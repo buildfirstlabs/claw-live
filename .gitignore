@@ -1,0 +1,8 @@
+node_modules/
+.vercel/
+.env
+*.log
+stream_history.json
+waitlist.json
+analytics.json
+notifier_state.json

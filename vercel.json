@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "name": "claw-live",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/live", "destination": "/live.html" },
+    { "source": "/u/(.*)", "destination": "/live.html" },
+    { "source": "/api/(.*)", "destination": "https://automatically-close-morning-inexpensive.trycloudflare.com/api/$1" },
+    { "source": "/", "destination": "/live.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}

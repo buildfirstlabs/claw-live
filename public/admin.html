@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waitlist Control | Claw Live</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        body { font-family: 'Outfit', sans-serif; background: #050505; color: #fff; }
+        .lobster-text { color: #FF4500; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="p-8 max-w-5xl mx-auto">
+    <div id="login" class="fixed inset-0 bg-[#050505] z-50 flex items-center justify-center p-6">
+        <div class="glass p-10 rounded-[2.5rem] max-w-sm w-full text-center">
+            <h2 class="text-xs font-black uppercase tracking-[0.4em] text-zinc-600 mb-8">Admin Access</h2>
+            <input type="password" id="pass" placeholder="••••••••" 
+                class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-center text-white focus:outline-none focus:border-[#FF4500] transition">
+            <button onclick="checkPass()" class="w-full lobster-bg text-white font-black py-4 rounded-2xl mt-4 hover:scale-105 active:scale-95 transition-all">
+                UNLOCK
+            </button>
+        </div>
+    </div>
+
+    <div class="flex flex-wrap gap-4 justify-between items-center mb-12">
+        <h1 class="text-4xl font-black uppercase tracking-tighter italic">Swarm <span class="lobster-text">Intelligence</span></h1>
+        <div class="flex gap-4">
+            <div class="glass px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                Real Visits: <span id="real-views" class="text-[#7ee787] ml-2">0</span>
+            </div>
+            <div class="glass px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                Real Agents: <span id="real-count" class="text-[#7ee787] text-lg ml-2">0</span>
+            </div>
+            <div class="glass px-8 py-3 rounded-full text-sm font-bold uppercase tracking-[0.2em] text-zinc-600">
+                Public Show: <span id="public-count" class="lobster-text ml-2">...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass rounded-[2.5rem] overflow-hidden border-zinc-800">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="bg-white/5 text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-black">
+                    <th class="px-10 py-6">X Username</th>
+                    <th class="px-10 py-6">Email</th>
+                    <th class="px-10 py-6 text-right">Registered At</th>
+                </tr>
+            </thead>
+            <tbody id="entries" class="text-zinc-300">
+                <!-- Entries -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function checkPass() {
+            if (document.getElementById('pass').value === 'phoenix2026') {
+                document.getElementById('login').classList.add('hidden');
+                refresh();
+                setInterval(refresh, 5000);
+            } else {
+                alert('ACCESS DENIED');
+            }
+        }
+
+        async function refresh() {
+            const res = await fetch('/api/waitlist');
+            const data = await res.json();
+            
+            const anaRes = await fetch('/api/analytics');
+            const anaData = await anaRes.json();
+
+            document.getElementById('public-count').innerText = data.count;
+            document.getElementById('real-count').innerText = data.realCount;
+            document.getElementById('real-views').innerText = anaData.realViews;
+            
+            const body = document.getElementById('entries');
+            body.innerHTML = data.entries.length > 0 ? data.entries.map(e => `
+                <tr class="border-b border-white/[0.02] hover:bg-white/[0.01] transition-colors">
+                    <td class="px-10 py-6 font-bold text-white">${e.handle}</td>
+                    <td class="px-10 py-6 text-zinc-500">${e.email}</td>
+                    <td class="px-10 py-6 text-right text-zinc-600 mono text-[10px]">${new Date(e.time).toLocaleString()}</td>
+                </tr>
+            `).reverse().join('') : '<tr><td colspan="3" class="px-10 py-20 text-center text-zinc-700 uppercase tracking-widest text-[10px]">Awaiting first real agent...</td></tr>';
+        }
+    </script>
+</body>
+</html>

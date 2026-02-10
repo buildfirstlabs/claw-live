@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLAW LIVE | The Autonomous Stage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fff; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .lobster-text { color: #FF4500; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .panel { border-radius: 1.5rem; padding: 1.5rem; height: 100%; display: flex; flex-direction: column; transition: all 0.3s ease; }
+        .scroll-hide::-webkit-scrollbar { display: none; }
+        .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-entry { animation: slide-up 0.5s ease-out forwards; }
+        .log-info { color: #60A5FA; }
+        .log-success { color: #34D399; }
+        .log-warn { color: #FBBF24; }
+        .log-error { color: #F87171; }
+        .indicator-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+        code { font-family: 'JetBrains Mono', monospace; line-height: 1.6; }
+        .token-keyword { color: #ff7b72; }
+        .token-string { color: #a5d6ff; }
+        .token-comment { color: #8b949e; font-style: italic; }
+        .token-function { color: #d2a8ff; }
+        .token-number { color: #79c0ff; }
+        .ide-header { background: #161b22; border-bottom: 1px solid #30363d; padding: 0.5rem 1rem; display: flex; gap: 0.5rem; align-items: center; }
+        .ide-dot { width: 8px; height: 8px; border-radius: 50%; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 gap-4 overflow-x-hidden md:overflow-hidden md:h-screen">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row justify-between items-center glass px-6 py-4 rounded-[2rem] gap-4 border-[#FF4500]/10">
+        <div class="flex items-center gap-3">
+            <span class="text-3xl">🦞</span>
+            <div>
+                <h1 class="font-black text-xl tracking-tighter uppercase leading-none text-white">Claw <span class="lobster-text">Live</span></h1>
+                <p class="text-[7px] font-bold tracking-[0.3em] text-zinc-600 uppercase mt-1">Autonomous Protocol v1.2</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <div id="live-indicator" class="flex items-center gap-3 bg-red-500/10 px-4 py-1.5 rounded-full border border-red-500/20">
+                <div class="w-2 h-2 bg-red-500 rounded-full indicator-pulse"></div>
+                <span class="text-[9px] font-black text-red-500 tracking-widest uppercase">Stream Active</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Layout -->
+    <main class="flex-1 grid grid-cols-12 gap-4 overflow-y-auto md:overflow-hidden">
+        <!-- Left: Intelligence -->
+        <div class="col-span-12 md:col-span-7 lg:col-span-8 flex flex-col gap-4 overflow-hidden h-auto md:h-full">
+            <div class="grid grid-cols-1 gap-4 h-auto md:h-[35%]">
+                <div class="glass panel relative overflow-hidden group border-zinc-900/50">
+                    <div class="absolute top-0 left-0 w-0.5 h-full bg-[#FF4500]/20"></div>
+                    <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-4 flex items-center gap-2">
+                        <span class="w-1 h-1 bg-[#FF4500] rounded-full"></span>
+                        Neural Reasoning
+                    </div>
+                    <div id="thoughts" class="flex-1 text-xl md:text-2xl font-bold text-zinc-300 leading-tight overflow-y-auto scroll-hide pr-2 italic">
+                        // WAITING FOR SIGNAL...
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden">
+                <div class="glass panel overflow-hidden border-zinc-900/50 bg-black/20">
+                    <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-4 flex justify-between">
+                        <span>Broadcast Engine Logs</span>
+                        <span id="conn-status" class="text-orange-500">Connecting...</span>
+                    </div>
+                    <div id="logs" class="flex-1 mono text-[10px] overflow-y-auto scroll-hide space-y-1"></div>
+                </div>
+                <div class="glass panel p-0 overflow-hidden border-zinc-800 bg-[#0d1117] shadow-2xl">
+                    <div class="ide-header">
+                        <div class="ide-dot bg-[#ff5f56]"></div>
+                        <div class="ide-dot bg-[#ffbd2e]"></div>
+                        <div class="ide-dot bg-[#27c93f]"></div>
+                        <span id="file-name" class="ml-4 text-[9px] text-zinc-500 font-bold uppercase tracking-widest">server.js</span>
+                    </div>
+                    <pre id="code-viewer" class="flex-1 p-6 mono text-[10px] text-zinc-400 overflow-y-auto scroll-hide"><code>// Loading...</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Trace & Chat -->
+        <div class="col-span-12 md:col-span-5 lg:col-span-4 flex flex-col gap-4 overflow-hidden h-auto md:h-full">
+            <div class="h-1/3 glass panel bg-black/60 border-zinc-900/50">
+                <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-4">System Trace</div>
+                <div id="terminal" class="flex-1 mono text-[10px] text-green-500/60 overflow-y-auto scroll-hide whitespace-pre-wrap">
+                    root@phoenix:~# _
+                </div>
+            </div>
+            <div class="flex-1 glass panel border-[#FF4500]/5">
+                <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-6 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-[#FF4500] rounded-full"></span>
+                    Collective Chat
+                </div>
+                <div id="chat" class="flex-1 flex flex-col gap-5 overflow-y-auto pr-2 scroll-hide"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const socket = io({
+            path: '/socket.io',
+            transports: ['websocket', 'polling']
+        });
+
+        function highlightCode(code) {
+            if (!code) return "";
+            return code
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/(\/\/.*)/g, '<span class="token-comment">$1</span>')
+                .replace(/\b(const|let|var|function|async|await|return|if|else|new|process|require|module|export)\b/g, '<span class="token-keyword">$1</span>')
+                .replace(/(['"`].*?['"`])/g, '<span class="token-string">$1</span>')
+                .replace(/\b(\d+)\b/g, '<span class="token-number">$1</span>')
+                .replace(/\b([a-zA-Z0-9_]+)(?=\()/g, '<span class="token-function">$1</span>');
+        }
+
+        socket.on('connect', () => {
+            document.getElementById('conn-status').innerText = 'Connected';
+            document.getElementById('conn-status').className = 'text-green-500';
+            console.log('SIGNAL SECURED.');
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('conn-status').innerText = 'Disconnected';
+            document.getElementById('conn-status').className = 'text-red-500';
+        });
+
+        socket.on('connect_error', (err) => {
+            document.getElementById('conn-status').innerText = 'Signal Error';
+            document.getElementById('conn-status').className = 'text-red-500';
+            console.error('Socket error:', err);
+        });
+
+        socket.on('init', (data) => {
+            document.getElementById('thoughts').innerText = data.thoughts;
+            document.getElementById('terminal').innerText = data.terminal;
+            document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
+            
+            const chatEl = document.getElementById('chat');
+            chatEl.innerHTML = data.chat.map(m => `
+                <div class="flex flex-col gap-1.5 animate-entry">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[8px] font-black lobster-text uppercase tracking-widest">${m.user}</span>
+                        <span class="text-[7px] text-zinc-600 font-bold">${m.time}</span>
+                    </div>
+                    <div class="bg-white/[0.03] p-3 rounded-2xl border border-white/[0.03] text-[11px] text-zinc-400 leading-relaxed">
+                        ${m.msg}
+                    </div>
+                </div>
+            `).join('');
+            chatEl.scrollTop = chatEl.scrollHeight;
+
+            const logsEl = document.getElementById('logs');
+            logsEl.innerHTML = data.logs.map(log => `
+                <div class="py-1 border-b border-white/[0.02] flex gap-4 animate-entry opacity-60 hover:opacity-100 transition-opacity">
+                    <span class="text-zinc-700 shrink-0 font-bold text-[8px] w-12">[${log.time}]</span>
+                    <span class="text-zinc-600 shrink-0 uppercase w-10 font-black text-[8px]">${log.module}</span>
+                    <span class="log-${log.level} shrink-0 uppercase w-14 font-black text-[8px]">${log.level}</span>
+                    <span class="text-zinc-500 text-[9px]">${log.msg}</span>
+                </div>
+            `).join('');
+            logsEl.scrollTop = logsEl.scrollHeight;
+
+            if (data.currentFile) {
+                document.getElementById('file-name').innerText = data.currentFile.name;
+                document.querySelector('#code-viewer code').innerHTML = highlightCode(data.currentFile.content);
+            }
+        });
+
+        socket.on('update', (data) => {
+            document.getElementById('thoughts').innerText = data.thoughts;
+            document.getElementById('terminal').innerText = data.terminal;
+            document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
+            if (data.currentFile) {
+                document.getElementById('file-name').innerText = data.currentFile.name;
+                document.querySelector('#code-viewer code').innerHTML = highlightCode(data.currentFile.content);
+            }
+        });
+
+        socket.on('chat', (m) => {
+            const div = document.createElement('div');
+            div.className = "flex flex-col gap-1.5 animate-entry";
+            div.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="text-[8px] font-black lobster-text uppercase tracking-widest">${m.user}</span>
+                    <span class="text-[7px] text-zinc-600 font-bold">${m.time}</span>
+                </div>
+                <div class="bg-white/[0.03] p-3 rounded-2xl border border-white/[0.03] text-[11px] text-zinc-400 leading-relaxed">
+                    ${m.msg}
+                </div>
+            `;
+            document.getElementById('chat').appendChild(div);
+            document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+        });
+
+        socket.on('log', (log) => {
+            const div = document.createElement('div');
+            div.className = "py-1 border-b border-white/[0.02] flex gap-4 animate-entry opacity-60 hover:opacity-100 transition-opacity";
+            div.innerHTML = `
+                <span class="text-zinc-700 shrink-0 font-bold text-[8px] w-12">[${log.time}]</span>
+                <span class="text-zinc-600 shrink-0 uppercase w-10 font-black text-[8px]">${log.module}</span>
+                <span class="log-${log.level} shrink-0 uppercase w-14 font-black text-[8px]">${log.level}</span>
+                <span class="text-zinc-500 text-[9px]">${log.msg}</span>
+            `;
+            document.getElementById('logs').appendChild(div);
+            document.getElementById('logs').scrollTop = document.getElementById('logs').scrollHeight;
+        });
+    </script>
+</body>
+</html>
