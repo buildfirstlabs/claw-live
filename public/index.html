@@ -69,7 +69,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-[#FF4500] rounded-full" style="animation: pulse 2s infinite;"></span>
-                    <span class="text-zinc-300" id="building-status">Building: Claiming System</span>
+                    <span class="text-zinc-300" id="building-status">Building...</span>
                 </div>
             </div>
         </div>
@@ -175,6 +175,19 @@
     <script>
         const API_URL = '/api/waitlist';
         
+        // Load build status
+        async function loadBuildStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                document.getElementById('version').textContent = data.version || 'v0.1';
+                document.getElementById('commit-count').textContent = data.commitCount || 0;
+                document.getElementById('building-status').textContent = data.buildStatus || 'Building...';
+            } catch (err) {
+                console.error('Failed to load build status:', err);
+            }
+        }
+        
         // Load verified agents
         async function loadVerifiedAgents() {
             try {
@@ -240,7 +253,8 @@
             }
         });
 
-        // Load agents on page load
+        // Load data on page load
+        loadBuildStatus();
         loadVerifiedAgents();
     </script>
 </body>

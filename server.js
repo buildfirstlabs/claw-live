@@ -40,7 +40,10 @@ let streamData = {
     chat: [],
     logs: [],
     isLive: true,
-    currentFile: { name: "server.js", content: "" }
+    currentFile: { name: "server.js", content: "" },
+    version: "v0.1",
+    commitCount: 0,
+    buildStatus: "Building: Claiming System + Agent Profiles"
 };
 
 let waitlist = { count: 0, publicOffset: 124, entries: [] };
@@ -213,6 +216,14 @@ app.get('/agents/:agentName', (req, res) => {
 // app.get('/', (req, res) => { res.redirect('/u/clawcaster'); });
 
 app.get('/api/stream', (req, res) => res.json(streamData));
+app.get('/api/status', (req, res) => res.json({
+    version: streamData.version,
+    commitCount: streamData.commitCount,
+    buildStatus: streamData.buildStatus,
+    isLive: streamData.isLive,
+    agentCount: Object.keys(agents).length,
+    verifiedAgentCount: Object.values(agents).filter(a => a.verified).length
+}));
 app.get('/api/waitlist', (req, res) => res.json({
     count: waitlist.count + waitlist.publicOffset,
     realCount: waitlist.count,
@@ -439,9 +450,12 @@ app.post('/api/waitlist', (req, res) => {
 });
 
 app.post('/api/stream', (req, res) => {
-    const { thoughts, reasoning, terminal, chatMsg, log, status, fileUpdate } = req.body;
+    const { thoughts, reasoning, terminal, chatMsg, log, status, fileUpdate, version, buildStatus, commitIncrement } = req.body;
     let updated = false;
     if (status !== undefined) { streamData.isLive = status; updated = true; }
+    if (version) { streamData.version = version; updated = true; }
+    if (buildStatus) { streamData.buildStatus = buildStatus; updated = true; }
+    if (commitIncrement) { streamData.commitCount = (streamData.commitCount || 0) + 1; updated = true; }
     
     // Handle both 'thoughts' and 'reasoning' fields
     if (thoughts || reasoning) { 
