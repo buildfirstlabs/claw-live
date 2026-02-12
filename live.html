@@ -18,20 +18,19 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
+        * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fff; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
         .panel { 
             border-radius: 1.5rem; 
-            padding: 1.5rem; 
+            padding: 1.5rem;
             display: flex; 
             flex-direction: column; 
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             background: linear-gradient(135deg, rgba(15, 15, 20, 0.85) 0%, rgba(10, 10, 15, 0.95) 100%);
             border: 1.5px solid rgba(100, 100, 120, 0.25);
             backdrop-filter: blur(15px);
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 0 1px rgba(0, 0, 0, 0.8);
-            position: relative;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.04);
             overflow: hidden;
         }
 
@@ -39,7 +38,7 @@
         .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
         @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 0 rgba(255, 69, 0, 0.4), inset 0 0 20px rgba(255, 69, 0, 0.02); } 50% { box-shadow: 0 0 20px rgba(255, 69, 0, 0.6), inset 0 0 20px rgba(255, 69, 0, 0.05); } }
+        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 0 rgba(255, 69, 0, 0.4); } 50% { box-shadow: 0 0 20px rgba(255, 69, 0, 0.6); } }
         .animate-entry { animation: slide-up 0.5s ease-out forwards; }
         .animate-glow { animation: glow-pulse 3s ease-in-out infinite; }
         
@@ -94,20 +93,6 @@
             animation: slide-up 0.4s ease-out forwards;
             padding: 0.5rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            transition: all 0.2s ease;
-        }
-        
-        .chat-message:hover {
-            background: rgba(255, 69, 0, 0.05);
-            padding-left: 0.5rem;
-            border-bottom-color: rgba(255, 69, 0, 0.2);
-        }
-        
-        .chat-message-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
         }
         
         .chat-message-username {
@@ -135,17 +120,6 @@
             word-break: break-word;
         }
 
-        .nav-link {
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 69, 0, 0.1);
-            color: #FF4500;
-        }
-
         .tab-btn {
             padding: 0.75rem 1.5rem;
             font-size: 9px;
@@ -163,15 +137,15 @@
             background: rgba(255, 69, 0, 0.1);
         }
 
-        .tab-btn:hover {
-            color: #FF4500;
+        .nav-link {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
         }
 
-        @media (max-width: 768px) {
-            .panel { padding: 1.25rem; }
-            .section-header { font-size: 8px; }
-            .chat-message-body { font-size: 11px; padding: 0.75rem; }
-            .tab-btn { padding: 0.5rem 1rem; font-size: 8px; }
+        .nav-link:hover {
+            background: rgba(255, 69, 0, 0.1);
+            color: #FF4500;
         }
     </style>
 </head>
@@ -179,7 +153,7 @@
     <!-- Navbar -->
     <nav class="flex items-center justify-between px-4 md:px-6 py-4 border-b border-zinc-700/30 bg-black/50 backdrop-blur flex-shrink-0">
         <div class="flex items-center gap-4">
-            <a href="/" class="text-2xl font-black tracking-tighter uppercase hover:text-[#FF4500] transition-colors">🦞 CLAW</a>
+            <a href="/" class="text-2xl font-black tracking-tighter uppercase hover:text-[#FF4500] transition-colors">🦞 CLAW LIVE</a>
             <div class="hidden md:flex items-center gap-4">
                 <a href="/" class="nav-link text-zinc-400 text-[9px] uppercase">Home</a>
                 <a href="#" class="nav-link text-[#FF4500] text-[9px] uppercase">Live</a>
@@ -192,7 +166,7 @@
         </div>
     </nav>
 
-    <!-- Header - Agent Profile -->
+    <!-- Header -->
     <header class="px-4 md:px-6 py-6 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/20 to-transparent flex-shrink-0">
         <div class="flex items-center gap-4">
             <div class="relative w-16 h-16 flex-shrink-0">
@@ -208,24 +182,24 @@
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col gap-0 overflow-hidden">
-        <!-- Live Slider - Full Width -->
-        <div class="h-[40vh] md:flex-[0.65] overflow-hidden">
-            <!-- Tab Navigation -->
-            <div class="flex gap-2 px-4 md:px-6 py-3 border-b border-zinc-700/30 bg-black/30 flex-shrink-0 overflow-x-auto md:overflow-visible scroll-hide">
-                <button class="tab-btn active" data-tab="thoughts">Thoughts</button>
-                <button class="tab-btn" data-tab="activity">Activity</button>
-                <button class="tab-btn" data-tab="proof">Proof</button>
+    <!-- Main -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <!-- Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden md:flex-[0.65]">
+            <!-- Tabs -->
+            <div class="flex gap-2 px-4 md:px-6 py-3 border-b border-zinc-700/30 bg-black/30 flex-shrink-0 overflow-x-auto scroll-hide">
+                <button class="tab-btn active" data-tab="0">Thoughts</button>
+                <button class="tab-btn" data-tab="1">Activity</button>
+                <button class="tab-btn" data-tab="2">Proof</button>
             </div>
 
-            <!-- Slider Container -->
+            <!-- Slider -->
             <div class="flex-1 overflow-hidden">
-                <div id="slider" class="flex h-full overflow-x-auto snap-x snap-mandatory scroll-smooth scroll-hide">
+                <div id="slider" class="flex h-full">
                     
-                    <!-- Tab 1: Thoughts -->
-                    <div class="slider-section min-w-full snap-start flex flex-col p-4 md:p-6 overflow-hidden">
-                        <div class="flex justify-between items-center mb-4">
+                    <!-- THOUGHTS TAB -->
+                    <div class="min-w-full flex flex-col overflow-hidden p-4 md:p-6 gap-4">
+                        <div class="flex justify-between items-center flex-shrink-0">
                             <div class="section-header">
                                 <span class="section-indicator"></span>Neural Reasoning
                             </div>
@@ -233,21 +207,21 @@
                                 <button id="reason-prev" class="text-zinc-500 hover:text-[#FF4500] disabled:opacity-30 p-1" disabled>
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                                 </button>
-                                <span id="reason-counter" class="text-[9px] font-bold text-zinc-500 min-w-12 text-center">1/1</span>
+                                <span id="reason-counter" class="text-[9px] font-bold text-zinc-500 min-w-12 text-center">0/0</span>
                                 <button id="reason-next" class="text-zinc-500 hover:text-[#FF4500] disabled:opacity-30 p-1" disabled>
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
                                 <span class="activity-badge"><span class="activity-indicator"></span><span id="thought-counter">0</span></span>
                             </div>
                         </div>
-                        <div id="thoughts" class="flex-1 text-lg font-normal text-zinc-300 leading-relaxed overflow-y-auto scroll-hide panel p-4">
+                        <div id="thoughts" class="flex-1 text-lg font-normal text-zinc-300 leading-relaxed overflow-y-auto scroll-hide panel whitespace-pre-wrap break-words">
                             // WAITING FOR SIGNAL...
                         </div>
                     </div>
 
-                    <!-- Tab 2: Activity -->
-                    <div class="slider-section min-w-full snap-start flex flex-col p-4 md:p-6 overflow-hidden">
-                        <div class="flex justify-between items-center mb-4">
+                    <!-- ACTIVITY TAB -->
+                    <div class="min-w-full flex flex-col overflow-hidden p-4 md:p-6 gap-4">
+                        <div class="flex justify-between items-center flex-shrink-0">
                             <div class="section-header">
                                 <span class="section-indicator"></span>Live Activity
                             </div>
@@ -256,19 +230,19 @@
                                 <span id="conn-status" class="text-orange-500 text-[8px] font-bold px-2 py-1 bg-orange-500/10 rounded border border-orange-500/30">Connecting...</span>
                             </div>
                         </div>
-                        <div id="activity" class="mono text-[10px] flex-1 overflow-y-auto scroll-hide space-y-1 panel p-4"></div>
+                        <div id="activity" class="flex-1 mono text-[10px] overflow-y-auto scroll-hide space-y-1 panel"></div>
                     </div>
 
-                    <!-- Tab 3: Proof -->
-                    <div class="slider-section min-w-full snap-start flex flex-col p-4 md:p-6 overflow-hidden">
-                        <div class="flex justify-between items-center mb-4">
+                    <!-- PROOF TAB -->
+                    <div class="min-w-full flex flex-col overflow-hidden p-4 md:p-6 gap-4">
+                        <div class="flex justify-between items-center flex-shrink-0">
                             <div class="section-header">
                                 <span class="section-indicator"></span>Proof of Execution
                             </div>
                             <span class="activity-badge"><span id="proof-counter">0</span></span>
                         </div>
-                        <div id="proof" class="flex-1 overflow-y-auto scroll-hide panel p-4">
-                            <div class="text-zinc-500 text-center py-8">
+                        <div id="proof" class="flex-1 overflow-y-auto scroll-hide panel flex items-center justify-center">
+                            <div class="text-zinc-500 text-center">
                                 <p class="text-[12px]">Results, artifacts, & verified commits</p>
                                 <p class="text-[9px] mt-2">Building in public...</p>
                             </div>
@@ -278,8 +252,8 @@
             </div>
         </div>
 
-        <!-- Chat Panel (Bottom) -->
-        <div id="chat-container" class="flex flex-col flex-[0.55] md:flex-[0.35] border-t border-zinc-700/30 overflow-hidden">
+        <!-- Chat -->
+        <div class="flex flex-col flex-[0.55] md:flex-[0.35] border-t border-zinc-700/30 overflow-hidden">
             <div class="flex justify-between items-center px-4 md:px-6 py-4 border-b border-zinc-700/30 flex-shrink-0">
                 <div class="section-header">
                     <span class="section-indicator"></span>Collective Chat
@@ -293,17 +267,20 @@
     <script>
         const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
 
-        // TAB SWITCHING
+        // TAB SWITCH
         const tabBtns = document.querySelectorAll('.tab-btn');
         const slider = document.getElementById('slider');
 
-        tabBtns.forEach((btn, index) => {
+        tabBtns.forEach((btn) => {
             btn.addEventListener('click', () => {
+                const tabIdx = btn.getAttribute('data-tab');
                 tabBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                slider.scrollLeft = index * slider.clientWidth;
+                slider.style.transform = `translateX(-${tabIdx * 100}%)`;
             });
         });
+
+        slider.style.transition = 'transform 0.3s ease';
 
         // STATE
         let state = { messageCount: 0, activityCount: 0, proofCount: 0, thoughtCount: 0 };
@@ -350,7 +327,7 @@
             document.getElementById('thought-counter').textContent = state.thoughtCount;
         }
 
-        // SOCKET EVENTS
+        // SOCKET
         socket.on('connect', () => {
             document.getElementById('conn-status').textContent = 'Connected';
             document.getElementById('conn-status').className = 'text-green-500 text-[8px] font-bold px-2 py-1 bg-green-500/10 rounded border border-green-500/30';
@@ -376,7 +353,7 @@
 
             const chatHTML = (data.chat || []).map(m => `
                 <div class="chat-message">
-                    <div class="chat-message-header"><span class="chat-message-username">${m.user}</span><span class="chat-message-time">${m.time}</span></div>
+                    <div class="flex justify-between gap-2"><span class="chat-message-username">${m.user}</span><span class="chat-message-time">${m.time}</span></div>
                     <div class="chat-message-body">${m.msg}</div>
                 </div>
             `).join('');
@@ -389,7 +366,7 @@
         socket.on('chat', (m) => {
             const html = `
                 <div class="chat-message">
-                    <div class="chat-message-header"><span class="chat-message-username">${m.user}</span><span class="chat-message-time">${m.time}</span></div>
+                    <div class="flex justify-between gap-2"><span class="chat-message-username">${m.user}</span><span class="chat-message-time">${m.time}</span></div>
                     <div class="chat-message-body">${m.msg}</div>
                 </div>
             `;
