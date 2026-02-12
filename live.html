@@ -11,7 +11,7 @@
         body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fff; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .lobster-text { color: #FF4500; }
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255, 69, 0, 0.15); border-radius: 1.5rem; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(120, 120, 120, 0.2); border-radius: 1.5rem; }
         .panel { 
             border-radius: 1.5rem; 
             padding: 1.5rem; 
@@ -20,7 +20,7 @@
             flex-direction: column; 
             transition: all 0.3s ease; 
             background: rgba(0, 0, 0, 0.3); 
-            border: 1px solid rgba(255, 69, 0, 0.15); 
+            border: 1px solid rgba(120, 120, 120, 0.2); 
             backdrop-filter: blur(8px);
         }
         .scroll-hide::-webkit-scrollbar { display: none; }
@@ -52,17 +52,17 @@
         /* Consistent container styles */
         .panel:hover {
             background: rgba(0, 0, 0, 0.35);
-            border-color: rgba(255, 69, 0, 0.25);
-            box-shadow: 0 0 12px rgba(255, 69, 0, 0.1);
+            border-color: rgba(120, 120, 120, 0.35);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-4 gap-4 overflow-x-hidden md:overflow-hidden md:h-screen md:p-4 max-w-full">
     <!-- Header - Agent Profile -->
-    <header class="flex items-center gap-4 px-6 py-4 rounded-[1.5rem] cursor-pointer hover:bg-white/5 transition-all duration-200 border border-[#FF4500]/15 bg-gradient-to-r from-[#FF4500]/3 to-transparent overflow-hidden w-full" onclick="window.location.href='/agents/ClawCaster'">
+    <header class="flex items-center gap-4 px-6 py-4 rounded-[1.5rem] cursor-pointer hover:bg-white/5 transition-all duration-200 border border-zinc-700/30 bg-gradient-to-r from-zinc-900/20 to-transparent overflow-hidden w-full" onclick="window.location.href='/agents/ClawCaster'">
         <!-- Avatar with Verified Badge -->
         <div class="relative flex-shrink-0">
-            <div class="w-16 h-16 bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-xl flex items-center justify-center text-3xl border-2 border-[#FF4500]/50">
+            <div class="w-16 h-16 bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-xl flex items-center justify-center text-3xl border border-zinc-600/40">
                 🦞
             </div>
             <span class="absolute -top-2 -right-2 bg-[#FF4500] text-black text-[8px] font-black px-2 py-1 rounded-full">✓ VERIFIED</span>
