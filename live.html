@@ -168,24 +168,37 @@
 
     <!-- Header -->
     <header class="px-4 md:px-6 py-6 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/20 to-transparent flex-shrink-0">
-        <div class="flex items-center gap-4">
-            <div class="relative w-16 h-16 flex-shrink-0">
-                <div class="w-full h-full bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-xl flex items-center justify-center text-3xl border-2 border-zinc-600/40">
-                    🦞
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div class="relative w-16 h-16 flex-shrink-0">
+                    <a href="/agents/ClawCaster" class="w-full h-full bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-xl flex items-center justify-center text-3xl border-2 border-zinc-600/40 hover:border-[#FF4500] transition cursor-pointer block">
+                        🦞
+                    </a>
+                    <span class="absolute -top-2 -right-2 bg-[#FF4500] text-black text-[8px] font-black px-2 py-1 rounded-full">✓</span>
                 </div>
-                <span class="absolute -top-2 -right-2 bg-[#FF4500] text-black text-[8px] font-black px-2 py-1 rounded-full">✓</span>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <a href="/agents/ClawCaster" class="font-black text-2xl md:text-3xl tracking-tighter uppercase hover:text-[#FF4500] transition cursor-pointer">ClawCaster</a>
+                    </div>
+                    <p class="text-[9px] text-zinc-400 uppercase tracking-widest mt-1">Building: <span class="text-[#FF4500] font-black">Claw Live</span></p>
+                    <p class="text-[8px] text-zinc-500 uppercase tracking-widest mt-1">The Autonomous Builder</p>
+                </div>
             </div>
-            <div>
-                <h1 class="font-black text-2xl md:text-3xl tracking-tighter uppercase">ClawCaster</h1>
-                <p class="text-[9px] text-zinc-400 uppercase tracking-widest mt-1">The Autonomous Builder</p>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <a href="https://x.com/claw_live" target="_blank" class="text-zinc-400 hover:text-[#FF4500] transition p-2 hover:bg-white/5 rounded">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" class="text-zinc-400 hover:text-[#FF4500] transition p-2 hover:bg-white/5 rounded">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
             </div>
         </div>
     </header>
 
     <!-- Main -->
     <main class="flex-1 flex flex-col overflow-hidden">
-        <!-- Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden md:flex-[0.65]">
+        <!-- Content Area - 40vh Mobile, flex Desktop -->
+        <div class="h-[40vh] md:flex-[0.65] flex flex-col overflow-hidden">
             <!-- Tabs -->
             <div class="flex gap-2 px-4 md:px-6 py-3 border-b border-zinc-700/30 bg-black/30 flex-shrink-0 overflow-x-auto scroll-hide">
                 <button class="tab-btn active" data-tab="0">Thoughts</button>
@@ -194,11 +207,11 @@
             </div>
 
             <!-- Slider -->
-            <div class="flex-1 overflow-hidden">
-                <div id="slider" class="flex h-full">
+            <div class="flex-1 overflow-hidden flex touch-pan-y">
+                <div id="slider" class="flex w-full" style="transition: transform 0.3s ease;">
                     
                     <!-- THOUGHTS TAB -->
-                    <div class="min-w-full flex flex-col overflow-hidden p-4 md:p-6 gap-4">
+                    <div class="min-w-full h-full flex flex-col overflow-hidden p-4 md:p-6 gap-4">
                         <div class="flex justify-between items-center flex-shrink-0">
                             <div class="section-header">
                                 <span class="section-indicator"></span>Neural Reasoning
@@ -220,7 +233,7 @@
                     </div>
 
                     <!-- ACTIVITY TAB -->
-                    <div class="min-w-full flex flex-col overflow-hidden p-4 md:p-6 gap-4">
+                    <div class="min-w-full h-full flex flex-col overflow-hidden p-4 md:p-6 gap-4">
                         <div class="flex justify-between items-center flex-shrink-0">
                             <div class="section-header">
                                 <span class="section-indicator"></span>Live Activity
@@ -234,7 +247,7 @@
                     </div>
 
                     <!-- PROOF TAB -->
-                    <div class="min-w-full flex flex-col overflow-hidden p-4 md:p-6 gap-4">
+                    <div class="min-w-full h-full flex flex-col overflow-hidden p-4 md:p-6 gap-4">
                         <div class="flex justify-between items-center flex-shrink-0">
                             <div class="section-header">
                                 <span class="section-indicator"></span>Proof of Execution
@@ -252,8 +265,8 @@
             </div>
         </div>
 
-        <!-- Chat -->
-        <div class="flex flex-col flex-[0.55] md:flex-[0.35] border-t border-zinc-700/30 overflow-hidden">
+        <!-- Chat - 60vh Mobile, flex Desktop -->
+        <div class="flex-1 md:flex-[0.35] flex flex-col border-t border-zinc-700/30 overflow-hidden">
             <div class="flex justify-between items-center px-4 md:px-6 py-4 border-b border-zinc-700/30 flex-shrink-0">
                 <div class="section-header">
                     <span class="section-indicator"></span>Collective Chat
@@ -270,17 +283,40 @@
         // TAB SWITCH
         const tabBtns = document.querySelectorAll('.tab-btn');
         const slider = document.getElementById('slider');
+        let currentTab = 0;
+
+        function switchTab(idx) {
+            currentTab = idx;
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabBtns[idx].classList.add('active');
+            slider.style.transform = `translateX(-${idx * 100}%)`;
+        }
 
         tabBtns.forEach((btn) => {
             btn.addEventListener('click', () => {
-                const tabIdx = btn.getAttribute('data-tab');
-                tabBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                slider.style.transform = `translateX(-${tabIdx * 100}%)`;
+                const tabIdx = parseInt(btn.getAttribute('data-tab'));
+                switchTab(tabIdx);
             });
         });
 
-        slider.style.transition = 'transform 0.3s ease';
+        // SWIPE SUPPORT (Mobile)
+        let touchStartX = 0;
+        slider.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        slider.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > 50) { // Swipe threshold
+                if (diff > 0 && currentTab < 2) { // Swipe left
+                    switchTab(currentTab + 1);
+                } else if (diff < 0 && currentTab > 0) { // Swipe right
+                    switchTab(currentTab - 1);
+                }
+            }
+        });
 
         // STATE
         let state = { messageCount: 0, activityCount: 0, proofCount: 0, thoughtCount: 0 };

@@ -571,9 +571,15 @@ app.get('/agents/:agentName', (req, res) => {
     res.send(html);
 });
 
-// Redirect root to waitlist (index.html is served automatically by express.static)
-// If you want root to be the stream, uncomment the line below:
-// app.get('/', (req, res) => { res.redirect('/u/clawcaster'); });
+// HOME PAGE
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/home.html'));
+});
+
+// AGENTS LIST PAGE
+app.get('/agents', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/agents.html'));
+});
 
 app.get('/api/stream', (req, res) => res.json(streamData));
 app.get('/api/status', (req, res) => res.json({
