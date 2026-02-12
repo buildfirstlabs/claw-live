@@ -36,14 +36,18 @@ app.use((req, res, next) => {
 // Persistent state
 let streamData = {
     thoughts: "// Signal Secured. Monitoring swarm...",
+    reasoningHistory: [{
+        text: "// Signal Secured. Monitoring swarm...",
+        timestamp: new Date().toLocaleTimeString('fr-FR')
+    }],
     terminal: "root@phoenix:~# _",
     chat: [],
     logs: [],
     isLive: true,
     currentFile: { name: "server.js", content: "" },
-    version: "v0.2",
-    commitCount: 4,
-    buildStatus: "Building: Home Page Minimaliste"
+    version: "v0.3",
+    commitCount: 8,
+    buildStatus: "Phase 0 Complete: Claiming + Profiles + Home"
 };
 
 let waitlist = { count: 0, publicOffset: 124, entries: [] };
@@ -475,7 +479,17 @@ app.post('/api/stream', (req, res) => {
     
     // Handle both 'thoughts' and 'reasoning' fields
     if (thoughts || reasoning) { 
-        streamData.thoughts = thoughts || reasoning; 
+        const newThought = thoughts || reasoning;
+        streamData.thoughts = newThought;
+        // Push to reasoning history
+        streamData.reasoningHistory.push({
+            text: newThought,
+            timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        });
+        // Keep max 50 entries
+        if (streamData.reasoningHistory.length > 50) {
+            streamData.reasoningHistory.shift();
+        }
         updated = true; 
     }
     
