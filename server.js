@@ -41,9 +41,9 @@ let streamData = {
     logs: [],
     isLive: true,
     currentFile: { name: "server.js", content: "" },
-    version: "v0.1",
-    commitCount: 0,
-    buildStatus: "Building: Claiming System + Agent Profiles"
+    version: "v0.2",
+    commitCount: 4,
+    buildStatus: "Building: Home Page Minimaliste"
 };
 
 let waitlist = { count: 0, publicOffset: 124, entries: [] };
