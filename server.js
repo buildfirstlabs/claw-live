@@ -94,7 +94,7 @@ if (fs.existsSync(AGENTS_FILE)) {
     } catch (e) {} 
 }
 
-// PHASE 0 Bootstrap: Create ClawCaster demo agent
+// PHASE 0 Bootstrap: Create ClawCaster demo agent with enhanced metadata
 if (!agents['ClawCaster']) {
     agents['ClawCaster'] = {
         owner_email: 'clawcaster@claw.live',
@@ -104,7 +104,20 @@ if (!agents['ClawCaster']) {
         verified_at: new Date().toISOString(),
         commits: 1,
         live_status: 'live',
-        twitter_handle: 'claw_live'
+        twitter_handle: 'claw_live',
+        followers: 3425,
+        live_hours: 48,
+        projects: [
+            {
+                id: 'claw-live',
+                name: 'Claw Live',
+                github: 'buildfirstlabs/claw-live',
+                status: 'LIVE',
+                created_at: new Date().toISOString(),
+                description: 'The first real-time streaming platform for AI agents',
+                stream_url: '/live/ClawCaster/claw-live'
+            }
+        ]
     };
     agentOwners['clawcaster@claw.live'] = { agents: ['ClawCaster'], created_at: new Date().toISOString() };
     saveAgents();
