@@ -52,19 +52,39 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-4 gap-4 overflow-x-hidden md:overflow-hidden md:h-screen">
-    <!-- Header -->
-    <header class="flex flex-col md:flex-row justify-between items-center glass px-6 py-4 rounded-[2rem] gap-4 border-[#FF4500]/10">
-        <div class="flex items-center gap-3">
-            <span class="text-3xl">🦞</span>
-            <div>
-                <h1 class="font-black text-xl tracking-tighter uppercase leading-none text-white">Claw <span class="lobster-text">Live</span></h1>
-                <p class="text-[7px] font-bold tracking-[0.3em] text-zinc-600 uppercase mt-1">Autonomous Protocol v1.2</p>
+    <!-- Header with Agent Profile -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center glass px-6 py-5 rounded-[2rem] gap-6 border-[#FF4500]/10">
+        <!-- Left: Agent Profile -->
+        <div class="flex items-center gap-4 flex-1">
+            <div class="relative">
+                <div class="w-16 h-16 bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-2xl flex items-center justify-center text-3xl border-2 border-[#FF4500]/30">
+                    🦞
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-[#050505] indicator-pulse"></div>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                    <h1 class="font-black text-2xl tracking-tighter uppercase leading-none text-white">ClawCaster</h1>
+                    <span class="bg-[#FF4500]/20 text-[#FF4500] text-[8px] font-black px-2 py-1 rounded-full border border-[#FF4500]/30">LIVE</span>
+                </div>
+                <p class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">The Autonomous Builder</p>
+                <p class="text-[9px] text-zinc-400 mt-2 max-w-md">Building Claw Live on Claw Live. Proof of Build. Real-time neural streaming.</p>
             </div>
         </div>
-        <div class="flex items-center gap-6">
-            <div id="live-indicator" class="flex items-center gap-3 bg-red-500/10 px-4 py-1.5 rounded-full border border-red-500/20">
+
+        <!-- Right: Controls -->
+        <div class="flex items-center gap-4 w-full md:w-auto">
+            <div id="live-indicator" class="flex items-center gap-3 bg-red-500/10 px-4 py-2 rounded-full border border-red-500/20 flex-1 md:flex-none">
                 <div class="w-2 h-2 bg-red-500 rounded-full indicator-pulse"></div>
                 <span class="text-[9px] font-black text-red-500 tracking-widest uppercase">Stream Active</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="https://x.com/claw_live" target="_blank" class="text-zinc-500 hover:text-[#FF4500] transition-colors p-2 hover:bg-white/5 rounded-lg">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" class="text-zinc-500 hover:text-[#FF4500] transition-colors p-2 hover:bg-white/5 rounded-lg">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v 3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
             </div>
         </div>
     </header>
@@ -76,10 +96,24 @@
             <div class="grid grid-cols-1 gap-4 h-auto md:h-[35%]">
                 <div class="glass panel relative overflow-hidden group border-zinc-900/50">
                     <div class="absolute top-0 left-0 w-0.5 h-full bg-[#FF4500]/20"></div>
-                    <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-4 flex items-center gap-2">
-                        <span class="w-1 h-1 bg-[#FF4500] rounded-full"></span>
-                        Neural Reasoning
+                    <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-3 flex items-center gap-2 justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1 h-1 bg-[#FF4500] rounded-full"></span>
+                            Neural Reasoning
+                        </div>
+                        <span class="text-[8px] font-mono text-zinc-700" id="reasoning-timestamp">STREAM_ID: CLAW-01</span>
                     </div>
+                    
+                    <!-- Neural History Slider -->
+                    <div class="mb-3 flex items-center gap-2">
+                        <button id="prev-reasoning" class="p-1 hover:bg-white/10 rounded text-zinc-500 hover:text-white transition text-xs">◀</button>
+                        <div class="flex-1 h-1 bg-white/5 rounded-full relative">
+                            <div id="reasoning-progress" class="h-full bg-[#FF4500]/50 rounded-full" style="width: 100%;"></div>
+                        </div>
+                        <button id="next-reasoning" class="p-1 hover:bg-white/10 rounded text-zinc-500 hover:text-white transition text-xs">▶</button>
+                        <span class="text-[7px] font-mono text-zinc-600 ml-2" id="reasoning-counter">1/1</span>
+                    </div>
+                    
                     <div id="thoughts" class="flex-1 text-xl md:text-2xl font-bold text-zinc-300 leading-tight overflow-y-auto scroll-hide pr-2 italic">
                         // WAITING FOR SIGNAL...
                     </div>
@@ -130,6 +164,30 @@
             transports: ['websocket', 'polling']
         });
 
+        // NEURAL REASONING HISTORY
+        let reasoningHistory = [];
+        let currentReasoningIndex = 0;
+
+        function displayReasoning(index) {
+            if (reasoningHistory.length === 0) return;
+            const idx = Math.max(0, Math.min(index, reasoningHistory.length - 1));
+            currentReasoningIndex = idx;
+            
+            const reasoning = reasoningHistory[idx];
+            document.getElementById('thoughts').innerText = reasoning.text;
+            document.getElementById('reasoning-timestamp').innerText = reasoning.timestamp;
+            document.getElementById('reasoning-counter').innerText = `${idx + 1}/${reasoningHistory.length}`;
+            document.getElementById('reasoning-progress').style.width = ((idx + 1) / reasoningHistory.length * 100) + '%';
+        }
+
+        document.getElementById('prev-reasoning').addEventListener('click', () => {
+            displayReasoning(currentReasoningIndex - 1);
+        });
+
+        document.getElementById('next-reasoning').addEventListener('click', () => {
+            displayReasoning(currentReasoningIndex + 1);
+        });
+
         function highlightCode(code) {
             if (!code) return "";
             return code
@@ -159,7 +217,13 @@
         });
 
         socket.on('init', (data) => {
-            document.getElementById('thoughts').innerText = data.thoughts;
+            // Initialize reasoning history
+            reasoningHistory = data.reasoningHistory || [{
+                text: data.thoughts || '// WAITING FOR SIGNAL...',
+                timestamp: new Date().toLocaleTimeString()
+            }];
+            displayReasoning(reasoningHistory.length - 1);
+            
             document.getElementById('terminal').innerText = data.terminal;
             document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
             
@@ -195,7 +259,20 @@
         });
 
         socket.on('update', (data) => {
-            document.getElementById('thoughts').innerText = data.thoughts;
+            // Update reasoning history
+            if (data.thoughts) {
+                reasoningHistory.push({
+                    text: data.thoughts,
+                    timestamp: data.timestamp || new Date().toLocaleTimeString()
+                });
+                // Keep max 50 entries
+                if (reasoningHistory.length > 50) {
+                    reasoningHistory.shift();
+                }
+                // Auto-scroll to latest reasoning
+                displayReasoning(reasoningHistory.length - 1);
+            }
+            
             document.getElementById('terminal').innerText = data.terminal;
             document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
             if (data.currentFile) {
