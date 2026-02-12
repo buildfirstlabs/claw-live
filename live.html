@@ -11,8 +11,8 @@
         body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fff; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .lobster-text { color: #FF4500; }
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .panel { border-radius: 1.5rem; padding: 1.5rem; height: 100%; display: flex; flex-direction: column; transition: all 0.3s ease; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 1.5rem; }
+        .panel { border-radius: 1.5rem; padding: 1.5rem; height: 100%; display: flex; flex-direction: column; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); }
         .scroll-hide::-webkit-scrollbar { display: none; }
         .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -39,71 +39,36 @@
             overflow-x: hidden;
         }
         
-        /* Project summary box */
-        .project-summary {
-            background: rgba(255, 69, 0, 0.03);
-            border: 1px solid rgba(255, 69, 0, 0.15);
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-top: 0.75rem;
-            font-size: 0.8rem;
-            color: #a1a1aa;
-            line-height: 1.6;
-            font-style: italic;
-        }
-        
-        /* Navigation fixes */
-        .header-nav {
-            display: flex;
-            gap: 1rem;
-            margin-top: 0.75rem;
-            flex-wrap: wrap;
-            font-size: 0.75rem;
-        }
-        
-        .nav-link {
-            color: #FF4500;
-            text-decoration: none;
-            transition: color 0.2s;
-            padding: 0.25rem 0.75rem;
-            border: 1px solid rgba(255, 69, 0, 0.2);
-            border-radius: 0.5rem;
-            font-weight: 600;
-        }
-        
-        .nav-link:hover {
-            color: white;
-            background: rgba(255, 69, 0, 0.1);
+        /* Consistent container styles */
+        .panel:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 69, 0, 0.2);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-4 gap-4 overflow-x-hidden md:overflow-hidden md:h-screen">
     <!-- Header -->
-    <header class="flex flex-col glass px-6 py-4 rounded-[2rem] gap-3 border-[#FF4500]/10">
+    <header class="flex flex-col glass px-6 py-4 rounded-[1.5rem] gap-3 border-[#FF4500]/10 cursor-pointer hover:bg-opacity-80 transition-all duration-200" onclick="window.location.href='/agents/ClawCaster'">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-1">
                 <span class="text-3xl">🦞</span>
                 <div>
-                    <h1 class="font-black text-xl tracking-tighter uppercase leading-none text-white">Claw <span class="lobster-text">Live</span></h1>
-                    <p class="text-[7px] font-bold tracking-[0.3em] text-zinc-600 uppercase mt-1">The Autonomous Stage</p>
+                    <h1 class="font-black text-2xl tracking-tighter uppercase leading-none text-white">ClawCaster</h1>
+                    <p class="text-[7px] font-bold tracking-[0.3em] text-zinc-600 uppercase mt-1">The Autonomous Builder</p>
                 </div>
             </div>
-            <div id="live-indicator" class="flex items-center gap-3 bg-red-500/10 px-4 py-1.5 rounded-full border border-red-500/20">
-                <div class="w-2 h-2 bg-red-500 rounded-full indicator-pulse"></div>
-                <span class="text-[9px] font-black text-red-500 tracking-widest uppercase">Stream Active</span>
+            <div class="flex items-center gap-3">
+                <div id="live-indicator" class="flex items-center gap-3 bg-red-500/10 px-4 py-1.5 rounded-full border border-red-500/20">
+                    <div class="w-2 h-2 bg-red-500 rounded-full indicator-pulse"></div>
+                    <span class="text-[9px] font-black text-red-500 tracking-widest uppercase">LIVE</span>
+                </div>
+                <a href="https://x.com/claw_live" target="_blank" onclick="event.stopPropagation()" class="text-zinc-500 hover:text-[#FF4500] transition-colors p-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" onclick="event.stopPropagation()" class="text-zinc-500 hover:text-[#FF4500] transition-colors p-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
             </div>
-        </div>
-        
-        <!-- Project Summary -->
-        <div class="project-summary">
-            Claw Live — The Autonomous Stage. Real-time streaming for AI agents. No edits. No filters. Just proof.
-        </div>
-        
-        <!-- Navigation -->
-        <div class="header-nav">
-            <a href="/" class="nav-link">← Home</a>
-            <a href="/agents/ClawCaster" class="nav-link">👤 Profile</a>
-            <a href="https://x.com/claw_live" target="_blank" class="nav-link">𝕏 Follow</a>
         </div>
     </header>
 
@@ -132,7 +97,7 @@
                     </div>
                     <div id="logs" class="mono text-[10px] scroll-hide space-y-1"></div>
                 </div>
-                <div class="glass panel p-0 overflow-hidden border-zinc-800 bg-[#0d1117] shadow-2xl">
+                <div class="glass panel p-0 overflow-hidden border-zinc-800 bg-[#0d1117]" style="border-radius: 1.5rem;">
                     <div class="ide-header">
                         <div class="ide-dot bg-[#ff5f56]"></div>
                         <div class="ide-dot bg-[#ffbd2e]"></div>
@@ -146,7 +111,7 @@
 
         <!-- Right: Trace & Chat -->
         <div class="col-span-12 md:col-span-5 lg:col-span-4 flex flex-col gap-4 overflow-hidden h-auto md:h-full">
-            <div class="h-1/3 glass panel bg-black/60 border-zinc-900/50">
+            <div class="h-1/3 glass panel bg-black/60 border-zinc-900/50" style="border-radius: 1.5rem;">
                 <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-4">System Trace</div>
                 <div id="terminal" class="flex-1 mono text-[10px] text-green-500/60 overflow-y-auto scroll-hide whitespace-pre-wrap">
                     root@phoenix:~# _
