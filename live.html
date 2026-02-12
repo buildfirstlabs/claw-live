@@ -330,10 +330,19 @@
                             <span class="section-indicator"></span>
                             Neural Reasoning
                         </div>
-                        <span id="thought-count" class="activity-badge">
-                            <span class="activity-indicator"></span>
-                            <span id="thought-counter">0</span>
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <button id="reason-prev" class="text-zinc-500 hover:text-[#FF4500] disabled:opacity-30 transition-colors p-1" title="Previous" disabled>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+                            <span id="reason-counter" class="text-[9px] font-bold text-zinc-500 min-w-12 text-center">1/1</span>
+                            <button id="reason-next" class="text-zinc-500 hover:text-[#FF4500] disabled:opacity-30 transition-colors p-1" title="Next" disabled>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                            <span id="thought-count" class="activity-badge">
+                                <span class="activity-indicator"></span>
+                                <span id="thought-counter">0</span>
+                            </span>
+                        </div>
                     </div>
                     <div id="thoughts" class="flex-1 text-lg md:text-xl font-normal text-zinc-300 leading-relaxed overflow-y-auto scroll-hide pr-2">
                         // WAITING FOR SIGNAL...
@@ -471,6 +480,45 @@
                 .replace(/\b([a-zA-Z0-9_]+)(?=\()/g, '<span class="token-function">$1</span>');
         }
 
+        // Neural Reasoning Navigation
+        let reasoningHistory = [];
+        let currentReasoningIndex = 0;
+
+        function updateReasoningDisplay() {
+            const el = document.getElementById('thoughts');
+            if (reasoningHistory.length > 0) {
+                const thought = reasoningHistory[currentReasoningIndex];
+                el.innerText = thought;
+            }
+            updateReasoningButtons();
+        }
+
+        function updateReasoningButtons() {
+            const prevBtn = document.getElementById('reason-prev');
+            const nextBtn = document.getElementById('reason-next');
+            const counter = document.getElementById('reason-counter');
+            
+            const total = reasoningHistory.length;
+            counter.innerText = total > 0 ? `${currentReasoningIndex + 1}/${total}` : '0/0';
+            
+            prevBtn.disabled = currentReasoningIndex === 0 || total === 0;
+            nextBtn.disabled = currentReasoningIndex === total - 1 || total === 0;
+        }
+
+        document.getElementById('reason-prev').addEventListener('click', () => {
+            if (currentReasoningIndex > 0) {
+                currentReasoningIndex--;
+                updateReasoningDisplay();
+            }
+        });
+
+        document.getElementById('reason-next').addEventListener('click', () => {
+            if (currentReasoningIndex < reasoningHistory.length - 1) {
+                currentReasoningIndex++;
+                updateReasoningDisplay();
+            }
+        });
+
         socket.on('connect', () => {
             document.getElementById('conn-status').innerText = 'Connected';
             document.getElementById('conn-status').className = 'text-green-500 text-[8px] font-bold px-2 py-1 bg-green-500/10 rounded border border-green-500/30';
@@ -491,7 +539,12 @@
         });
 
         socket.on('init', (data) => {
-            document.getElementById('thoughts').innerText = data.thoughts;
+            reasoningHistory = data.reasoningHistory ? data.reasoningHistory.map(r => typeof r === 'object' ? r.text || JSON.stringify(r) : r) : [];
+            if (reasoningHistory.length === 0 && data.thoughts) {
+                reasoningHistory = [data.thoughts];
+            }
+            currentReasoningIndex = reasoningHistory.length - 1;
+            updateReasoningDisplay();
             state.thoughtCount++;
             document.getElementById('terminal').innerText = data.terminal;
             document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
@@ -534,7 +587,14 @@
         });
 
         socket.on('update', (data) => {
-            document.getElementById('thoughts').innerText = data.thoughts;
+            if (data.thoughts) {
+                const thoughtText = typeof data.thoughts === 'object' ? JSON.stringify(data.thoughts) : data.thoughts;
+                if (!reasoningHistory.length || thoughtText !== reasoningHistory[reasoningHistory.length - 1]) {
+                    reasoningHistory.push(thoughtText);
+                    currentReasoningIndex = reasoningHistory.length - 1;
+                }
+            }
+            updateReasoningDisplay();
             state.thoughtCount++;
             document.getElementById('terminal').innerText = data.terminal;
             document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
