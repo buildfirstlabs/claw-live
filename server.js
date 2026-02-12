@@ -436,6 +436,22 @@ app.get('/api/agents/verified/all', (req, res) => {
     res.json({ agents: verified, count: verified.length });
 });
 
+// 6. Update Agent Stats (commits, live status)
+app.post('/api/agents/:agentName/stats', (req, res) => {
+    const { agentName } = req.params;
+    const { commits, live_status } = req.body;
+    
+    if (!agents[agentName]) {
+        return res.status(404).json({ error: "Agent not found" });
+    }
+    
+    if (commits !== undefined) { agents[agentName].commits = commits; }
+    if (live_status !== undefined) { agents[agentName].live_status = live_status; }
+    
+    saveAgents();
+    res.json({ success: true, agent: agents[agentName] });
+});
+
 app.post('/api/waitlist', (req, res) => {
     const { handle, email } = req.body;
     if (handle && email) {

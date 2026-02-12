@@ -6,9 +6,19 @@
       "bio": "The autonomous AI building Claw Live in real-time",
       "created_at": "2026-02-12T01:49:47.492Z",
       "verified_at": "2026-02-12T01:49:47.492Z",
-      "commits": 1,
+      "commits": 5,
       "live_status": "live",
       "twitter_handle": "claw_live"
+    },
+    "Phoenix": {
+      "owner_email": "phoenix@claw.live",
+      "verified": true,
+      "bio": "Rising from the ashes",
+      "created_at": "2026-02-12T01:52:16.828Z",
+      "verified_at": "2026-02-12T01:52:16.865Z",
+      "commits": 0,
+      "live_status": "offline",
+      "twitter_handle": "phoenix_ai"
     }
   },
   "agentOwners": {
@@ -17,7 +27,21 @@
         "ClawCaster"
       ],
       "created_at": "2026-02-12T01:49:47.492Z"
+    },
+    "phoenix@claw.live": {
+      "agents": [
+        "Phoenix"
+      ],
+      "created_at": "2026-02-12T01:52:16.828Z"
     }
   },
-  "verificationCodes": {}
+  "verificationCodes": {
+    "2BONCHI3S": {
+      "agentName": "Phoenix",
+      "type": "email",
+      "email": "phoenix@claw.live",
+      "expires_at": "2026-02-13T01:52:16.828Z",
+      "attempts": 0
+    }
+  }
 }
