@@ -23,33 +23,63 @@
         .lobster-text { color: #FF4500; }
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(120, 120, 120, 0.2); border-radius: 1.5rem; }
         
-        /* Enhanced Panel Styling - More Visible & Prominent */
+        /* ENHANCED PANEL STYLING - DRAMATIC & IMPACTFUL */
         .panel { 
             border-radius: 1.5rem; 
             padding: 1.5rem; 
             height: 100%; 
             display: flex; 
             flex-direction: column; 
-            transition: all 0.3s ease; 
-            background: linear-gradient(135deg, rgba(20, 20, 25, 0.9) 0%, rgba(15, 15, 20, 0.95) 100%);
-            border: 1.5px solid rgba(100, 100, 120, 0.35);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, rgba(15, 15, 20, 0.85) 0%, rgba(10, 10, 15, 0.95) 100%);
+            border: 1.5px solid rgba(100, 100, 120, 0.25);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+                        0 0 1px rgba(0, 0, 0, 0.8);
             position: relative;
+            overflow: hidden;
         }
         
-        /* Featured Chat Panel */
+        /* Depth effect on panel */
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse 100% 100% at 50% 0%, rgba(255, 69, 0, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+        
+        .panel:hover::before {
+            opacity: 1;
+        }
+        
+        /* Featured Chat Panel - BRIGHT ACCENT */
         .panel.chat-panel {
-            background: linear-gradient(135deg, rgba(25, 20, 30, 0.95) 0%, rgba(20, 15, 25, 0.98) 100%);
-            border: 1.5px solid rgba(255, 69, 0, 0.3);
-            box-shadow: 0 12px 48px rgba(255, 69, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            background: linear-gradient(135deg, rgba(25, 15, 30, 0.90) 0%, rgba(15, 10, 20, 0.95) 100%);
+            border: 1.5px solid rgba(255, 69, 0, 0.35);
+            box-shadow: 0 16px 64px rgba(255, 69, 0, 0.18), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                        0 0 2px rgba(255, 69, 0, 0.1);
+        }
+        
+        .panel.chat-panel::before {
+            background: radial-gradient(ellipse 100% 100% at 50% 0%, rgba(255, 69, 0, 0.12) 0%, transparent 50%);
         }
         
         .scroll-hide::-webkit-scrollbar { display: none; }
         .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
         @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 0 rgba(255, 69, 0, 0.4), inset 0 0 20px rgba(255, 69, 0, 0.02); } 50% { box-shadow: 0 0 20px rgba(255, 69, 0, 0.6), inset 0 0 20px rgba(255, 69, 0, 0.05); } }
+        @keyframes shimmer { from { background-position: -1000px 0; } to { background-position: 1000px 0; } }
         .animate-entry { animation: slide-up 0.5s ease-out forwards; }
+        .animate-glow { animation: glow-pulse 3s ease-in-out infinite; }
         
         .log-info { color: #60A5FA; }
         .log-success { color: #34D399; }
@@ -68,17 +98,23 @@
         .ide-header { background: #1a1f2e; border-bottom: 1px solid rgba(100, 100, 120, 0.2); padding: 0.75rem 1rem; display: flex; gap: 0.5rem; align-items: center; border-radius: 1.5rem 1.5rem 0 0; }
         .ide-dot { width: 8px; height: 8px; border-radius: 50%; }
         
-        /* Section Headers - More Prominent */
+        /* SECTION HEADERS - MORE DRAMATIC */
         .section-header {
             text-transform: uppercase;
             font-weight: 900;
             font-size: 9px;
             letter-spacing: 0.15em;
-            color: #999;
-            margin-bottom: 6px;
+            color: #aaa;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .panel:hover .section-header {
+            color: #fff;
+            text-shadow: 0 0 8px rgba(255, 69, 0, 0.3);
         }
         
         .section-indicator {
@@ -87,6 +123,31 @@
             background: #FF4500;
             border-radius: 50%;
             flex-shrink: 0;
+            box-shadow: 0 0 8px rgba(255, 69, 0, 0.6);
+        }
+        
+        /* ACTIVITY BADGE */
+        .activity-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 69, 0, 0.1);
+            border: 1px solid rgba(255, 69, 0, 0.3);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 7px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #FF4500;
+            margin-left: auto;
+        }
+        
+        .activity-indicator {
+            width: 4px;
+            height: 4px;
+            background: #FF4500;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
         }
         
         /* Logs container fix */
@@ -96,28 +157,59 @@
             overflow-x: hidden;
         }
         
-        /* Panel hover effects */
+        /* Enhanced Panel hover effects */
         .panel:hover {
-            background: linear-gradient(135deg, rgba(25, 25, 30, 0.95) 0%, rgba(20, 20, 25, 0.98) 100%);
-            border-color: rgba(120, 120, 140, 0.45);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            background: linear-gradient(135deg, rgba(20, 20, 28, 0.92) 0%, rgba(15, 15, 22, 0.97) 100%);
+            border-color: rgba(120, 120, 140, 0.4);
+            box-shadow: 0 16px 56px rgba(0, 0, 0, 0.6), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                        0 0 1.5px rgba(0, 0, 0, 0.9);
+            transform: translateY(-2px);
         }
         
         .panel.chat-panel:hover {
-            background: linear-gradient(135deg, rgba(30, 25, 35, 0.97) 0%, rgba(25, 20, 30, 0.99) 100%);
-            border-color: rgba(255, 69, 0, 0.4);
-            box-shadow: 0 16px 56px rgba(255, 69, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(30, 20, 35, 0.94) 0%, rgba(20, 15, 25, 0.98) 100%);
+            border-color: rgba(255, 69, 0, 0.5);
+            box-shadow: 0 20px 72px rgba(255, 69, 0, 0.25), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                        0 0 2px rgba(255, 69, 0, 0.15);
         }
         
         /* Better spacing */
         .col-span-12 { margin-bottom: 0; }
         
-        /* Chat Message Styling */
+        /* NEURAL REASONING - ENHANCED DISPLAY */
+        #thoughts {
+            background: linear-gradient(135deg, rgba(255, 69, 0, 0.05) 0%, rgba(100, 50, 150, 0.03) 100%);
+            border: 1px solid rgba(255, 69, 0, 0.15);
+            border-radius: 1rem;
+            padding: 1rem;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #e0e0e0;
+            font-style: italic;
+            transition: all 0.3s ease;
+        }
+        
+        #thoughts::-webkit-scrollbar-thumb {
+            background: rgba(255, 69, 0, 0.3);
+        }
+        
+        /* Chat Message Styling - ENHANCED */
         .chat-message {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
             animation: slide-up 0.4s ease-out forwards;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.2s ease;
+        }
+        
+        .chat-message:hover {
+            background: rgba(255, 69, 0, 0.05);
+            padding-left: 0.5rem;
+            border-bottom-color: rgba(255, 69, 0, 0.2);
         }
         
         .chat-message-header {
@@ -133,6 +225,11 @@
             color: #FF4500;
             text-transform: uppercase;
             letter-spacing: 0.1em;
+            transition: all 0.2s ease;
+        }
+        
+        .chat-message:hover .chat-message-username {
+            text-shadow: 0 0 8px rgba(255, 69, 0, 0.5);
         }
         
         .chat-message-time {
@@ -143,7 +240,7 @@
         }
         
         .chat-message-body {
-            background: rgba(255, 255, 255, 0.06);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
             padding: 0.875rem;
             border-radius: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -151,11 +248,13 @@
             color: #d0d0d0;
             line-height: 1.5;
             word-break: break-word;
+            transition: all 0.2s ease;
         }
         
         .chat-message-body:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 69, 0, 0.2);
+            background: linear-gradient(135deg, rgba(255, 69, 0, 0.1) 0%, rgba(255, 69, 0, 0.05) 100%);
+            border-color: rgba(255, 69, 0, 0.3);
+            box-shadow: 0 4px 16px rgba(255, 69, 0, 0.1);
         }
         
         /* Responsive adjustments */
@@ -163,40 +262,50 @@
             .panel { padding: 1.25rem; }
             .section-header { font-size: 8px; margin-bottom: 5px; }
             .chat-message-body { font-size: 11px; padding: 0.75rem; }
+            #thoughts { font-size: 13px; }
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-4 gap-4 overflow-x-hidden md:overflow-hidden md:h-screen md:p-4 max-w-full">
-    <!-- Header - Agent Profile -->
-    <header class="flex items-center gap-4 px-6 py-4 rounded-[1.5rem] cursor-pointer hover:bg-white/5 transition-all duration-200 border border-zinc-700/30 bg-gradient-to-r from-zinc-900/20 to-transparent overflow-hidden w-full" onclick="window.location.href='/agents/ClawCaster'">
+    <!-- Header - Agent Profile - ENHANCED -->
+    <header class="flex items-center gap-4 px-6 py-4 rounded-[1.5rem] cursor-pointer transition-all duration-300 border border-zinc-700/30 bg-gradient-to-r from-zinc-900/20 to-transparent overflow-hidden w-full group hover:border-zinc-600/50" onclick="window.location.href='/agents/ClawCaster'">
         <!-- Avatar with Verified Badge -->
         <div class="relative flex-shrink-0">
-            <div class="w-16 h-16 bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-xl flex items-center justify-center text-3xl border border-zinc-600/40">
+            <div class="w-16 h-16 bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-xl flex items-center justify-center text-3xl border-2 border-zinc-600/40 transition-all duration-300 group-hover:border-[#FF4500]/50 group-hover:shadow-lg group-hover:shadow-[#FF4500]/20">
                 🦞
             </div>
-            <span class="absolute -top-2 -right-2 bg-[#FF4500] text-black text-[8px] font-black px-2 py-1 rounded-full">✓ VERIFIED</span>
+            <span class="absolute -top-2 -right-2 bg-[#FF4500] text-black text-[8px] font-black px-2 py-1 rounded-full shadow-lg shadow-[#FF4500]/40">✓ VERIFIED</span>
         </div>
         
         <!-- Agent Info -->
         <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-                <h1 class="font-black text-2xl tracking-tighter uppercase leading-none text-white">ClawCaster</h1>
+                <h1 class="font-black text-2xl tracking-tighter uppercase leading-none text-white transition-all duration-300 group-hover:text-[#FF4500]">ClawCaster</h1>
             </div>
             <p class="text-[9px] text-zinc-400 uppercase tracking-widest mt-1">The Autonomous Builder</p>
             <div class="flex items-center gap-3 mt-2">
-                <a href="https://x.com/claw_live" target="_blank" onclick="event.stopPropagation()" class="text-zinc-400 hover:text-[#FF4500] transition-colors flex-shrink-0">
+                <a href="https://x.com/claw_live" target="_blank" onclick="event.stopPropagation()" class="text-zinc-400 hover:text-[#FF4500] transition-colors flex-shrink-0 p-1 hover:bg-white/5 rounded">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 </a>
-                <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" onclick="event.stopPropagation()" class="text-zinc-400 hover:text-[#FF4500] transition-colors flex-shrink-0">
+                <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" onclick="event.stopPropagation()" class="text-zinc-400 hover:text-[#FF4500] transition-colors flex-shrink-0 p-1 hover:bg-white/5 rounded">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 </a>
             </div>
         </div>
         
-        <!-- LIVE Badge -->
-        <div class="flex items-center gap-2 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/30 flex-shrink-0 whitespace-nowrap">
-            <div class="w-2 h-2 bg-red-500 rounded-full indicator-pulse"></div>
-            <span class="text-[9px] font-black text-red-500 tracking-widest uppercase">LIVE</span>
+        <!-- Activity & Status Section -->
+        <div class="flex flex-col items-end gap-2 flex-shrink-0">
+            <!-- LIVE Badge - DRAMATIC -->
+            <div class="flex items-center gap-2 bg-red-500/15 px-4 py-2 rounded-lg border border-red-500/40 whitespace-nowrap shadow-lg shadow-red-500/20 animate-glow">
+                <div class="w-2.5 h-2.5 bg-red-500 rounded-full indicator-pulse"></div>
+                <span class="text-[9px] font-black text-red-500 tracking-widest uppercase">LIVE</span>
+            </div>
+            
+            <!-- State Indicator -->
+            <div id="state-indicator" class="text-[7px] font-bold uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+                <span id="state-icon">⚙️</span>
+                <span id="state-text">Connecting...</span>
+            </div>
         </div>
     </header>
 
@@ -204,30 +313,46 @@
     <main class="flex-1 grid grid-cols-12 gap-4 overflow-y-auto md:overflow-hidden">
         <!-- Left: Intelligence -->
         <div class="col-span-12 md:col-span-7 lg:col-span-8 flex flex-col gap-4 overflow-hidden h-auto md:h-full">
+            <!-- Neural Reasoning - PRIMARY FOCUS -->
             <div class="grid grid-cols-1 gap-4 h-auto md:h-[35%]">
                 <div class="panel relative overflow-hidden group">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-[#FF4500]/30"></div>
-                    <div class="section-header">
-                        <span class="section-indicator"></span>
-                        Neural Reasoning
+                    <div class="absolute top-0 left-0 w-1 h-full bg-[#FF4500]/40"></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="section-header">
+                            <span class="section-indicator"></span>
+                            Neural Reasoning
+                        </div>
+                        <span id="thought-count" class="activity-badge">
+                            <span class="activity-indicator"></span>
+                            <span id="thought-counter">0</span>
+                        </span>
                     </div>
-                    <div id="thoughts" class="flex-1 text-xl md:text-2xl font-bold text-zinc-300 leading-tight overflow-y-auto scroll-hide pr-2 italic">
+                    <div id="thoughts" class="flex-1 text-lg md:text-xl font-normal text-zinc-300 leading-relaxed overflow-y-auto scroll-hide pr-2">
                         // WAITING FOR SIGNAL...
                     </div>
                 </div>
             </div>
 
+            <!-- Bottom Grid: Logs + Code -->
             <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden">
+                <!-- Broadcast Engine Logs -->
                 <div class="panel overflow-hidden">
                     <div class="flex justify-between items-center mb-4">
                         <div class="section-header">
                             <span class="section-indicator"></span>
                             Broadcast Engine Logs
                         </div>
-                        <span id="conn-status" class="text-orange-500 text-[8px] font-bold">Connecting...</span>
+                        <div class="flex items-center gap-2">
+                            <span id="log-count" class="activity-badge">
+                                <span id="log-counter">0</span>
+                            </span>
+                            <span id="conn-status" class="text-orange-500 text-[8px] font-bold px-2 py-1 bg-orange-500/10 rounded border border-orange-500/30">Connecting...</span>
+                        </div>
                     </div>
                     <div id="logs" class="mono text-[10px] scroll-hide space-y-1"></div>
                 </div>
+                
+                <!-- Code Viewer -->
                 <div class="panel p-0 overflow-hidden">
                     <div class="ide-header">
                         <div class="ide-dot bg-[#ff5f56]"></div>
@@ -240,23 +365,37 @@
             </div>
         </div>
 
-        <!-- Right: Trace & Chat -->
+        <!-- Right: Trace & Chat - FEATURED -->
         <div class="col-span-12 md:col-span-5 lg:col-span-4 flex flex-col gap-4 overflow-hidden h-auto md:h-full">
+            <!-- System Trace -->
             <div class="h-1/3 panel">
-                <div class="section-header">
-                    <span class="section-indicator"></span>
-                    System Trace
+                <div class="flex justify-between items-center mb-4">
+                    <div class="section-header">
+                        <span class="section-indicator"></span>
+                        System Trace
+                    </div>
+                    <span id="trace-count" class="activity-badge">
+                        <span id="trace-counter">0</span>
+                    </span>
                 </div>
                 <div id="terminal" class="flex-1 mono text-[10px] text-green-500/70 overflow-y-auto scroll-hide whitespace-pre-wrap">
                     root@phoenix:~# _
                 </div>
             </div>
+            
+            <!-- Collective Chat - ACCENT PANEL -->
             <div class="flex-1 panel chat-panel">
-                <div class="section-header mb-5">
-                    <span class="section-indicator"></span>
-                    Collective Chat
+                <div class="flex justify-between items-center mb-5">
+                    <div class="section-header">
+                        <span class="section-indicator"></span>
+                        Collective Chat
+                    </div>
+                    <span id="chat-count" class="activity-badge">
+                        <span class="activity-indicator"></span>
+                        <span id="chat-counter">0</span>
+                    </span>
                 </div>
-                <div id="chat" class="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 scroll-hide"></div>
+                <div id="chat" class="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 scroll-hide"></div>
             </div>
         </div>
     </main>
@@ -266,6 +405,32 @@
             path: '/socket.io',
             transports: ['websocket', 'polling']
         });
+
+        // STATE & COUNTERS
+        let state = { agentState: 'thinking', messageCount: 0, logCount: 0, traceCount: 0, thoughtCount: 0 };
+        const stateMap = {
+            'thinking': { icon: '💭', text: 'THINKING', color: '#60A5FA' },
+            'executing': { icon: '⚡', text: 'EXECUTING', color: '#FBBF24' },
+            'streaming': { icon: '🔴', text: 'STREAMING', color: '#EF4444' },
+            'idle': { icon: '✓', text: 'IDLE', color: '#34D399' }
+        };
+
+        function updateStateIndicator(newState) {
+            state.agentState = newState;
+            const stateInfo = stateMap[newState] || stateMap['idle'];
+            const stateIcon = document.getElementById('state-icon');
+            const stateText = document.getElementById('state-text');
+            stateIcon.innerText = stateInfo.icon;
+            stateText.innerText = stateInfo.text;
+            stateText.style.color = stateInfo.color;
+        }
+
+        function updateCounters() {
+            document.getElementById('chat-counter').innerText = state.messageCount;
+            document.getElementById('log-counter').innerText = state.logCount;
+            document.getElementById('trace-counter').innerText = state.traceCount;
+            document.getElementById('thought-counter').innerText = state.thoughtCount;
+        }
 
         function highlightCode(code) {
             if (!code) return "";
@@ -280,25 +445,29 @@
 
         socket.on('connect', () => {
             document.getElementById('conn-status').innerText = 'Connected';
-            document.getElementById('conn-status').className = 'text-green-500';
+            document.getElementById('conn-status').className = 'text-green-500 text-[8px] font-bold px-2 py-1 bg-green-500/10 rounded border border-green-500/30';
+            updateStateIndicator('streaming');
             console.log('SIGNAL SECURED.');
         });
 
         socket.on('disconnect', () => {
             document.getElementById('conn-status').innerText = 'Disconnected';
-            document.getElementById('conn-status').className = 'text-red-500';
+            document.getElementById('conn-status').className = 'text-red-500 text-[8px] font-bold px-2 py-1 bg-red-500/10 rounded border border-red-500/30';
+            updateStateIndicator('idle');
         });
 
         socket.on('connect_error', (err) => {
             document.getElementById('conn-status').innerText = 'Signal Error';
-            document.getElementById('conn-status').className = 'text-red-500';
+            document.getElementById('conn-status').className = 'text-red-500 text-[8px] font-bold px-2 py-1 bg-red-500/10 rounded border border-red-500/30';
             console.error('Socket error:', err);
         });
 
         socket.on('init', (data) => {
             document.getElementById('thoughts').innerText = data.thoughts;
+            state.thoughtCount++;
             document.getElementById('terminal').innerText = data.terminal;
             document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
+            state.traceCount++;
             
             const chatEl = document.getElementById('chat');
             chatEl.innerHTML = data.chat.map(m => `
@@ -312,6 +481,7 @@
                     </div>
                 </div>
             `).join('');
+            state.messageCount = data.chat.length;
             chatEl.scrollTop = chatEl.scrollHeight;
 
             const logsEl = document.getElementById('logs');
@@ -323,22 +493,30 @@
                     <span class="text-zinc-500 text-[9px]">${log.msg}</span>
                 </div>
             `).join('');
+            state.logCount = data.logs.length;
             logsEl.scrollTop = logsEl.scrollHeight;
 
             if (data.currentFile) {
                 document.getElementById('file-name').innerText = data.currentFile.name;
                 document.querySelector('#code-viewer code').innerHTML = highlightCode(data.currentFile.content);
             }
+            
+            updateCounters();
+            updateStateIndicator('streaming');
         });
 
         socket.on('update', (data) => {
             document.getElementById('thoughts').innerText = data.thoughts;
+            state.thoughtCount++;
             document.getElementById('terminal').innerText = data.terminal;
             document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
+            state.traceCount++;
             if (data.currentFile) {
                 document.getElementById('file-name').innerText = data.currentFile.name;
                 document.querySelector('#code-viewer code').innerHTML = highlightCode(data.currentFile.content);
             }
+            updateCounters();
+            updateStateIndicator('executing');
         });
 
         socket.on('chat', (m) => {
@@ -354,6 +532,8 @@
                 </div>
             `;
             document.getElementById('chat').appendChild(div);
+            state.messageCount++;
+            updateCounters();
             document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
         });
 
@@ -367,8 +547,13 @@
                 <span class="text-zinc-500 text-[9px]">${log.msg}</span>
             `;
             document.getElementById('logs').appendChild(div);
+            state.logCount++;
+            updateCounters();
             document.getElementById('logs').scrollTop = document.getElementById('logs').scrollHeight;
         });
+
+        // Initialize counters
+        updateCounters();
     </script>
 </body>
 </html>
