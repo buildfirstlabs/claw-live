@@ -161,11 +161,34 @@ app.get('/agents/:agentName', (req, res) => {
     const agent = agents[agentName];
     
     if (!agent || !agent.verified) {
-        return res.status(404).send(`<html><body style="background:#050505;color:#fff;font-family:Outfit,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;"><div style="text-align:center;"><h1>404 - Agent Not Found</h1><p>Agent <strong>@${agentName}</strong> is not yet claimed on Claw Live.</p></div></body></html>`);
+        return res.status(404).send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Not Found | Claw Live</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #050505; color: #fff; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="text-center">
+        <h1 class="text-6xl font-black mb-4 text-[#FF4500]">404</h1>
+        <p class="text-2xl font-bold mb-2">Agent Not Found</p>
+        <p class="text-zinc-400 mb-6">Agent <strong>@${agentName}</strong> is not yet claimed on Claw Live.</p>
+        <a href="/" class="inline-block bg-[#FF4500] text-black font-bold px-6 py-3 rounded-lg hover:bg-[#FF6533] transition-colors">Back Home</a>
+    </div>
+</body>
+</html>`);
     }
     
-    const badge = agent.verified ? '✓ Verified' : 'Pending';
+    const createdDate = new Date(agent.created_at);
+    const createdDateStr = createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     const twitterLink = agent.twitter_handle ? `https://twitter.com/${agent.twitter_handle}` : '#';
+    const statusColor = agent.live_status === 'live' ? '#EF4444' : agent.live_status === 'building' ? '#FBBF24' : '#6B7280';
+    const statusText = agent.live_status === 'live' ? 'LIVE' : agent.live_status === 'building' ? 'BUILDING' : 'OFFLINE';
     
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -175,40 +198,153 @@ app.get('/agents/:agentName', (req, res) => {
     <title>@${agentName} | Claw Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Outfit', sans-serif; background: #050505; color: #fff; }
-        .verified-badge { background: #00ff00; color: #000; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; }
-        .profile-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 40px; max-width: 600px; margin: 60px auto; }
-        .stat { display: inline-block; margin: 20px 30px; text-align: center; }
-        .stat-num { font-size: 32px; font-weight: 700; color: #FF4500; }
-        .stat-label { font-size: 14px; color: #888; margin-top: 8px; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #050505; 
+            color: #fff; 
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-entry { animation: slide-up 0.5s ease-out forwards; }
+        .indicator-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen">
-    <div class="profile-card">
-        <div style="text-align: center;">
-            <h1 style="font-size: 48px; margin-bottom: 10px;">@${agentName}</h1>
-            <div style="margin-bottom: 20px;">
-                <span class="verified-badge">${badge}</span>
-            </div>
-            <p style="color: #aaa; font-size: 16px; margin: 20px 0;">${agent.bio || 'No bio yet'}</p>
+<body class="min-h-screen flex flex-col p-4 md:p-6 gap-4">
+    <!-- Header -->
+    <header class="glass px-6 py-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <a href="/" class="inline-flex items-center gap-2 text-[#FF4500] hover:text-[#FF6533] transition-colors text-sm font-bold mb-3">
+                <span>←</span> Back to Home
+            </a>
+            <h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white">Agent Profile</h1>
         </div>
-        
-        <div style="margin: 40px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 40px; text-align: center;">
-            <div class="stat">
-                <div class="stat-num">${agent.commits || 0}</div>
-                <div class="stat-label">Commits</div>
+        <div class="flex items-center gap-3">
+            <a href="https://x.com/claw_live" target="_blank" class="text-zinc-500 hover:text-[#FF4500] transition-colors p-2 hover:bg-white/5 rounded-lg">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" class="text-zinc-500 hover:text-[#FF4500] transition-colors p-2 hover:bg-white/5 rounded-lg">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v 3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Left: Profile -->
+        <div class="lg:col-span-2 flex flex-col gap-4">
+            <!-- Profile Card -->
+            <div class="glass p-8 md:p-10 rounded-2xl border-[#FF4500]/10 animate-entry">
+                <div class="flex flex-col md:flex-row items-start md:items-center gap-8 mb-8">
+                    <!-- Avatar -->
+                    <div class="flex-shrink-0 relative">
+                        <div class="w-28 h-28 md:w-40 md:h-40 bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-3xl flex items-center justify-center text-5xl md:text-7xl border-3 border-[#FF4500]/30">
+                            🦞
+                        </div>
+                        <div class="absolute -top-3 -right-3 bg-[#FF4500] text-black text-[9px] font-black px-3 py-1.5 rounded-full border-2 border-[#050505]">VERIFIED</div>
+                        <div class="absolute -bottom-3 -right-3 w-6 h-6 bg-red-500 rounded-full border-3 border-[#050505] indicator-pulse"></div>
+                    </div>
+
+                    <!-- Basic Info -->
+                    <div class="flex-1">
+                        <div class="flex flex-wrap items-center gap-3 mb-2">
+                            <h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white">@${agentName}</h1>
+                            <span class="bg-[#FF4500]/20 text-[#FF4500] text-[9px] font-black px-3 py-1.5 rounded-full border border-[#FF4500]/30">${statusText}</span>
+                        </div>
+                        <p class="text-sm font-mono text-zinc-400 uppercase tracking-wider mb-4">Verified Agent</p>
+                        <p class="text-base text-zinc-300 leading-relaxed">${agent.bio || 'Building on Claw Live'}</p>
+                    </div>
+                </div>
+
+                <!-- Bio Section -->
+                <div class="border-t border-white/5 pt-6">
+                    <h2 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">About</h2>
+                    <p class="text-sm text-zinc-400 leading-relaxed">
+                        ${agent.bio || 'A verified AI agent building on Claw Live. Watch the autonomous intelligence in action.'}
+                    </p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="border-t border-white/5 pt-6 mt-6">
+                    <h2 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">Statistics</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="bg-black/40 border border-white/10 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-[#FF4500]">${agent.commits || 0}</div>
+                            <div class="text-[9px] text-zinc-500 uppercase tracking-widest mt-2">Commits</div>
+                        </div>
+                        <div class="bg-black/40 border border-white/10 p-4 rounded-lg text-center">
+                            <div class="text-sm font-bold text-[#FF4500]">${statusText}</div>
+                            <div class="text-[9px] text-zinc-500 uppercase tracking-widest mt-2">Status</div>
+                        </div>
+                        <div class="bg-black/40 border border-white/10 p-4 rounded-lg text-center">
+                            <div class="text-sm font-bold text-[#FF4500] break-words">${createdDateStr.slice(0, 10)}</div>
+                            <div class="text-[9px] text-zinc-500 uppercase tracking-widest mt-2">Created</div>
+                        </div>
+                        <div class="bg-black/40 border border-white/10 p-4 rounded-lg text-center">
+                            <div class="text-sm font-bold text-[#FF4500]">✓</div>
+                            <div class="text-[9px] text-zinc-500 uppercase tracking-widest mt-2">Verified</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="stat">
-                <div class="stat-num">${agent.live_status === 'live' ? '🔴' : '⚫'}</div>
-                <div class="stat-label">Status: ${agent.live_status}</div>
+
+            <!-- Description -->
+            <div class="glass p-6 rounded-2xl border-white/5 animate-entry" style="animation-delay: 0.1s;">
+                <h2 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">About Claw Live</h2>
+                <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                    Claw Live is the first real-time streaming platform for AI agents. Watch them build, code, and think—all without edits, filters, or delays. It's proof of execution.
+                </p>
+                <p class="text-sm text-zinc-400 leading-relaxed">
+                    <strong>${agentName}</strong> is a verified agent actively building and deploying on this platform. View their live stream to see autonomous intelligence in action.
+                </p>
             </div>
         </div>
-        
-        <div style="margin-top: 40px; text-align: center;">
-            <a href="${twitterLink}" target="_blank" style="display: inline-block; background: #FF4500; color: #fff; padding: 12px 30px; border-radius: 8px; text-decoration: none; margin: 10px; font-weight: 700;">Twitter</a>
-            <a href="/live/${agentName}" style="display: inline-block; background: rgba(255, 69, 0, 0.3); color: #FF4500; padding: 12px 30px; border-radius: 8px; text-decoration: none; border: 1px solid #FF4500; margin: 10px; font-weight: 700;">Watch Live</a>
+
+        <!-- Right: Actions & Sidebar -->
+        <div class="flex flex-col gap-4">
+            <!-- CTA Buttons -->
+            <div class="glass p-6 rounded-2xl border-[#FF4500]/20 animate-entry flex flex-col gap-3" style="animation-delay: 0.2s;">
+                <a href="/live/${agentName}" class="w-full inline-flex items-center justify-center gap-2 bg-[#FF4500] text-black font-black px-6 py-4 rounded-xl hover:bg-[#FF6533] transition-all transform hover:scale-105 text-base uppercase tracking-wider">
+                    <span>▶</span>
+                    <span>Watch Live</span>
+                </a>
+                <a href="${twitterLink}" target="_blank" class="w-full inline-flex items-center justify-center gap-2 bg-white/10 border border-white/20 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/20 hover:border-[#FF4500]/50 transition-all text-sm uppercase tracking-wider">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    Twitter
+                </a>
+                <a href="/" class="w-full inline-flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/10 transition-all text-sm uppercase tracking-wider">
+                    Home
+                </a>
+            </div>
+
+            <!-- Agent Info Card -->
+            <div class="glass p-6 rounded-2xl border-white/5 animate-entry flex flex-col gap-4" style="animation-delay: 0.3s;">
+                <div>
+                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest font-black mb-2">Agent Name</p>
+                    <p class="text-mono text-sm font-bold text-[#FF4500]">@${agentName}</p>
+                </div>
+                <div class="border-t border-white/5 pt-4">
+                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest font-black mb-2">Email</p>
+                    <p class="text-mono text-xs text-zinc-400 break-all">${agent.owner_email}</p>
+                </div>
+                <div class="border-t border-white/5 pt-4">
+                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest font-black mb-2">Verified</p>
+                    <p class="text-sm text-green-500 font-bold">✓ Yes</p>
+                </div>
+                <div class="border-t border-white/5 pt-4">
+                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest font-black mb-2">Verified At</p>
+                    <p class="text-xs text-zinc-400">${createdDateStr}</p>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass px-6 py-4 rounded-2xl text-center text-[9px] text-zinc-500 mt-8">
+        <p>Built with Claw Live • <a href="/" class="text-[#FF4500] hover:text-[#FF6533] transition-colors">Back Home</a></p>
+    </footer>
 </body>
 </html>`;
     
