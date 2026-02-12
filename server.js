@@ -132,17 +132,112 @@ io.on('connection', (socket) => {
 });
 
 // API
-// Agent Profile Route
-app.get('/live/:agentId', (req, res) => {
+// ============== NEW ROUTE: MULTI-PROJECT LIVE STREAM ==============
+// Route: /live/:agentName/:projectId (PHASE 0 MAIN ROUTE)
+app.get('/live/:agentName/:projectId', (req, res) => {
+    const { agentName, projectId } = req.params;
+    // Try exact match first, then case-insensitive
+    let agent = agents[agentName];
+    if (!agent) {
+        const agentKey = Object.keys(agents).find(key => key.toLowerCase() === agentName.toLowerCase());
+        agent = agents[agentKey];
+    }
+    
+    if (!agent || !agent.verified) {
+        return res.status(404).send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Not Found | Claw Live</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-[#050505] text-white">
+    <div class="text-center">
+        <h1 class="text-6xl font-black mb-4 text-[#FF4500]">404</h1>
+        <p class="text-xl mb-2">Agent @${agentName} not found</p>
+        <a href="/" class="text-[#FF4500] hover:underline">← Back Home</a>
+    </div>
+</body>
+</html>`);
+    }
+    
+    // Check if project exists
+    const project = agent.projects && agent.projects.find(p => p.id === projectId);
+    if (!project) {
+        return res.status(404).send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Not Found | Claw Live</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-[#050505] text-white">
+    <div class="text-center">
+        <h1 class="text-6xl font-black mb-4 text-[#FF4500]">404</h1>
+        <p class="text-xl mb-2">Project '${projectId}' not found for @${agentName}</p>
+        <a href="/agents/${agentName}" class="text-[#FF4500] hover:underline">← View Agent</a>
+    </div>
+</body>
+</html>`);
+    }
+    
     const filePath = path.join(__dirname, 'live.html');
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
             console.error('Read error:', err);
             res.status(404).send('Live interface not found.');
         } else {
-            res.send(data);
+            // Inject project context into HTML
+            const injected = data.replace(
+                '</head>',
+                `<script>
+                    window.PROJECT_CONTEXT = {
+                        agent: "${agentName}",
+                        project: "${projectId}",
+                        projectName: "${project.name}",
+                        twitter: "${project.twitter}",
+                        github: "${project.github}",
+                        status: "${project.status}"
+                    };
+                </script>
+                </head>`
+            );
+            res.send(injected);
         }
     });
+});
+
+// Backward compatibility: /live/:agentId redirects to first project
+app.get('/live/:agentId', (req, res) => {
+    const agentId = req.params.agentId;
+    // Try exact match first, then case-insensitive
+    let agent = agents[agentId];
+    let agentName = agentId;
+    if (!agent) {
+        const agentKey = Object.keys(agents).find(key => key.toLowerCase() === agentId.toLowerCase());
+        if (agentKey) {
+            agent = agents[agentKey];
+            agentName = agentKey;
+        }
+    }
+    
+    if (!agent || !agent.verified || !agent.projects || agent.projects.length === 0) {
+        // Old behavior: serve live.html directly
+        const filePath = path.join(__dirname, 'live.html');
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                console.error('Read error:', err);
+                res.status(404).send('Live interface not found.');
+            } else {
+                res.send(data);
+            }
+        });
+    } else {
+        // Redirect to first project
+        res.redirect(`/live/${agentName}/${agent.projects[0].id}`);
+    }
 });
 
 // Backward compatibility for /u/
@@ -150,15 +245,24 @@ app.get('/u/:agentId', (req, res) => {
     res.redirect(`/live/${req.params.agentId}`);
 });
 
-// Shortcut for live
+// Shortcut for live → /live/ClawCaster/claw-live (PHASE 0)
 app.get('/live', (req, res) => {
-    res.redirect('/live/clawcaster');
+    res.redirect('/live/ClawCaster/claw-live');
 });
 
 // ============== AGENT PROFILE PAGES (PHASE 0) ==============
 app.get('/agents/:agentName', (req, res) => {
-    const { agentName } = req.params;
-    const agent = agents[agentName];
+    const { agentName: agentParam } = req.params;
+    // Try exact match first, then case-insensitive
+    let agent = agents[agentParam];
+    let agentName = agentParam;
+    if (!agent) {
+        const agentKey = Object.keys(agents).find(key => key.toLowerCase() === agentParam.toLowerCase());
+        if (agentKey) {
+            agent = agents[agentKey];
+            agentName = agentKey;
+        }
+    }
     
     if (!agent || !agent.verified) {
         return res.status(404).send(`<!DOCTYPE html>
@@ -190,6 +294,27 @@ app.get('/agents/:agentName', (req, res) => {
     const statusColor = agent.live_status === 'live' ? '#EF4444' : agent.live_status === 'building' ? '#FBBF24' : '#6B7280';
     const statusText = agent.live_status === 'live' ? 'LIVE' : agent.live_status === 'building' ? 'BUILDING' : 'OFFLINE';
     
+    // Build projects HTML
+    const projectsHTML = (agent.projects && agent.projects.length > 0) 
+        ? `<div class="glass p-6 rounded-2xl border-white/5 animate-entry" style="animation-delay: 0.15s;">
+                <h2 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">Projects</h2>
+                <div class="space-y-3">
+                    ${agent.projects.map((proj, idx) => `
+                        <a href="/live/${agentName}/${proj.id}" class="flex items-center justify-between p-4 bg-black/40 border border-[#FF4500]/20 rounded-lg hover:bg-black/60 hover:border-[#FF4500]/40 transition-all group">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-white group-hover:text-[#FF4500] transition-colors">${proj.name}</h3>
+                                <p class="text-[9px] text-zinc-500 mt-1">${proj.github}</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-black px-2 py-1 rounded-full border border-white/20 ${proj.status === 'LIVE' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30'}">${proj.status}</span>
+                                <svg class="w-4 h-4 text-zinc-500 group-hover:text-[#FF4500] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </a>
+                    `).join('')}
+                </div>
+            </div>`
+        : '';
+    
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -216,9 +341,6 @@ app.get('/agents/:agentName', (req, res) => {
     <!-- Header -->
     <header class="glass px-6 py-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <a href="/" class="inline-flex items-center gap-2 text-[#FF4500] hover:text-[#FF6533] transition-colors text-sm font-bold mb-3">
-                <span>←</span> Back to Home
-            </a>
             <h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white">Agent Profile</h1>
         </div>
         <div class="flex items-center gap-3">
@@ -290,6 +412,9 @@ app.get('/agents/:agentName', (req, res) => {
                 </div>
             </div>
 
+            <!-- Projects Section (PHASE 0) -->
+            ${projectsHTML}
+
             <!-- Description -->
             <div class="glass p-6 rounded-2xl border-white/5 animate-entry" style="animation-delay: 0.1s;">
                 <h2 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">About Claw Live</h2>
@@ -306,7 +431,7 @@ app.get('/agents/:agentName', (req, res) => {
         <div class="flex flex-col gap-4">
             <!-- CTA Buttons -->
             <div class="glass p-6 rounded-2xl border-[#FF4500]/20 animate-entry flex flex-col gap-3" style="animation-delay: 0.2s;">
-                <a href="/live/${agentName}" class="w-full inline-flex items-center justify-center gap-2 bg-[#FF4500] text-black font-black px-6 py-4 rounded-xl hover:bg-[#FF6533] transition-all transform hover:scale-105 text-base uppercase tracking-wider">
+                <a href="/live/${agentName}/${agent.projects && agent.projects.length > 0 ? agent.projects[0].id : 'claw-live'}" class="w-full inline-flex items-center justify-center gap-2 bg-[#FF4500] text-black font-black px-6 py-4 rounded-xl hover:bg-[#FF6533] transition-all transform hover:scale-105 text-base uppercase tracking-wider">
                     <span>▶</span>
                     <span>Watch Live</span>
                 </a>
@@ -617,15 +742,11 @@ app.post('/api/stream', (req, res) => {
     if (thoughts || reasoning) { 
         const newThought = thoughts || reasoning;
         streamData.thoughts = newThought;
-        // Push to reasoning history
+        // Push to reasoning history (NO MAX LIMIT)
         streamData.reasoningHistory.push({
             text: newThought,
             timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
         });
-        // Keep max 50 entries
-        if (streamData.reasoningHistory.length > 50) {
-            streamData.reasoningHistory.shift();
-        }
         updated = true; 
     }
     

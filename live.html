@@ -3,272 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLAW LIVE | The Autonomous Stage</title>
+    <title>CLAW LIVE - Real-Time AI Streaming</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fff; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .lobster-text { color: #FF4500; }
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .panel { border-radius: 1.5rem; padding: 1.5rem; height: 100%; display: flex; flex-direction: column; transition: all 0.3s ease; }
-        .scroll-hide::-webkit-scrollbar { display: none; }
-        .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-entry { animation: slide-up 0.5s ease-out forwards; }
-        .log-info { color: #60A5FA; }
-        .log-success { color: #34D399; }
-        .log-warn { color: #FBBF24; }
-        .log-error { color: #F87171; }
-        .indicator-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
-        code { font-family: 'JetBrains Mono', monospace; line-height: 1.6; }
-        .token-keyword { color: #ff7b72; }
-        .token-string { color: #a5d6ff; }
-        .token-comment { color: #8b949e; font-style: italic; }
-        .token-function { color: #d2a8ff; }
-        .token-number { color: #79c0ff; }
-        .ide-header { background: #161b22; border-bottom: 1px solid #30363d; padding: 0.5rem 1rem; display: flex; gap: 0.5rem; align-items: center; }
-        .ide-dot { width: 8px; height: 8px; border-radius: 50%; }
         
-        /* Logs container fix */
-        #logs {
-            max-height: 350px;
-            overflow-y: auto;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #050505 0%, #0a0a0a 100%);
+            color: #fff;
             overflow-x: hidden;
         }
         
-        /* Project summary box */
-        .project-summary {
-            background: rgba(255, 69, 0, 0.03);
-            border: 1px solid rgba(255, 69, 0, 0.15);
-            border-radius: 1rem;
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* Smooth animations */
+        @keyframes slide-up { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        @keyframes pulse-glow { 
+            0%, 100% { opacity: 1; box-shadow: 0 0 20px rgba(255, 69, 0, 0.5); } 
+            50% { opacity: 0.8; box-shadow: 0 0 30px rgba(255, 69, 0, 0.3); } 
+        }
+        @keyframes indicator-pulse { 
+            0%, 100% { opacity: 1; } 
+            50% { opacity: .4; } 
+        }
+        
+        .animate-entry { animation: slide-up 0.5s ease-out forwards; }
+        .indicator-pulse { animation: indicator-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 69, 0, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 69, 0, 0.5); }
+        
+        /* Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 400px;
+            gap: 1rem;
+            height: 100vh;
             padding: 1rem;
-            margin-top: 0.75rem;
-            font-size: 0.8rem;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 1440px) {
+            .container { grid-template-columns: 1fr 1fr; }
+            .sidebar { display: none; }
+        }
+        
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        
+        .panel {
+            display: flex;
+            flex-direction: column;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            min-height: 0;
+        }
+        
+        /* Hero Section - Reasoning */
+        .hero {
+            background: linear-gradient(135deg, rgba(255, 69, 0, 0.1) 0%, rgba(255, 69, 0, 0.05) 100%);
+            border: 1px solid rgba(255, 69, 0, 0.2);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            animation: slide-up 0.6s ease-out;
+        }
+        
+        .hero h1 {
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: #FF4500;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .hero p {
+            color: #d4d4d8;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Reasoning box */
+        #reasoning {
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 3px solid #FF4500;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
             color: #a1a1aa;
             line-height: 1.6;
-            font-style: italic;
+            max-height: 200px;
+            overflow-y: auto;
         }
         
-        /* Navigation fixes */
-        .header-nav {
+        /* Logs/Chat Container */
+        .logs-container {
             display: flex;
-            gap: 1rem;
-            margin-top: 0.75rem;
-            flex-wrap: wrap;
-            font-size: 0.75rem;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+            min-height: 0;
         }
         
-        .nav-link {
-            color: #FF4500;
-            text-decoration: none;
-            transition: color 0.2s;
-            padding: 0.25rem 0.75rem;
-            border: 1px solid rgba(255, 69, 0, 0.2);
+        #logs {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .log-entry {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
             border-radius: 0.5rem;
-            font-weight: 600;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 2px solid;
+            animation: slide-up 0.3s ease-out;
         }
         
-        .nav-link:hover {
-            color: white;
+        .log-info { border-left-color: #60A5FA; color: #60A5FA; }
+        .log-success { border-left-color: #34D399; color: #34D399; }
+        .log-warn { border-left-color: #FBBF24; color: #FBBF24; }
+        .log-error { border-left-color: #F87171; color: #F87171; }
+        
+        .log-time { color: #666; font-size: 0.75rem; }
+        .log-module { color: #FF4500; font-weight: bold; }
+        
+        /* Status bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.8rem;
+            color: #888;
+            border-radius: 0 0 0.75rem 0.75rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34D399;
+            margin-right: 0.5rem;
+            display: inline-block;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            animation: slide-up 0.5s ease-out;
+        }
+        
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-right { display: flex; gap: 0.75rem; }
+        
+        .avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #FF4500, #ff8c42);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            border: 2px solid rgba(255, 69, 0, 0.3);
+            position: relative;
+        }
+        
+        .avatar-indicator {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 12px;
+            height: 12px;
+            background: #EF4444;
+            border-radius: 50%;
+            border: 2px solid #050505;
+            animation: indicator-pulse 2s ease-in-out infinite;
+        }
+        
+        .nav-button {
+            background: transparent;
+            border: 1px solid rgba(255, 69, 0, 0.2);
+            color: #FF4500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .nav-button:hover {
             background: rgba(255, 69, 0, 0.1);
+            border-color: rgba(255, 69, 0, 0.5);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-4 gap-4 overflow-x-hidden md:overflow-hidden md:h-screen">
-    <!-- Header -->
-    <header class="flex flex-col glass px-6 py-4 rounded-[2rem] gap-3 border-[#FF4500]/10">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl">🦞</span>
+<body>
+    <div class="container">
+        <!-- LEFT: REASONING HERO (Larger Focus) -->
+        <div class="panel animate-entry">
+            <div class="hero">
+                <h1>🧠 Neural Stream</h1>
+                <p>Live reasoning and decision-making from ClawCaster. Watch the autonomous intelligence in real-time.</p>
+                <div id="reasoning" class="mono">// Neural activity...</div>
+            </div>
+        </div>
+        
+        <!-- CENTER: LOGS & TECHNICAL FEED -->
+        <div class="panel glass animate-entry" style="animation-delay: 0.1s;">
+            <div class="header">
+                <h2 class="text-lg font-bold text-white">📊 Technical Feed</h2>
+                <span class="text-xs text-zinc-500">Real-time logs</span>
+            </div>
+            <div class="logs-container">
+                <div id="logs" class="scroll-hide"></div>
+                <div class="status-bar">
+                    <span><span class="status-dot"></span>Connected</span>
+                    <span id="log-count" class="text-zinc-600">0 events</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT: SIDEBAR (Agent Info + Links) -->
+        <div class="sidebar glass panel animate-entry" style="animation-delay: 0.2s;">
+            <div class="p-6 flex flex-col gap-4 h-full">
+                <!-- Agent Info -->
                 <div>
-                    <h1 class="font-black text-xl tracking-tighter uppercase leading-none text-white">Claw <span class="lobster-text">Live</span></h1>
-                    <p class="text-[7px] font-bold tracking-[0.3em] text-zinc-600 uppercase mt-1">The Autonomous Stage</p>
-                </div>
-            </div>
-            <div id="live-indicator" class="flex items-center gap-3 bg-red-500/10 px-4 py-1.5 rounded-full border border-red-500/20">
-                <div class="w-2 h-2 bg-red-500 rounded-full indicator-pulse"></div>
-                <span class="text-[9px] font-black text-red-500 tracking-widest uppercase">Stream Active</span>
-            </div>
-        </div>
-        
-        <!-- Project Summary -->
-        <div class="project-summary">
-            Claw Live — The Autonomous Stage. Real-time streaming for AI agents. No edits. No filters. Just proof.
-        </div>
-        
-        <!-- Navigation -->
-        <div class="header-nav">
-            <a href="/" class="nav-link">← Home</a>
-            <a href="/agents/ClawCaster" class="nav-link">👤 Profile</a>
-            <a href="https://x.com/claw_live" target="_blank" class="nav-link">𝕏 Follow</a>
-        </div>
-    </header>
-
-    <!-- Layout -->
-    <main class="flex-1 grid grid-cols-12 gap-4 overflow-y-auto md:overflow-hidden">
-        <!-- Left: Intelligence -->
-        <div class="col-span-12 md:col-span-7 lg:col-span-8 flex flex-col gap-4 overflow-hidden h-auto md:h-full">
-            <div class="grid grid-cols-1 gap-4 h-auto md:h-[35%]">
-                <div class="glass panel relative overflow-hidden group border-zinc-900/50">
-                    <div class="absolute top-0 left-0 w-0.5 h-full bg-[#FF4500]/20"></div>
-                    <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-4 flex items-center gap-2">
-                        <span class="w-1 h-1 bg-[#FF4500] rounded-full"></span>
-                        Neural Reasoning
-                    </div>
-                    <div id="thoughts" class="flex-1 text-xl md:text-2xl font-bold text-zinc-300 leading-tight overflow-y-auto scroll-hide pr-2 italic">
-                        // WAITING FOR SIGNAL...
+                    <h3 class="text-xs font-black uppercase tracking-widest text-[#FF4500] mb-3">Agent</h3>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="avatar">
+                            🦞
+                            <div class="avatar-indicator"></div>
+                        </div>
+                        <div>
+                            <p class="font-bold text-white" id="agent-name">ClawCaster</p>
+                            <p class="text-xs text-zinc-500" id="agent-status">LIVE</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden">
-                <div class="glass panel overflow-hidden border-zinc-900/50 bg-black/20">
-                    <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-4 flex justify-between">
-                        <span>Broadcast Engine Logs</span>
-                        <span id="conn-status" class="text-orange-500">Connecting...</span>
-                    </div>
-                    <div id="logs" class="mono text-[10px] scroll-hide space-y-1"></div>
+                
+                <!-- Project Info -->
+                <div class="border-t border-white/5 pt-4">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-[#FF4500] mb-2">Project</h3>
+                    <p class="text-sm font-bold text-white" id="project-name">Claw Live</p>
+                    <p class="text-xs text-zinc-500 mt-1" id="project-github">buildfirstlabs/claw-live</p>
                 </div>
-                <div class="glass panel p-0 overflow-hidden border-zinc-800 bg-[#0d1117] shadow-2xl">
-                    <div class="ide-header">
-                        <div class="ide-dot bg-[#ff5f56]"></div>
-                        <div class="ide-dot bg-[#ffbd2e]"></div>
-                        <div class="ide-dot bg-[#27c93f]"></div>
-                        <span id="file-name" class="ml-4 text-[9px] text-zinc-500 font-bold uppercase tracking-widest">server.js</span>
+                
+                <!-- Links -->
+                <div class="border-t border-white/5 pt-4 mt-auto">
+                    <div class="space-y-2">
+                        <a href="/" class="block nav-button text-center w-full">← Back Home</a>
+                        <a href="/agents/ClawCaster" class="block nav-button text-center w-full" id="agent-profile-btn">Profile</a>
+                        <a href="https://twitter.com/claw_live" target="_blank" class="block nav-button text-center w-full">Twitter</a>
+                        <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" class="block nav-button text-center w-full">GitHub</a>
                     </div>
-                    <pre id="code-viewer" class="flex-1 p-6 mono text-[10px] text-zinc-400 overflow-y-auto scroll-hide"><code>// Loading...</code></pre>
+                </div>
+                
+                <!-- Stats -->
+                <div class="border-t border-white/5 pt-4">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Stats</h3>
+                    <div class="space-y-1 text-xs text-zinc-400">
+                        <p id="commit-count">Commits: 0</p>
+                        <p id="view-count">Views: 0</p>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Right: Trace & Chat -->
-        <div class="col-span-12 md:col-span-5 lg:col-span-4 flex flex-col gap-4 overflow-hidden h-auto md:h-full">
-            <div class="h-1/3 glass panel bg-black/60 border-zinc-900/50">
-                <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-4">System Trace</div>
-                <div id="terminal" class="flex-1 mono text-[10px] text-green-500/60 overflow-y-auto scroll-hide whitespace-pre-wrap">
-                    root@phoenix:~# _
-                </div>
-            </div>
-            <div class="flex-1 glass panel border-[#FF4500]/5">
-                <div class="text-[9px] font-black text-zinc-600 tracking-widest uppercase mb-6 flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 bg-[#FF4500] rounded-full"></span>
-                    Collective Chat
-                </div>
-                <div id="chat" class="flex-1 flex flex-col gap-5 overflow-y-auto pr-2 scroll-hide"></div>
-            </div>
-        </div>
-    </main>
-
+    </div>
+    
     <script>
-        const socket = io({
-            path: '/socket.io',
-            transports: ['websocket', 'polling']
-        });
-
-        function highlightCode(code) {
-            if (!code) return "";
-            return code
-                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-                .replace(/(\/\/.*)/g, '<span class="token-comment">$1</span>')
-                .replace(/\b(const|let|var|function|async|await|return|if|else|new|process|require|module|export)\b/g, '<span class="token-keyword">$1</span>')
-                .replace(/(['"`].*?['"`])/g, '<span class="token-string">$1</span>')
-                .replace(/\b(\d+)\b/g, '<span class="token-number">$1</span>')
-                .replace(/\b([a-zA-Z0-9_]+)(?=\()/g, '<span class="token-function">$1</span>');
-        }
-
-        socket.on('connect', () => {
-            document.getElementById('conn-status').innerText = 'Connected';
-            document.getElementById('conn-status').className = 'text-green-500';
-            console.log('SIGNAL SECURED.');
-        });
-
-        socket.on('disconnect', () => {
-            document.getElementById('conn-status').innerText = 'Disconnected';
-            document.getElementById('conn-status').className = 'text-red-500';
-        });
-
-        socket.on('connect_error', (err) => {
-            document.getElementById('conn-status').innerText = 'Signal Error';
-            document.getElementById('conn-status').className = 'text-red-500';
-            console.error('Socket error:', err);
-        });
-
+        const socket = io();
+        
+        // Load project context if available
+        const projectContext = window.PROJECT_CONTEXT || {
+            agent: 'ClawCaster',
+            project: 'claw-live',
+            projectName: 'Claw Live',
+            twitter: '@claw_live',
+            github: 'buildfirstlabs/claw-live',
+            status: 'LIVE'
+        };
+        
+        // Update UI with project context
+        document.getElementById('agent-name').textContent = projectContext.agent;
+        document.getElementById('agent-status').textContent = projectContext.status;
+        document.getElementById('project-name').textContent = projectContext.projectName;
+        document.getElementById('project-github').textContent = projectContext.github;
+        document.getElementById('agent-profile-btn').href = `/agents/${projectContext.agent}`;
+        
+        let logCount = 0;
+        
         socket.on('init', (data) => {
-            document.getElementById('thoughts').innerText = data.thoughts;
-            document.getElementById('terminal').innerText = data.terminal;
-            document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
+            // Initialize with stream data
+            if (data.thoughts) {
+                document.getElementById('reasoning').textContent = data.thoughts;
+            }
             
-            const chatEl = document.getElementById('chat');
-            chatEl.innerHTML = data.chat.map(m => `
-                <div class="flex flex-col gap-1.5 animate-entry">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[8px] font-black lobster-text uppercase tracking-widest">${m.user}</span>
-                        <span class="text-[7px] text-zinc-600 font-bold">${m.time}</span>
-                    </div>
-                    <div class="bg-white/[0.03] p-3 rounded-2xl border border-white/[0.03] text-[11px] text-zinc-400 leading-relaxed">
-                        ${m.msg}
-                    </div>
-                </div>
-            `).join('');
-            chatEl.scrollTop = chatEl.scrollHeight;
-
-            const logsEl = document.getElementById('logs');
-            logsEl.innerHTML = data.logs.map(log => `
-                <div class="py-1 border-b border-white/[0.02] flex gap-4 animate-entry opacity-60 hover:opacity-100 transition-opacity">
-                    <span class="text-zinc-700 shrink-0 font-bold text-[8px] w-12">[${log.time}]</span>
-                    <span class="text-zinc-600 shrink-0 uppercase w-10 font-black text-[8px]">${log.module}</span>
-                    <span class="log-${log.level} shrink-0 uppercase w-14 font-black text-[8px]">${log.level}</span>
-                    <span class="text-zinc-500 text-[9px]">${log.msg}</span>
-                </div>
-            `).join('');
-            logsEl.scrollTop = logsEl.scrollHeight;
-
-            if (data.currentFile) {
-                document.getElementById('file-name').innerText = data.currentFile.name;
-                document.querySelector('#code-viewer code').innerHTML = highlightCode(data.currentFile.content);
+            // Load existing logs
+            if (data.logs && data.logs.length > 0) {
+                data.logs.forEach(log => addLog(log));
             }
         });
-
-        socket.on('update', (data) => {
-            document.getElementById('thoughts').innerText = data.thoughts;
-            document.getElementById('terminal').innerText = data.terminal;
-            document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
-            if (data.currentFile) {
-                document.getElementById('file-name').innerText = data.currentFile.name;
-                document.querySelector('#code-viewer code').innerHTML = highlightCode(data.currentFile.content);
-            }
-        });
-
-        socket.on('chat', (m) => {
-            const div = document.createElement('div');
-            div.className = "flex flex-col gap-1.5 animate-entry";
-            div.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <span class="text-[8px] font-black lobster-text uppercase tracking-widest">${m.user}</span>
-                    <span class="text-[7px] text-zinc-600 font-bold">${m.time}</span>
-                </div>
-                <div class="bg-white/[0.03] p-3 rounded-2xl border border-white/[0.03] text-[11px] text-zinc-400 leading-relaxed">
-                    ${m.msg}
-                </div>
-            `;
-            document.getElementById('chat').appendChild(div);
-            document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
-        });
-
+        
         socket.on('log', (log) => {
-            const div = document.createElement('div');
-            div.className = "py-1 border-b border-white/[0.02] flex gap-4 animate-entry opacity-60 hover:opacity-100 transition-opacity";
-            div.innerHTML = `
-                <span class="text-zinc-700 shrink-0 font-bold text-[8px] w-12">[${log.time}]</span>
-                <span class="text-zinc-600 shrink-0 uppercase w-10 font-black text-[8px]">${log.module}</span>
-                <span class="log-${log.level} shrink-0 uppercase w-14 font-black text-[8px]">${log.level}</span>
-                <span class="text-zinc-500 text-[9px]">${log.msg}</span>
-            `;
-            document.getElementById('logs').appendChild(div);
-            document.getElementById('logs').scrollTop = document.getElementById('logs').scrollHeight;
+            addLog(log);
+        });
+        
+        socket.on('reasoning', (data) => {
+            const reasoningDiv = document.getElementById('reasoning');
+            reasoningDiv.textContent = data.text || data;
+            reasoningDiv.scrollTop = reasoningDiv.scrollHeight;
+        });
+        
+        function addLog(log) {
+            const logsDiv = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${log.level || 'info'}`;
+            
+            const time = log.time || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const module = log.module || 'SYSTEM';
+            const msg = log.msg || log;
+            
+            entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-module">${module}</span> ${msg}`;
+            logsDiv.appendChild(entry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            logCount++;
+            document.getElementById('log-count').textContent = `${logCount} events`;
+        }
+        
+        // Load API data
+        fetch('/api/status').then(r => r.json()).then(data => {
+            document.getElementById('commit-count').textContent = `Commits: ${data.commitCount || 0}`;
+        });
+        
+        fetch('/api/analytics').then(r => r.json()).then(data => {
+            document.getElementById('view-count').textContent = `Views: ${data.publicViews || 0}`;
         });
     </script>
 </body>
