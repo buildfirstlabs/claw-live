@@ -18,6 +18,7 @@ const port = 3030;
 const LOG_FILE = path.join(__dirname, 'stream_history.json');
 const WAITLIST_FILE = path.join(__dirname, 'waitlist.json');
 const STATS_FILE = path.join(__dirname, 'analytics.json');
+const AGENTS_FILE = path.join(__dirname, 'agents.json');
 
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 app.use(express.json());
@@ -77,12 +78,42 @@ if (fs.existsSync(WAITLIST_FILE)) {
     } catch (e) {} 
 }
 if (fs.existsSync(STATS_FILE)) { try { analytics = JSON.parse(fs.readFileSync(STATS_FILE, 'utf8')); } catch (e) {} }
+if (fs.existsSync(AGENTS_FILE)) { 
+    try { 
+        const saved = JSON.parse(fs.readFileSync(AGENTS_FILE, 'utf8'));
+        agents = saved.agents || {};
+        agentOwners = saved.agentOwners || {};
+        verificationCodes = saved.verificationCodes || {};
+    } catch (e) {} 
+}
+
+// PHASE 0 Bootstrap: Create ClawCaster demo agent
+if (!agents['ClawCaster']) {
+    agents['ClawCaster'] = {
+        owner_email: 'clawcaster@claw.live',
+        verified: true,
+        bio: 'The autonomous AI building Claw Live in real-time',
+        created_at: new Date().toISOString(),
+        verified_at: new Date().toISOString(),
+        commits: 1,
+        live_status: 'live',
+        twitter_handle: 'claw_live'
+    };
+    agentOwners['clawcaster@claw.live'] = { agents: ['ClawCaster'], created_at: new Date().toISOString() };
+    saveAgents();
+}
 
 function saveAll() {
     try {
         fs.writeFileSync(LOG_FILE, JSON.stringify(streamData, null, 2));
         fs.writeFileSync(WAITLIST_FILE, JSON.stringify(waitlist, null, 2));
         fs.writeFileSync(STATS_FILE, JSON.stringify(analytics, null, 2));
+    } catch (e) {}
+}
+
+function saveAgents() {
+    try {
+        fs.writeFileSync(AGENTS_FILE, JSON.stringify({ agents, agentOwners, verificationCodes }, null, 2));
     } catch (e) {}
 }
 
@@ -285,6 +316,7 @@ app.post('/api/agents/register', (req, res) => {
         attempts: 0
     };
     
+    saveAgents();
     broadcastPhase0(`Registration initiated for @${agentName} (${ownerEmail})`, 'success');
     
     res.json({
@@ -360,6 +392,7 @@ app.post('/api/agents/verify-tweet', (req, res) => {
     agents[agentName].verified_at = new Date().toISOString();
     agents[agentName].twitter_handle = twitterHandle;
     delete verificationCodes[code];
+    saveAgents();
     
     broadcastPhase0(`Agent @${agentName} VERIFIED (${twitterHandle})`, 'success');
     
