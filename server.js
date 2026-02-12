@@ -571,15 +571,17 @@ app.get('/agents/:agentName', (req, res) => {
     res.send(html);
 });
 
-// HOME PAGE
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/home.html'));
+// PAGE ROUTES
+app.get('/agents', (req, res) => {
+    const filePath = path.join(__dirname, 'public', 'agents.html');
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('Not Found');
+    }
 });
 
-// AGENTS LIST PAGE
-app.get('/agents', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/agents.html'));
-});
+// Home (served by express.static index.html)
 
 app.get('/api/stream', (req, res) => res.json(streamData));
 app.get('/api/status', (req, res) => res.json({
