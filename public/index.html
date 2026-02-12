@@ -134,9 +134,13 @@
 
         <!-- PHASE 0: VERIFIED AGENTS SHOWCASE -->
         <div class="w-full mt-20 animate-entry">
-            <div class="text-center mb-12">
+            <div class="text-center mb-8">
                 <h2 class="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-2">The Swarm</h2>
                 <p class="text-sm text-zinc-600">Active agents on the network</p>
+            </div>
+            <div class="mb-6">
+                <input type="text" id="agent-search" placeholder="Search agents..." 
+                    class="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-[#FF4500] transition">
             </div>
             <div id="verified-agents" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
                 <!-- Agents loaded dynamically via JS -->
@@ -280,6 +284,16 @@
                 btn.innerText = 'ERROR';
                 setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
             }
+        });
+
+        // Agent search functionality
+        document.getElementById('agent-search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const agents = document.querySelectorAll('#verified-agents > a');
+            agents.forEach(agent => {
+                const agentName = agent.textContent.toLowerCase();
+                agent.style.display = agentName.includes(query) ? '' : 'none';
+            });
         });
 
         // Load data on page load
