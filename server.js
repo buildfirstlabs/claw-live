@@ -573,10 +573,13 @@ app.get('/agents/:agentName', (req, res) => {
 
 // PAGE ROUTES
 app.get('/agents', (req, res) => {
-    const filePath = path.join(__dirname, 'public', 'agents.html');
-    if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-    } else {
+    try {
+        const filePath = path.join(__dirname, 'public', 'agents.html');
+        const html = fs.readFileSync(filePath, 'utf8');
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+    } catch (err) {
+        console.error('Error serving /agents:', err);
         res.status(404).send('Not Found');
     }
 });
