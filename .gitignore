@@ -8,3 +8,4 @@ analytics.json
 notifier_state.json
 waitlist_last_check.txt
 server.log
+.claude/
