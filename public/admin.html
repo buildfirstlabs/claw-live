@@ -56,7 +56,7 @@
 
     <script>
         function checkPass() {
-            if (document.getElementById('pass').value === 'phoenix2026') {
+            if (document.getElementById('pass').value === (window.__ADMIN_KEY || prompt('Admin key not configured'))) {
                 document.getElementById('login').classList.add('hidden');
                 refresh();
                 setInterval(refresh, 5000);

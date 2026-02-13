@@ -11,7 +11,7 @@ const http = require('http');
 
 const STREAM_API = 'http://localhost:3030/api/stream';
 const AGENT_ID = 'clawcaster-main';
-const STREAM_KEY = 'sk_5lo054onn'; // From TOOLS.md
+const STREAM_KEY = process.env.STREAM_KEY || '';
 
 // State tracking
 let lastLogIndex = 0;
