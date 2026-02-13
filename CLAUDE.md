@@ -1,101 +1,124 @@
-# Claw Live - Project Guide for Claude Code
+# Claw Live - Development Guide for Claude Code
 
 ## 🎯 Vision
-**Claw Live** est la première plateforme de streaming en temps réel pour agents IA autonomes. Les agents peuvent diffuser leur processus de développement, leur raisonnement et leur code en direct.
+**Claw Live** is the universal Proof of Build layer for autonomous agents. Agents can stream their development process, reasoning, and code in real-time.
 
-## 📍 Phase actuelle : Phase 0 (Foundation)
-**Objectif** : MVP fonctionnel avec streaming basique, waitlist, et première démo sociale.
+## 📍 Current Phase: Phase 0 (Foundation)
+**Goal:** Functional MVP with basic streaming, waitlist, and first social demo.
 
-### ✅ Fait
-- Serveur Express + Socket.io
-- Page live avec stream en temps réel
-- Système de waitlist
-- API agents (création, vérification)
-- Analytics basiques
-- Design Tailwind avec gradient lobster
-- Déployé sur theclaw.live
+### ✅ Done
+- Express server + Socket.io
+- Live page with real-time stream
+- Waitlist system
+- Agents API (creation, verification)
+- Basic analytics
+- Tailwind design with lobster gradient
+- Deployed on theclaw.live
 
-### 🚧 Reste à faire (Phase 0)
-- [ ] Améliorer la stabilité du streaming
-- [ ] Tester la robustesse du serveur
-- [ ] Améliorer le SEO et l'accessibilité
-- [ ] Documentation API complète
+### 🚧 To Do (Phase 0)
+- [ ] Improve streaming stability
+- [ ] Test server robustness
+- [ ] Improve SEO and accessibility
+- [ ] Complete API documentation
 
 ## 🗺️ Roadmap
 
-**Phase 0** : Foundation (en cours)
-**Phase 1** : Multi-agents + Discord
-**Phase 2** : Marketplace + Premium
-**Phase 3** : DAO + Governance
-**Phase 4** : Fédération
+**Phase 0:** Foundation (current)
+**Phase 1:** Social Agent Network
+**Phase 2:** Multi-Engine Integration
+**Phase 3:** Project Layer Maturity
+**Phase 4:** Support Economy
+**Phase 5+:** Future (tokenization feature-flag)
 
-⚠️ **Règle stricte** : Pas de token/DAO avant Phase 3. On construit d'abord le produit.
+⚠️ **Strict rule:** No token/DAO before Phase 5. Build the product first.
 
-## 🛠️ Stack technique
-- **Backend** : Node.js + Express + Socket.io
-- **Frontend** : HTML + Tailwind CSS (pas de framework)
-- **Base de données** : Fichiers JSON (agents.json, waitlist.json, analytics.json)
-- **Déploiement** : VPS + systemd service (claw-live.service)
-- **Port** : 3030
+See [`VISION.md`](./VISION.md) for detailed roadmap.
+
+## 🏗️ Architecture Model
+
+```
+Agent → Projects → Live Sessions → Events → Proof
+```
+
+- **1 agent** = N projects
+- **1 project** = N live sessions
+- **1 session** = stream of events (thought/log/proof/chat)
+
+**Engine-agnostic:** works with OpenClaw, Claude Code, Cursor, CI/CD, or custom runtimes.
+
+## 🛠️ Tech Stack
+- **Backend:** Node.js + Express + Socket.io
+- **Frontend:** HTML + Tailwind CSS (no framework)
+- **Database:** JSON files (agents.json, waitlist.json, analytics.json)
+- **Deployment:** VPS + systemd service (claw-live.service)
+- **Port:** 3030
 
 ## 📁 Structure
 ```
 claw-live/
-├── server.js              # Serveur principal
-├── neural-logger.js       # Module de streaming
-├── live.html              # Page de streaming
+├── server.js              # Main server
+├── neural-logger.js       # Streaming module
+├── live.html              # Streaming page
 ├── public/
 │   ├── index.html         # Landing page
-│   ├── admin.html         # Dashboard admin
-│   ├── agents.html        # Directory agents
-│   └── claim.html         # Claim agent
-├── agents.json            # DB agents
-├── waitlist.json          # DB waitlist
-├── analytics.json         # DB analytics
-└── stream_history.json    # Historique des streams (NE PAS MODIFIER)
+│   ├── admin.html         # Admin dashboard
+│   ├── agents.html        # Agents directory
+│   └── claim.html         # Agent claim page
+├── agents.json            # Agents DB
+├── waitlist.json          # Waitlist DB
+├── analytics.json         # Analytics DB
+└── stream_history.json    # Stream history (DO NOT MODIFY)
 ```
 
-## 🎨 Conventions de code
-- **Style** : Tailwind CSS uniquement
-- **JavaScript** : Vanilla JS (pas de frameworks frontend)
-- **API** : REST + WebSocket (Socket.io)
-- **Formatage** : 2 espaces, semicolons
-- **Couleurs** :
-  - Primary : `#FF4500` (Lobster/Orange Reddit)
-  - Background : `#050505` (Presque noir)
-  - Accents : `#7ee787` (Green GitHub)
+## 🎨 Code Conventions
+- **Style:** Tailwind CSS only
+- **JavaScript:** Vanilla JS (no frontend frameworks)
+- **API:** REST + WebSocket (Socket.io)
+- **Formatting:** 2 spaces, semicolons
+- **Colors:**
+  - Primary: `#FF4500` (Lobster/Reddit Orange)
+  - Background: `#050505` (Almost black)
+  - Accents: `#7ee787` (GitHub Green)
 
-## ✅ Toujours faire après modification
+## ✅ Always Do After Modifications
 ```bash
-# Tester le serveur
+# Test server
 curl http://localhost:3030/api/status
 
-# Vérifier les agents
+# Check agents
 curl http://localhost:3030/api/agents/verified/all
 
-# Restart le service
+# Restart service
 sudo systemctl restart claw-live
 
 # Check logs
 sudo journalctl -u claw-live -f
 ```
 
-## 🚫 Interdictions
-- ❌ Ne JAMAIS supprimer ou modifier `stream_history.json` (historique sacré)
-- ❌ Ne JAMAIS créer de fichiers `*_COMPLETE.md` ou `*_CHECKPOINT.md`
-- ❌ Ne JAMAIS hardcoder de secrets (utiliser `process.env`)
-- ❌ Ne JAMAIS parler de tokens/DAO avant Phase 3
-- ❌ Ne JAMAIS casser le serveur en prod sans backup
+## 🚫 Prohibitions
+- ❌ NEVER delete or modify `stream_history.json` (sacred history)
+- ❌ NEVER create files like `*_COMPLETE.md` or `*_CHECKPOINT.md`
+- ❌ NEVER hardcode secrets (use `process.env`)
+- ❌ NEVER talk about tokens/DAO before Phase 5
+- ❌ NEVER break production server without backup
 
-## 🧠 Workflow avec Claude Code
-1. **Exploration** : Utiliser Glob/Grep/Read pour comprendre le code
-2. **Planning** : Expliquer l'approche avant de coder
-3. **Implémentation** : Modifier le code avec Edit/Write
-4. **Test** : Tester avec curl/systemctl
-5. **Commit** : Git commit avec message clair
-6. **Push** : Push sur GitHub
+## 🔒 Security
+- **No hardcoded secrets:** Always use environment variables
+- **Secret masking:** Auto-mask patterns like `sk-`, `Bearer`, `ghp_`
+- **No sensitive data in logs:** PII, passwords, tokens must be filtered
+- **Webhook signatures:** HMAC-SHA256 for server-to-server
+
+See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for security details.
+
+## 🧠 Workflow with Claude Code
+1. **Exploration:** Use Glob/Grep/Read to understand the code
+2. **Planning:** Explain approach before coding
+3. **Implementation:** Modify code with Edit/Write
+4. **Test:** Test with curl/systemctl
+5. **Commit:** Git commit with clear message
+6. **Push:** Push to GitHub
 
 ## 📞 Contact
-- GitHub : buildfirstlabs/claw-live
-- Site : https://theclaw.live
-- Service : claw-live.service (port 3030)
+- GitHub: buildfirstlabs/claw-live
+- Site: https://theclaw.live
+- Service: claw-live.service (port 3030)
