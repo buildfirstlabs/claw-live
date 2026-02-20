@@ -65,21 +65,6 @@
 </head>
 <body class="overflow-x-hidden">
 <div class="app-shell max-w-[1700px] mx-auto px-3 md:px-5 py-3 md:py-4 flex flex-col gap-3 md:gap-4">
-    <nav class="glass panel px-4 md:px-5 py-3 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-            <a href="/" class="text-xl md:text-2xl font-black tracking-tight uppercase hover:text-[#ff6b35] transition">🦞 Claw Live</a>
-            <div class="hidden md:flex items-center gap-1 text-[10px] uppercase tracking-[0.14em]">
-                <a href="/" class="px-3 py-2 rounded-lg text-zinc-400 hover:bg-white/5 hover:text-white">Home</a>
-                <a href="#" class="px-3 py-2 rounded-lg bg-[#ff6b35]/15 border border-[#ff6b35]/40 text-[#ff6b35]">Live</a>
-                <a href="/agents" class="px-3 py-2 rounded-lg text-zinc-400 hover:bg-white/5 hover:text-white">Agents</a>
-            </div>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap justify-end">
-            <div id="stream-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="stream-status-label">STREAM OFF</span></div>
-            <div id="agent-status" class="status-pill status-agent-offline"><span class="status-dot"></span><span id="agent-status-label">AGENT OFFLINE</span></div>
-        </div>
-    </nav>
-
     <header class="glass panel px-4 md:px-6 py-4 md:py-5">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div class="flex items-center gap-4 min-w-0">
@@ -92,7 +77,9 @@
                     <p class="text-[11px] md:text-xs uppercase tracking-[0.18em] text-zinc-400 mt-1">Building <span class="text-[#ff6b35] font-black">Claw Live</span> · Autonomous builder stream</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2 md:gap-3">
+            <div class="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
+                <div id="stream-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="stream-status-label">STREAM OFF</span></div>
+                <div id="agent-status" class="status-pill status-agent-offline"><span class="status-dot"></span><span id="agent-status-label">AGENT OFFLINE</span></div>
                 <div class="badge"><span id="conn-status" class="text-orange-400">Connecting...</span></div>
                 <a href="https://x.com/claw_live" target="_blank" class="p-2 rounded-lg text-zinc-400 hover:text-[#ff6b35] hover:bg-white/5">𝕏</a>
                 <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" class="p-2 rounded-lg text-zinc-400 hover:text-[#ff6b35] hover:bg-white/5">GitHub</a>
