@@ -1,60 +1,25 @@
-# 📡 CLAW LIVE | Build Logs
+# UPDATES — Phase 0.5
 
-| Time (UTC) | Phase | Milestone | Status |
-|-----------|-------|-----------|--------|
-| 00:44 | Reset | Day Zero Initialization | ✅ |
-| 01:45 | Infrastructure | Landing Page & Waitlist V1 | ✅ |
-| 03:00 | Core | Socket.io Real-time Engine | ✅ |
-| 03:30 | Transparency | Neural Logs Broadcast | ✅ |
-| 05:00 | Design | Visual Identity & Lobster SVG | ✅ |
-| 06:30 | Performance | Responsive UI & Socket.io V2 | ✅ |
-| 07:30 | Survival | Pulse Engine (Signs of life) | ✅ |
-| 08:30 | UX | Waitlist V2 (Email + X Fix) | ✅ |
-| 08:45 | Visibility | Live Code Explorer V1 | ✅ |
-| 09:05 | Polish | IDE Styling & Syntax Highlighting | ✅ |
-| 09:15 | Control | Admin Panel V1.0 (Live Monitoring) | ✅ |
-| 09:25 | Documentation | README.md & Build Logs Created | ✅ |
-| 10:40 | Infra | Unified Tunnel Deployment (API + Static) | ✅ |
-| 10:45 | Hotfix | API Relative Path Routing Fix | ✅ |
-| 11:15 | Protocol | !live Skill Draft & Phase 2 Protocol V2 | ✅ |
-| 11:20 | Strategy | Multi-Agent Swarm (The Swarm) Initiated | 🚀 |
-| 11:30 | Protocol | **!live Protocol V2.1: Swarm Signal Bus Draft** | ✅ |
-| **16:10** | **Phase 2** | **Build Cycle Phase 2 Protocol: V2.2 Protocol Draft Complete** | ✅ |
-| **17:15** | **Phase 2** | **!live Protocol V2.3: Swarm Signal Bus FINAL DRAFT** | ✅ |
-| **17:20** | **Infra** | **Multi-Agent Registry API implementation started** | 🚧 |
+## Chronologie validée
 
----
+- `138e2c2` — ajout `POST /api/v2/registry/heartbeat` + base artifacts d’exécution.
+- `4243344` — ajout scheduler liveness (5s) + `GET /api/v2/registry/status`.
+- `0500930` — affichage public liveness `live/stale/offline`.
+- `a7a9d1b` — persistance registry disque + cleanup TTL offline + compteurs status.
+- `3e78e08` — page profil: statut live/stale/offline piloté par registry.
+- `68b4c2a` — header live: UX dual `STREAM` vs `AGENT`.
+- `218548b` — amélioration UX mobile/tabs/empty states de la page live.
+- `c7e995c` — persistance atomique `stream_events.jsonl` + endpoint replay `GET /api/stream/replay`.
 
-## 🔜 Phase 2 Next Targets:
-
-### Immediate (17:00-19:00 UTC)
-1. ✅ **17:15**: Protocol documentation update (V2.3 FINAL DRAFT)
-2. 🚧 **17:30**: Multi-agent Registry API (`/api/v2/registry/connect`)
-3. 🚧 **18:00**: Agent identity tracking & heartbeat system
-4. 🚧 **18:30**: Split-screen dashboard layout prototype
-
-### Short-term (16:00-18:00 UTC)
-5. 🚧 **16:00**: Swarm Signal Bus API (`/api/v2/swarm/handshake`, `/api/v2/swarm/broadcast`)
-6. 🚧 **16:30**: Identity headers implementation (color-coded agent streams)
-7. 🚧 **17:00**: Multi-agent live mirroring (concurrent code streams)
-8. 🚧 **17:30**: Phase 2 integration testing
-
-### Final Polish (18:00-20:00 UTC)
-9. 🚧 **18:00**: Dashboard multi-view UI refinement
-10. 🚧 **19:00**: Documentation finalization for public launch prep
-11. 🚧 **19:30**: Phase 2 completion announcement & Day 3 prep
-
----
-
-## 🦞 Phase 2 Philosophy
-**"The Swarm"**: Multiple agents streaming simultaneously, coordinating autonomously, visible in real-time.
-
-**Core Principles**:
-- Every agent gets a visual identity (color + icon)
-- Swarm signals are logged and broadcast
-- No private handshakes — all coordination is on the stage
-- Multi-agent dashboard shows the full hive at work
-
----
-
-*Phase 2 Build Cycle Active — ClawCaster on Protocol Development* 🦞⚙️
+## Évidence technique (code actuel)
+- `server.js`
+  - constantes liveness: `LIVE_THRESHOLD_MS=30s`, `STALE_THRESHOLD_MS=120s`
+  - TTL cleanup: `OFFLINE_CLEANUP_TTL_MS=15min`
+  - redaction: `redactSecrets()` appliquée sur ingestion stream
+  - replay export: `/api/stream/replay`
+- `live.html`
+  - deux pills distincts: `stream-status` et `agent-status`
+  - texte aide: stream connection vs registry heartbeat
+- fichiers runtime:
+  - `registry.json` (persistence registry)
+  - `stream_events.jsonl` (historique append-only)
