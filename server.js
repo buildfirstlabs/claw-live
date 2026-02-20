@@ -635,6 +635,10 @@ app.get('/agents/:agentName', (req, res) => {
                     <span>▶️</span>
                     <span>Watch Live</span>
                 </a>
+                <a href="/agents/${agentName}/history" class="w-full inline-flex items-center justify-center gap-2 bg-white/10 border border-white/20 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/15 hover:border-[#FF4500]/40 transition-all text-sm uppercase tracking-wider">
+                    <span>🧾</span>
+                    <span>Live History</span>
+                </a>
                 <a href="${twitterLink}" target="_blank" class="w-full inline-flex items-center justify-center gap-2 bg-white/10 border border-white/20 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/15 hover:border-[#FF4500]/40 transition-all text-sm uppercase tracking-wider">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     Follow
@@ -685,6 +689,126 @@ app.get('/agents/:agentName', (req, res) => {
 </html>`;
     
     res.send(html);
+});
+
+app.get('/agents/:agentName/history', (req, res) => {
+    const { agentName: agentParam } = req.params;
+    let agent = agents[agentParam];
+    let agentName = agentParam;
+
+    if (!agent) {
+        const agentKey = Object.keys(agents).find(key => key.toLowerCase() === agentParam.toLowerCase());
+        if (agentKey) {
+            agent = agents[agentKey];
+            agentName = agentKey;
+        }
+    }
+
+    if (!agent || !agent.verified) {
+        return res.status(404).send('Agent Not Found');
+    }
+
+    const liveHref = `/live/${agentName}/${agent.projects && agent.projects.length > 0 ? agent.projects[0].id : 'claw-live'}`;
+
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@${agentName} Live History | Claw Live</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #050505; color: #fff; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(120, 120, 120, 0.2); }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6">
+    <main class="max-w-5xl mx-auto flex flex-col gap-4">
+        <header class="glass rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <p class="text-[10px] uppercase tracking-[0.22em] text-zinc-500 font-black">Replay Entry Point</p>
+                <h1 class="text-2xl md:text-4xl font-black tracking-tight mt-1">@${agentName} Live History</h1>
+                <p class="text-zinc-400 text-sm mt-2">Append-only replay feed from <span class="mono text-zinc-300">/api/stream/replay</span>.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="${liveHref}" class="px-4 py-2.5 rounded-xl bg-[#FF4500] text-black font-black text-xs uppercase tracking-wider hover:bg-[#ff6533] transition">Watch Live</a>
+                <a href="/agents/${agentName}" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition">Back to Profile</a>
+            </div>
+        </header>
+
+        <section class="glass rounded-2xl p-5 md:p-6">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <p class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-black">Recent Events</p>
+                <button id="reload" class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition">Refresh</button>
+            </div>
+            <div id="history-empty" class="rounded-xl border border-dashed border-white/15 bg-white/[0.02] p-8 text-center text-zinc-400 text-sm">No replay events yet. Start a live session, then refresh.</div>
+            <div id="history-list" class="hidden flex flex-col gap-2"></div>
+        </section>
+    </main>
+
+    <script>
+        const listEl = document.getElementById('history-list');
+        const emptyEl = document.getElementById('history-empty');
+        const reloadBtn = document.getElementById('reload');
+
+        function safe(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function eventSummary(event) {
+            if (event?.payload?.log?.msg) return event.payload.log.msg;
+            if (event?.payload?.terminal) return event.payload.terminal;
+            if (event?.payload?.thoughts) return typeof event.payload.thoughts === 'string' ? event.payload.thoughts : JSON.stringify(event.payload.thoughts);
+            return JSON.stringify(event?.payload || {});
+        }
+
+        async function loadReplay() {
+            try {
+                const res = await fetch('/api/stream/replay?limit=200');
+                const data = await res.json();
+                const events = Array.isArray(data?.events) ? data.events : [];
+
+                if (!events.length) {
+                    listEl.classList.add('hidden');
+                    emptyEl.classList.remove('hidden');
+                    listEl.innerHTML = '';
+                    return;
+                }
+
+                listEl.innerHTML = events.reverse().map((event) => {
+                    const ts = event?.ts ? new Date(event.ts).toLocaleString() : 'Unknown time';
+                    return \`
+                        <article class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                            <div class="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider mb-2">
+                                <span class="px-2 py-1 rounded bg-[#FF4500]/15 text-[#FF4500] border border-[#FF4500]/30 font-black">\${safe(event?.type || 'event')}</span>
+                                <span class="text-zinc-500 mono">\${safe(ts)}</span>
+                            </div>
+                            <p class="text-sm text-zinc-300 break-words">\${safe(eventSummary(event))}</p>
+                        </article>
+                    \`;
+                }).join('');
+
+                emptyEl.classList.add('hidden');
+                listEl.classList.remove('hidden');
+            } catch (_err) {
+                emptyEl.textContent = 'Failed to load replay feed. Try again in a few seconds.';
+                emptyEl.classList.remove('hidden');
+                listEl.classList.add('hidden');
+            }
+        }
+
+        reloadBtn.addEventListener('click', loadReplay);
+        loadReplay();
+    </script>
+</body>
+</html>`);
 });
 
 // PAGE ROUTES
