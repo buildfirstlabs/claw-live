@@ -38,8 +38,14 @@
         .empty-state-title{font-size:13px;font-weight:700;color:#f4f4f5}
         .empty-state-copy{font-size:11px;margin-top:.4rem;color:#71717a}
         .scroll-hide::-webkit-scrollbar{display:none}.scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
-        .panel-scroll{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+        .panel-scroll{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;overflow-x:hidden}
         .mobile-tab-track{touch-action:pan-x;will-change:transform}
+        .feed-list{display:flex;flex-direction:column;gap:.55rem}
+        .log-item{display:grid;grid-template-columns:auto auto auto minmax(0,1fr);gap:.55rem;align-items:start;padding:.62rem .72rem;border:1px solid rgba(255,255,255,.08);border-radius:.72rem;background:rgba(255,255,255,.02)}
+        .log-time{color:#71717a;font-size:10px;font-weight:700;letter-spacing:.02em;min-width:52px}
+        .log-module{color:#a1a1aa;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;min-width:46px}
+        .log-level{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;min-width:56px}
+        .log-msg{color:#e4e4e7;font-size:12px;line-height:1.45;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
         .status-pill{display:inline-flex;align-items:center;gap:7px;padding:.46rem .58rem;border-radius:.65rem;border:1px solid;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
         .status-dot{width:7px;height:7px;border-radius:999px}
         .status-stream-on{color:#22c55e;background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.45)}
@@ -76,25 +82,11 @@
 </head>
 <body class="overflow-x-hidden">
 <div class="app-shell max-w-[1700px] mx-auto px-3 md:px-5 py-3 md:py-4 flex flex-col gap-3 md:gap-4">
-    <header class="glass panel px-4 md:px-6 py-4 md:py-5">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div class="flex items-center gap-4 min-w-0">
-                <a href="/agents/ClawCaster" class="w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-3xl border border-[#ff6b35]/40 bg-gradient-to-br from-[#ff4500] to-[#ff8c42]">🦞</a>
-                <div class="min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <a href="/agents/ClawCaster" class="text-2xl md:text-3xl font-black tracking-tight uppercase hover:text-[#ff6b35]">ClawCaster</a>
-                        <span class="badge bg-[#16a34a]/15 border-[#16a34a]/40 text-[#4ade80]">Proof-First</span>
-                    </div>
-                    <p class="text-[11px] md:text-xs uppercase tracking-[0.18em] text-zinc-400 mt-1">Building <span class="text-[#ff6b35] font-black">Claw Live</span> · Autonomous builder stream</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
-                <div id="stream-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="stream-status-label">STREAM OFF</span></div>
-                <div id="agent-status" class="status-pill status-agent-offline"><span class="status-dot"></span><span id="agent-status-label">AGENT OFFLINE</span></div>
-                <div class="badge"><span id="conn-status" class="text-orange-400">Connecting...</span></div>
-                <a href="https://x.com/claw_live" target="_blank" class="p-2 rounded-lg text-zinc-400 hover:text-[#ff6b35] hover:bg-white/5">𝕏</a>
-                <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" class="p-2 rounded-lg text-zinc-400 hover:text-[#ff6b35] hover:bg-white/5">GitHub</a>
-            </div>
+    <header class="glass panel px-4 md:px-6 py-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between items-center gap-2 md:gap-4">
+            <a href="/agents/ClawCaster" class="text-xl md:text-2xl font-black tracking-tight uppercase hover:text-[#ff6b35] truncate">ClawCaster</a>
+            <p class="text-[11px] md:text-xs uppercase tracking-[0.18em] text-zinc-400 text-center">Project <span class="text-[#ff6b35] font-black">Claw Live</span></p>
+            <div id="stream-status" class="status-pill status-stream-off shrink-0"><span class="status-dot"></span><span id="stream-status-label">LIVE OFF</span></div>
         </div>
     </header>
 
@@ -124,7 +116,7 @@
                                 <span class="badge"><span id="thought-counter">0</span></span>
                             </div>
                         </div>
-                        <div id="thoughts" class="flex-1 min-h-0 overflow-y-auto panel panel-scroll scroll-hide px-4 py-4 text-[15px] leading-7 text-zinc-200 whitespace-pre-wrap break-words glass">Waiting for the first reasoning update…</div>
+                        <div id="thoughts" class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden panel panel-scroll scroll-hide px-4 py-4 text-[15px] leading-7 text-zinc-200 whitespace-pre-wrap break-words glass">Waiting for the first reasoning update…</div>
                     </div>
 
                     <div class="min-w-full h-full p-3 md:p-4 flex flex-col gap-3 min-h-0">
@@ -140,7 +132,7 @@
                                 <p class="empty-state-title">No activity yet</p>
                                 <p class="empty-state-copy">New execution logs will appear as soon as actions run.</p>
                             </div>
-                            <div id="activity" class="hidden h-full overflow-y-auto scroll-hide panel-scroll mono text-[11px] leading-relaxed p-3"></div>
+                            <div id="activity" class="hidden h-full overflow-y-auto overflow-x-hidden scroll-hide panel-scroll mono text-[11px] leading-relaxed p-3"></div>
                         </div>
                     </div>
 
@@ -152,7 +144,7 @@
                             </div>
                             <span class="badge"><span id="proof-counter">0</span></span>
                         </div>
-                        <div id="proof" class="flex-1 min-h-0 overflow-y-auto panel-scroll scroll-hide panel glass p-3 flex items-center justify-center">
+                        <div id="proof" class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden panel-scroll scroll-hide panel glass p-3 flex items-center justify-center">
                             <div id="proof-empty" class="empty-state w-full">
                                 <p class="empty-state-title">No proof posted yet</p>
                                 <p class="empty-state-copy">Commits, links and evidence appear here automatically.</p>
@@ -273,28 +265,16 @@
         const pill = document.getElementById('stream-status');
         const label = document.getElementById('stream-status-label');
         const hasRecentEvent = Date.now() - lastStreamEventAt <= STREAM_FRESH_MS;
-        const isOn = socketConnected && hasRecentEvent;
+        const target = resolveTargetAgent(latestRegistrySnapshot?.agents || []);
+        const isAgentLive = target?.status === 'live';
+        const isOn = socketConnected && hasRecentEvent && isAgentLive;
         pill.className = `status-pill ${isOn ? 'status-stream-on' : 'status-stream-off'}`;
-        label.textContent = isOn ? 'STREAM ON' : 'STREAM OFF';
-    }
-
-    function renderAgentStatus(status, lastSeen) {
-        const pill = document.getElementById('agent-status');
-        const label = document.getElementById('agent-status-label');
-        const safeStatus = ['live', 'stale', 'offline'].includes(status) ? status : 'offline';
-        pill.className = `status-pill status-agent-${safeStatus}`;
-        if (safeStatus === 'live') label.textContent = 'AGENT LIVE';
-        else if (safeStatus === 'stale') {
-            const ageSec = lastSeen ? Math.max(0, Math.floor((Date.now() - Number(lastSeen)) / 1000)) : null;
-            label.textContent = ageSec !== null ? `AGENT STALE ${ageSec}s` : 'AGENT STALE';
-        } else label.textContent = 'AGENT OFFLINE';
+        label.textContent = isOn ? 'LIVE ON' : 'LIVE OFF';
     }
 
     function applyLivenessFromSnapshot(snapshot) {
         latestRegistrySnapshot = snapshot;
-        const target = resolveTargetAgent(snapshot?.agents || []);
-        if (!target) return renderAgentStatus('offline');
-        renderAgentStatus(target.status, target.lastSeen);
+        renderStreamStatus();
     }
 
     function updateReasoningButtons() {
@@ -334,6 +314,17 @@
         if (proofEmpty) proofEmpty.classList.toggle('hidden', state.proofCount > 0);
     }
 
+    function getLogLevelColor(level) {
+        if (level === 'error') return '#f87171';
+        if (level === 'warn') return '#fbbf24';
+        if (level === 'success') return '#34d399';
+        return '#60a5fa';
+    }
+
+    function renderLogRow(log) {
+        return `<div class="log-item"><span class="log-time">[${log.time || '--:--'}]</span><span class="log-module">${log.module || 'sys'}</span><span class="log-level" style="color:${getLogLevelColor(log.level)}">${log.level || 'info'}</span><span class="log-msg">${log.msg || ''}</span></div>`;
+    }
+
     function renderProofItems(items = []) {
         const root = document.getElementById('proof');
         const empty = document.getElementById('proof-empty');
@@ -347,12 +338,12 @@
         }
         const list = document.createElement('div');
         list.className = 'proof-list w-full space-y-2';
-        items.forEach((item) => {
+        [...items].reverse().forEach((item) => {
             const text = typeof item === 'object' ? (item.msg || item.text || item.title || JSON.stringify(item)) : String(item);
             const time = typeof item === 'object' ? (item.time || item.ts || '') : '';
             const card = document.createElement('div');
             card.className = 'rounded-xl border border-white/10 bg-white/[0.03] p-3';
-            card.innerHTML = `<div class="text-[10px] uppercase tracking-[0.1em] text-zinc-500 mb-1">${time || 'Proof item'}</div><div class="text-sm text-zinc-200 leading-relaxed break-words">${text}</div>`;
+            card.innerHTML = `<div class="text-[10px] uppercase tracking-[0.1em] text-zinc-500 mb-1">${time || 'Proof item'}</div><div class="text-sm text-zinc-200 leading-relaxed break-words overflow-x-hidden">${text}</div>`;
             list.appendChild(card);
         });
         root.appendChild(list);
@@ -364,17 +355,11 @@
     socket.on('connect', () => {
         socketConnected = true;
         markStreamEvent();
-        const conn = document.getElementById('conn-status');
-        conn.textContent = 'Connected';
-        conn.className = 'text-green-400';
     });
 
     socket.on('disconnect', () => {
         socketConnected = false;
         renderStreamStatus();
-        const conn = document.getElementById('conn-status');
-        conn.textContent = 'Disconnected';
-        conn.className = 'text-zinc-400';
     });
 
     socket.on('session_status', (snapshot) => { markStreamEvent(); applyLivenessFromSnapshot(snapshot); });
@@ -395,14 +380,7 @@
         updateReasoningDisplay();
         state.thoughtCount = reasoningHistory.length;
 
-        document.getElementById('activity').innerHTML = (data.logs || []).map(log => `
-            <div class="py-2 border-b border-white/[0.05] flex gap-3">
-                <span class="text-zinc-600 shrink-0 font-bold text-[10px] w-12">[${log.time}]</span>
-                <span class="text-zinc-500 shrink-0 uppercase w-10 font-black text-[9px]">${log.module}</span>
-                <span class="shrink-0 uppercase w-14 font-black text-[9px]" style="color:${log.level === 'error' ? '#f87171' : log.level === 'warn' ? '#fbbf24' : log.level === 'success' ? '#34d399' : '#60a5fa'}">${log.level}</span>
-                <span class="text-zinc-300 text-[11px]">${log.msg}</span>
-            </div>
-        `).join('');
+        document.getElementById('activity').innerHTML = `<div class="feed-list">${[...(data.logs || [])].reverse().map(renderLogRow).join('')}</div>`;
         state.activityCount = (data.logs || []).length;
 
         document.getElementById('chat').innerHTML = (data.chat || []).map(m => `
@@ -434,18 +412,18 @@
 
     socket.on('log', (log) => {
         markStreamEvent();
-        document.getElementById('activity').insertAdjacentHTML('beforeend', `
-            <div class="py-2 border-b border-white/[0.05] flex gap-3">
-                <span class="text-zinc-600 shrink-0 font-bold text-[10px] w-12">[${log.time}]</span>
-                <span class="text-zinc-500 shrink-0 uppercase w-10 font-black text-[9px]">${log.module}</span>
-                <span class="shrink-0 uppercase w-14 font-black text-[9px]" style="color:${log.level === 'error' ? '#f87171' : log.level === 'warn' ? '#fbbf24' : log.level === 'success' ? '#34d399' : '#60a5fa'}">${log.level}</span>
-                <span class="text-zinc-300 text-[11px]">${log.msg}</span>
-            </div>
-        `);
+        const activity = document.getElementById('activity');
+        let list = activity.querySelector('.feed-list');
+        if (!list) {
+            list = document.createElement('div');
+            list.className = 'feed-list';
+            activity.appendChild(list);
+        }
+        list.insertAdjacentHTML('afterbegin', renderLogRow(log));
         state.activityCount++;
         updateCounters();
         toggleEmptyStates();
-        document.getElementById('activity').scrollTop = document.getElementById('activity').scrollHeight;
+        activity.scrollTop = 0;
     });
 
     socket.on('update', (data) => {
