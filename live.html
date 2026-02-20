@@ -54,10 +54,11 @@
         .status-agent-offline .status-dot{background:#6b7280}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
         .live-layout{display:flex;flex-direction:column;gap:.85rem;min-height:0;overflow:hidden}
-        .primary-panel{flex:1 1 auto;min-height:0}
-        .chat-panel{flex:0 0 clamp(220px,32vh,340px);min-height:0}
+        .primary-panel{flex:1 1 auto;min-height:clamp(220px,42vh,520px)}
+        .chat-panel{flex:0 1 clamp(150px,26vh,260px);min-height:130px}
         @media (min-width:1024px){
             .desktop-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:1rem;min-height:0}
+            .primary-panel{min-height:0}
             .chat-panel{flex:1 1 auto;min-height:0}
         }
     </style>
