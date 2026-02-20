@@ -19,9 +19,9 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;700;800;900&display=swap');
         *{box-sizing:border-box}
-        html,body{height:100%;overflow:hidden}
+        html,body{min-height:100%;overflow-x:hidden;overflow-y:auto}
         body{font-family:'Inter',sans-serif;background:radial-gradient(circle at 0% 0%,#1b1b24 0%,#08080c 35%,#040405 100%);color:#fff;min-height:100dvh}
-        .app-shell{height:100dvh;height:100svh;height:calc(var(--app-vh,1vh)*100);overflow:hidden}
+        .app-shell{min-height:100dvh;min-height:100svh;min-height:calc(var(--app-vh,1vh)*100);overflow:visible}
         .mono{font-family:'JetBrains Mono',monospace}
         .glass{background:linear-gradient(145deg,rgba(21,22,28,.78),rgba(8,8,11,.9));border:1px solid rgba(255,255,255,.09);box-shadow:0 20px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
         .panel{border-radius:1.1rem;overflow:hidden}
@@ -53,11 +53,12 @@
         .status-agent-offline{color:#9ca3af;background:rgba(156,163,175,.12);border-color:rgba(156,163,175,.34)}
         .status-agent-offline .status-dot{background:#6b7280}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-        .live-layout{display:flex;flex-direction:column;gap:.85rem;min-height:0;overflow:hidden}
+        .live-layout{display:flex;flex-direction:column;gap:.85rem;min-height:0;overflow:visible}
         .primary-panel{flex:1 1 auto;min-height:clamp(220px,42vh,520px)}
         .chat-panel{flex:0 1 clamp(150px,26vh,260px);min-height:130px}
         @media (min-width:1024px){
             .desktop-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:1rem;min-height:0}
+            .live-layout{overflow:hidden}
             .primary-panel{min-height:0}
             .chat-panel{flex:1 1 auto;min-height:0}
         }
