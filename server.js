@@ -16,6 +16,7 @@ const io = new Server(server, {
 
 const port = 3030;
 const LOG_FILE = path.join(__dirname, 'stream_history.json');
+const STREAM_EVENTS_FILE = path.join(__dirname, 'stream_events.jsonl');
 const WAITLIST_FILE = path.join(__dirname, 'waitlist.json');
 const STATS_FILE = path.join(__dirname, 'analytics.json');
 const AGENTS_FILE = path.join(__dirname, 'agents.json');
@@ -76,6 +77,68 @@ function broadcastPhase0(msg, level = 'info', module = 'PHASE0') {
     });
 }
 
+const SECRET_KEY_HINT = /(token|secret|api[-_]?key|password|authorization)/i;
+const SECRET_VALUE_PATTERNS = [
+    /\b(sk|gsk)_[A-Za-z0-9_-]{8,}\b/g,
+    /\bghp_[A-Za-z0-9]{20,}\b/g,
+    /\b(?:api[-_]?key|token|secret|password)\s*[:=]\s*[^\s,;"']+/gi,
+    /\bBearer\s+[A-Za-z0-9._-]{12,}\b/gi
+];
+
+function redactStringSecrets(input) {
+    let redacted = input;
+    SECRET_VALUE_PATTERNS.forEach((pattern) => {
+        redacted = redacted.replace(pattern, '[REDACTED]');
+    });
+    return redacted;
+}
+
+function redactSecrets(input) {
+    if (input === null || input === undefined) return input;
+    if (typeof input === 'string') return redactStringSecrets(input);
+    if (Array.isArray(input)) return input.map((item) => redactSecrets(item));
+
+    if (typeof input === 'object') {
+        const out = {};
+        Object.entries(input).forEach(([key, value]) => {
+            out[key] = SECRET_KEY_HINT.test(key) ? '[REDACTED]' : redactSecrets(value);
+        });
+        return out;
+    }
+
+    return input;
+}
+
+function writeJsonAtomic(filePath, data) {
+    const tmpFile = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+    fs.writeFileSync(tmpFile, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
+    fs.renameSync(tmpFile, filePath);
+}
+
+function appendStreamEventAtomic(event) {
+    const fd = fs.openSync(STREAM_EVENTS_FILE, 'a');
+    try {
+        fs.writeSync(fd, `${JSON.stringify(event)}\n`, null, 'utf8');
+        fs.fsyncSync(fd);
+    } finally {
+        fs.closeSync(fd);
+    }
+}
+
+function readStreamReplay(limit = 200) {
+    if (!fs.existsSync(STREAM_EVENTS_FILE)) return [];
+
+    try {
+        const content = fs.readFileSync(STREAM_EVENTS_FILE, 'utf8');
+        const lines = content.trim().split('\n').filter(Boolean);
+        return lines.slice(-limit).map((line) => {
+            try { return JSON.parse(line); } catch (e) { return null; }
+        }).filter(Boolean);
+    } catch (e) {
+        return [];
+    }
+}
+
 // Loaders
 if (fs.existsSync(LOG_FILE)) { try { streamData = { ...streamData, ...JSON.parse(fs.readFileSync(LOG_FILE, 'utf8')) }; } catch (e) {} }
 if (fs.existsSync(WAITLIST_FILE)) { 
@@ -131,22 +194,28 @@ if (!agents['ClawCaster']) {
 
 function saveAll() {
     try {
-        fs.writeFileSync(LOG_FILE, JSON.stringify(streamData, null, 2));
-        fs.writeFileSync(WAITLIST_FILE, JSON.stringify(waitlist, null, 2));
-        fs.writeFileSync(STATS_FILE, JSON.stringify(analytics, null, 2));
+        writeJsonAtomic(LOG_FILE, streamData);
+        writeJsonAtomic(WAITLIST_FILE, waitlist);
+        writeJsonAtomic(STATS_FILE, analytics);
     } catch (e) {}
 }
 
 function saveAgents() {
     try {
-        fs.writeFileSync(AGENTS_FILE, JSON.stringify({ agents, agentOwners, verificationCodes }, null, 2));
+        writeJsonAtomic(AGENTS_FILE, { agents, agentOwners, verificationCodes });
     } catch (e) {}
 }
 
 function saveRegistry() {
     try {
-        fs.writeFileSync(REGISTRY_FILE, JSON.stringify(registry, null, 2));
+        writeJsonAtomic(REGISTRY_FILE, registry);
     } catch (e) {}
+}
+
+function commitStreamState(rawEvent) {
+    const event = redactSecrets(rawEvent || {});
+    appendStreamEventAtomic({ ...event, ts: new Date().toISOString() });
+    writeJsonAtomic(LOG_FILE, streamData);
 }
 
 const LIVE_THRESHOLD_MS = 30 * 1000;
@@ -634,6 +703,12 @@ app.get('/agents', (req, res) => {
 // Home (served by express.static index.html)
 
 app.get('/api/stream', (req, res) => res.json(streamData));
+app.get('/api/stream/replay', (req, res) => {
+    const requested = Number.parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(requested) ? Math.max(1, Math.min(requested, 1000)) : 200;
+    const events = readStreamReplay(limit);
+    res.json({ count: events.length, events });
+});
 app.get('/api/status', (req, res) => res.json({
     version: streamData.version,
     commitCount: streamData.commitCount,
@@ -916,41 +991,44 @@ app.post('/api/waitlist', (req, res) => {
 });
 
 app.post('/api/stream', (req, res) => {
-    const { thoughts, reasoning, terminal, chatMsg, log, status, fileUpdate, version, buildStatus, commitIncrement } = req.body;
+    const incoming = redactSecrets(req.body || {});
+    const { thoughts, reasoning, terminal, chatMsg, log, status, fileUpdate, version, buildStatus, commitIncrement } = incoming;
     let updated = false;
+
     if (status !== undefined) { streamData.isLive = status; updated = true; }
     if (version) { streamData.version = version; updated = true; }
     if (buildStatus) { streamData.buildStatus = buildStatus; updated = true; }
     if (commitIncrement) { streamData.commitCount = (streamData.commitCount || 0) + 1; updated = true; }
-    
-    // Handle both 'thoughts' and 'reasoning' fields
-    if (thoughts || reasoning) { 
+
+    if (thoughts || reasoning) {
         const newThought = thoughts || reasoning;
         streamData.thoughts = newThought;
-        // Push to reasoning history (NO MAX LIMIT)
         streamData.reasoningHistory.push({
             text: newThought,
             timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
         });
-        updated = true; 
+        updated = true;
     }
-    
-    if (terminal) { 
+
+    if (terminal) {
         streamData.terminal += `\n$ ${terminal}`;
         const lines = streamData.terminal.split('\n');
         if (lines.length > 100) streamData.terminal = lines.slice(-100).join('\n');
-        updated = true; 
+        updated = true;
     }
+
     if (chatMsg) {
-        const newMessage = { 
-            user: chatMsg.user || "ClawCaster", 
-            msg: chatMsg.msg, 
-            time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) 
+        const newMessage = {
+            user: chatMsg.user || "ClawCaster",
+            msg: chatMsg.msg,
+            time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
         };
         streamData.chat.push(newMessage);
         if (streamData.chat.length > 50) streamData.chat.shift();
-        io.emit('chat', newMessage); 
+        io.emit('chat', newMessage);
+        updated = true;
     }
+
     if (log) {
         const newLog = {
             level: log.level || "info", module: log.module || "SYSTEM", msg: log.msg,
@@ -959,9 +1037,16 @@ app.post('/api/stream', (req, res) => {
         streamData.logs.push(newLog);
         if (streamData.logs.length > 200) streamData.logs.shift();
         io.emit('log', newLog);
+        updated = true;
     }
+
     if (fileUpdate) { streamData.currentFile = fileUpdate; updated = true; }
-    if (updated) io.emit('update', streamData);
+
+    if (updated) {
+        io.emit('update', streamData);
+        commitStreamState({ type: 'stream.update', payload: incoming });
+    }
+
     saveAll();
     res.json({ status: "ok" });
 });

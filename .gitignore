@@ -3,6 +3,7 @@ node_modules/
 .env
 *.log
 stream_history.json
+stream_events.jsonl
 waitlist.json
 analytics.json
 registry.json
