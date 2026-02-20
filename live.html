@@ -148,14 +148,29 @@
             color: #FF4500;
         }
 
-        .liveness-badge {
+        .status-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .status-pill {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 14px;
+            padding: 7px 10px;
             border-radius: 10px;
             border: 1px solid;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 900;
             letter-spacing: 0.12em;
             text-transform: uppercase;
@@ -163,42 +178,85 @@
             white-space: nowrap;
         }
 
-        .liveness-dot {
+        .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 9999px;
         }
 
-        .liveness-live {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.12);
-            border-color: rgba(239, 68, 68, 0.45);
+        .status-stream-on {
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.12);
+            border-color: rgba(34, 197, 94, 0.45);
         }
 
-        .liveness-live .liveness-dot {
-            background: #ef4444;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.85);
+        .status-stream-on .status-dot {
+            background: #22c55e;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.85);
             animation: pulse 1.6s ease-in-out infinite;
         }
 
-        .liveness-stale {
-            color: #f59e0b;
-            background: rgba(245, 158, 11, 0.12);
-            border-color: rgba(245, 158, 11, 0.45);
-        }
-
-        .liveness-stale .liveness-dot {
-            background: #f59e0b;
-        }
-
-        .liveness-offline {
+        .status-stream-off {
             color: #9ca3af;
             background: rgba(156, 163, 175, 0.12);
             border-color: rgba(156, 163, 175, 0.35);
         }
 
-        .liveness-offline .liveness-dot {
+        .status-stream-off .status-dot {
             background: #6b7280;
+        }
+
+        .status-agent-live {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.45);
+        }
+
+        .status-agent-live .status-dot {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.85);
+            animation: pulse 1.6s ease-in-out infinite;
+        }
+
+        .status-agent-stale {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.45);
+        }
+
+        .status-agent-stale .status-dot {
+            background: #f59e0b;
+        }
+
+        .status-agent-offline {
+            color: #9ca3af;
+            background: rgba(156, 163, 175, 0.12);
+            border-color: rgba(156, 163, 175, 0.35);
+        }
+
+        .status-agent-offline .status-dot {
+            background: #6b7280;
+        }
+
+        .status-help {
+            font-size: 8px;
+            color: #71717a;
+            letter-spacing: 0.04em;
+            text-align: right;
+            max-width: 260px;
+            line-height: 1.3;
+        }
+
+        @media (max-width: 640px) {
+            .status-stack {
+                align-items: flex-start;
+            }
+            .status-row {
+                justify-content: flex-start;
+            }
+            .status-help {
+                text-align: left;
+            }
         }
     </style>
 </head>
@@ -213,9 +271,18 @@
                 <a href="/agents" class="nav-link text-zinc-400 text-[9px] uppercase">Agents</a>
             </div>
         </div>
-        <div id="liveness-badge" class="liveness-badge liveness-offline">
-            <div class="liveness-dot"></div>
-            <span id="liveness-label">OFFLINE</span>
+        <div class="status-stack" title="STREAM = socket + fresh events. AGENT = registry heartbeat status.">
+            <div class="status-row">
+                <div id="stream-status" class="status-pill status-stream-off">
+                    <div class="status-dot"></div>
+                    <span id="stream-status-label">STREAM OFF</span>
+                </div>
+                <div id="agent-status" class="status-pill status-agent-offline">
+                    <div class="status-dot"></div>
+                    <span id="agent-status-label">AGENT OFFLINE</span>
+                </div>
+            </div>
+            <p class="status-help">STREAM = live feed connection. AGENT = registry heartbeat.</p>
         </div>
     </nav>
 
@@ -376,6 +443,9 @@
         let reasoningHistory = [];
         let currentReasoningIndex = 0;
         let latestRegistrySnapshot = null;
+        let socketConnected = false;
+        let lastStreamEventAt = 0;
+        const STREAM_FRESH_MS = 25000;
 
         function resolveTargetAgent(snapshotAgents = []) {
             const targetByName = (window.PROJECT_CONTEXT?.agent || 'ClawCaster').toLowerCase();
@@ -387,20 +457,35 @@
             );
         }
 
-        function renderLivenessBadge(status, lastSeen) {
-            const badge = document.getElementById('liveness-badge');
-            const label = document.getElementById('liveness-label');
+        function markStreamEvent() {
+            lastStreamEventAt = Date.now();
+            renderStreamStatus();
+        }
 
+        function renderStreamStatus() {
+            const pill = document.getElementById('stream-status');
+            const label = document.getElementById('stream-status-label');
+            const hasRecentEvent = Date.now() - lastStreamEventAt <= STREAM_FRESH_MS;
+            const isOn = socketConnected && hasRecentEvent;
+
+            pill.className = `status-pill ${isOn ? 'status-stream-on' : 'status-stream-off'}`;
+            label.textContent = isOn ? 'STREAM ON' : 'STREAM OFF';
+        }
+
+        function renderAgentStatus(status, lastSeen) {
+            const pill = document.getElementById('agent-status');
+            const label = document.getElementById('agent-status-label');
             const safeStatus = ['live', 'stale', 'offline'].includes(status) ? status : 'offline';
-            badge.className = `liveness-badge liveness-${safeStatus}`;
+
+            pill.className = `status-pill status-agent-${safeStatus}`;
 
             if (safeStatus === 'live') {
-                label.textContent = 'LIVE';
+                label.textContent = 'AGENT LIVE';
             } else if (safeStatus === 'stale') {
                 const ageSec = lastSeen ? Math.max(0, Math.floor((Date.now() - Number(lastSeen)) / 1000)) : null;
-                label.textContent = ageSec !== null ? `STALE ${ageSec}s` : 'STALE';
+                label.textContent = ageSec !== null ? `AGENT STALE ${ageSec}s` : 'AGENT STALE';
             } else {
-                label.textContent = 'OFFLINE';
+                label.textContent = 'AGENT OFFLINE';
             }
         }
 
@@ -410,11 +495,11 @@
             const target = resolveTargetAgent(agents);
 
             if (!target) {
-                renderLivenessBadge('offline');
+                renderAgentStatus('offline');
                 return;
             }
 
-            renderLivenessBadge(target.status, target.lastSeen);
+            renderAgentStatus(target.status, target.lastSeen);
         }
 
         function updateReasoningDisplay() {
@@ -459,11 +544,21 @@
 
         // SOCKET
         socket.on('connect', () => {
+            socketConnected = true;
+            markStreamEvent();
             document.getElementById('conn-status').textContent = 'Connected';
             document.getElementById('conn-status').className = 'text-green-500 text-[8px] font-bold px-2 py-1 bg-green-500/10 rounded border border-green-500/30';
         });
 
+        socket.on('disconnect', () => {
+            socketConnected = false;
+            renderStreamStatus();
+            document.getElementById('conn-status').textContent = 'Disconnected';
+            document.getElementById('conn-status').className = 'text-zinc-400 text-[8px] font-bold px-2 py-1 bg-zinc-500/10 rounded border border-zinc-500/30';
+        });
+
         socket.on('session_status', (snapshot) => {
+            markStreamEvent();
             applyLivenessFromSnapshot(snapshot);
         });
 
@@ -477,6 +572,7 @@
         }
 
         socket.on('init', (data) => {
+            markStreamEvent();
             reasoningHistory = (data.reasoningHistory || []).map(r => typeof r === 'object' ? r.text || JSON.stringify(r) : r);
             if (reasoningHistory.length === 0 && data.thoughts) reasoningHistory = [data.thoughts];
             currentReasoningIndex = reasoningHistory.length - 1;
@@ -507,6 +603,7 @@
         });
 
         socket.on('chat', (m) => {
+            markStreamEvent();
             const html = `
                 <div class="chat-message">
                     <div class="flex justify-between gap-2"><span class="chat-message-username">${m.user}</span><span class="chat-message-time">${m.time}</span></div>
@@ -520,6 +617,7 @@
         });
 
         socket.on('log', (log) => {
+            markStreamEvent();
             const html = `
                 <div class="py-1 border-b border-white/[0.02] flex gap-4 animate-entry opacity-60 hover:opacity-100">
                     <span class="text-zinc-700 shrink-0 font-bold text-[8px] w-12">[${log.time}]</span>
@@ -535,6 +633,7 @@
         });
 
         socket.on('update', (data) => {
+            markStreamEvent();
             if (data.thoughts) {
                 const thoughtText = typeof data.thoughts === 'object' ? JSON.stringify(data.thoughts) : data.thoughts;
                 if (!reasoningHistory.length || thoughtText !== reasoningHistory[reasoningHistory.length - 1]) {
@@ -548,9 +647,11 @@
         });
 
         setInterval(() => {
+            renderStreamStatus();
             if (latestRegistrySnapshot) applyLivenessFromSnapshot(latestRegistrySnapshot);
         }, 5000);
 
+        renderStreamStatus();
         loadInitialLiveness();
         updateCounters();
     </script>
