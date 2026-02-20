@@ -78,3 +78,8 @@ curl "http://localhost:3030/api/v2/registry/status"
 ## Loop de livraison continue (simple)
 - Script: `scripts/ship-loop.sh`
 - Doc courte: `docs/SHIP_LOOP.md`
+
+## Docs Phase 0.5 (ops/QA)
+- Incident playbook: `docs/PHASE0_5_INCIDENT_PLAYBOOK.md`
+- Manual verification run (2026-02-20): `docs/PHASE0_5_MANUAL_VERIFICATION_RUN_2026-02-20.md`
+- Mobile QA checklist (2026-02-20): `docs/PHASE0_5_MOBILE_QA_CHECKLIST_2026-02-20.md`
