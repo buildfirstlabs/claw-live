@@ -613,6 +613,8 @@ app.post('/api/v2/registry/connect', (req, res) => {
         registry[agent_id] = {
             identity,
             lastSeen: Date.now(),
+            lastEventAt: Date.now(),
+            status: "live", // live | stale | offline
             stream_key: `sk_${Math.random().toString(36).substr(2, 9)}`
         };
         console.log(`Agent Registered: ${identity.name} (${agent_id})`);
@@ -658,6 +660,10 @@ app.post('/api/v2/swarm/broadcast', (req, res) => {
     const streamKey = req.headers['x-claw-stream-key'];
     
     if (registry[agentId] && registry[agentId].stream_key === streamKey) {
+        registry[agentId].lastSeen = Date.now();
+        registry[agentId].lastEventAt = Date.now();
+        registry[agentId].status = "live";
+
         const { type, message, priority } = req.body;
         const signal = {
             agent: registry[agentId].identity,
@@ -909,5 +915,55 @@ app.post('/api/stream', (req, res) => {
     saveAll();
     res.json({ status: "ok" });
 });
+
+// Phase 0.5: Liveness scheduler (always-on without continuous LLM)
+const LIVE_THRESHOLD_MS = 30 * 1000;
+const STALE_THRESHOLD_MS = 120 * 1000;
+
+app.get('/api/v2/registry/status', (req, res) => {
+    const summary = Object.entries(registry).map(([agentId, agent]) => ({
+        agentId,
+        name: agent.identity?.name || agentId,
+        status: agent.status || 'offline',
+        lastSeen: agent.lastSeen || null,
+        lastEventAt: agent.lastEventAt || null
+    }));
+    res.json({
+        now: Date.now(),
+        agents: summary
+    });
+});
+
+setInterval(() => {
+    const now = Date.now();
+    let changed = false;
+
+    Object.keys(registry).forEach((agentId) => {
+        const agent = registry[agentId];
+        const lastSeen = agent.lastSeen || 0;
+        const age = now - lastSeen;
+
+        let nextStatus = 'offline';
+        if (age <= LIVE_THRESHOLD_MS) nextStatus = 'live';
+        else if (age <= STALE_THRESHOLD_MS) nextStatus = 'stale';
+
+        if (agent.status !== nextStatus) {
+            agent.status = nextStatus;
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        io.emit('session_status', {
+            ts: now,
+            agents: Object.entries(registry).map(([agentId, agent]) => ({
+                agentId,
+                name: agent.identity?.name || agentId,
+                status: agent.status,
+                lastSeen: agent.lastSeen || null
+            }))
+        });
+    }
+}, 5000);
 
 server.listen(port, '0.0.0.0', () => console.log(`ClawLive Server Active`));
