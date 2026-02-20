@@ -54,12 +54,22 @@
         .status-agent-offline .status-dot{background:#6b7280}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
         .live-layout{display:flex;flex-direction:column;gap:.85rem;min-height:0;overflow:visible}
-        .primary-panel{flex:1 1 auto;min-height:clamp(220px,42vh,520px)}
-        .chat-panel{flex:0 1 clamp(150px,26vh,260px);min-height:130px}
+        .primary-panel{
+            flex:0 0 auto;
+            height:clamp(300px,calc(var(--app-vh,1vh)*52),560px);
+            min-height:300px;
+            max-height:560px;
+        }
+        .chat-panel{flex:1 1 auto;min-height:150px}
         @media (min-width:1024px){
             .desktop-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:1rem;min-height:0}
             .live-layout{overflow:hidden}
-            .primary-panel{min-height:0}
+            .primary-panel{
+                flex:1 1 auto;
+                height:clamp(380px,68vh,760px);
+                min-height:380px;
+                max-height:760px;
+            }
             .chat-panel{flex:1 1 auto;min-height:0}
         }
     </style>
@@ -114,7 +124,7 @@
                                 <span class="badge"><span id="thought-counter">0</span></span>
                             </div>
                         </div>
-                        <div id="thoughts" class="flex-1 min-h-0 panel panel-scroll scroll-hide px-4 py-4 text-[15px] leading-7 text-zinc-200 whitespace-pre-wrap break-words glass">Waiting for the first reasoning update…</div>
+                        <div id="thoughts" class="flex-1 min-h-0 overflow-y-auto panel panel-scroll scroll-hide px-4 py-4 text-[15px] leading-7 text-zinc-200 whitespace-pre-wrap break-words glass">Waiting for the first reasoning update…</div>
                     </div>
 
                     <div class="min-w-full h-full p-3 md:p-4 flex flex-col gap-3 min-h-0">
