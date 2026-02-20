@@ -58,3 +58,7 @@ curl "http://localhost:3030/api/v2/registry/status"
 - `registry.json`
 - `stream_events.jsonl`
 - `stream_history.json`
+
+## Loop de livraison continue (simple)
+- Script: `scripts/ship-loop.sh`
+- Doc courte: `docs/SHIP_LOOP.md`
