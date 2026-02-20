@@ -30,17 +30,17 @@ Operator: subagent run (local host)
 
 #### Injection probe
 - Command:
-  - `curl -sS -X POST http://localhost:3030/api/stream -H 'Content-Type: application/json' --data '{"terminal":"echo sk_live_abc123","log":{"level":"info","module":"SECURITY","msg":"token=abc123 authorization=Bearer topsecret gsk_foo ghp_bar"}}'`
+  - `curl -sS -X POST http://localhost:3030/api/stream -H 'Content-Type: application/json' --data '{"terminal":"echo SECRET_EXAMPLE","log":{"level":"info","module":"SECURITY","msg":"token=EXAMPLE authorization=AUTH_SCHEME EXAMPLE_KEY_A EXAMPLE_KEY_B"}}'`
 - Result: `{"status":"ok"}`
 
 #### Replay check
 - Command: `curl -sS 'http://localhost:3030/api/stream/replay?limit=1'`
 - Last payload observed:
-  - `{"terminal":"echo [REDACTED]","log":{"level":"info","module":"SECURITY","msg":"[REDACTED] authorization=Bearer topsecret gsk_foo ghp_bar"}}`
+  - `{"terminal":"echo [REDACTED]","log":{"level":"info","module":"SECURITY","msg":"[REDACTED] authorization=AUTH_SCHEME EXAMPLE_KEY_A EXAMPLE_KEY_B"}}`
 
 - Verdict: **FAIL (partial redaction only)**
-  - `token=abc123` was redacted.
-  - `Bearer topsecret`, `gsk_foo`, and `ghp_bar` remained visible in `log.msg`.
+  - `token=EXAMPLE` was redacted.
+  - Other auth/key-like examples remained visible in `log.msg`.
 
 ## Final status
 - `/live`: PASS
