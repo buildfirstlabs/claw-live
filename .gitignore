@@ -5,6 +5,7 @@ node_modules/
 stream_history.json
 waitlist.json
 analytics.json
+registry.json
 notifier_state.json
 waitlist_last_check.txt
 server.log

@@ -19,6 +19,7 @@ const LOG_FILE = path.join(__dirname, 'stream_history.json');
 const WAITLIST_FILE = path.join(__dirname, 'waitlist.json');
 const STATS_FILE = path.join(__dirname, 'analytics.json');
 const AGENTS_FILE = path.join(__dirname, 'agents.json');
+const REGISTRY_FILE = path.join(__dirname, 'registry.json');
 
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 app.use(express.json());
@@ -93,6 +94,11 @@ if (fs.existsSync(AGENTS_FILE)) {
         verificationCodes = saved.verificationCodes || {};
     } catch (e) {} 
 }
+if (fs.existsSync(REGISTRY_FILE)) {
+    try {
+        registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8'));
+    } catch (e) {}
+}
 
 // PHASE 0 Bootstrap: Create ClawCaster demo agent with enhanced metadata
 if (!agents['ClawCaster']) {
@@ -135,6 +141,40 @@ function saveAgents() {
     try {
         fs.writeFileSync(AGENTS_FILE, JSON.stringify({ agents, agentOwners, verificationCodes }, null, 2));
     } catch (e) {}
+}
+
+function saveRegistry() {
+    try {
+        fs.writeFileSync(REGISTRY_FILE, JSON.stringify(registry, null, 2));
+    } catch (e) {}
+}
+
+const LIVE_THRESHOLD_MS = 30 * 1000;
+const STALE_THRESHOLD_MS = 120 * 1000;
+const OFFLINE_CLEANUP_TTL_MS = 15 * 60 * 1000;
+
+function statusFromAge(ageMs) {
+    if (ageMs <= LIVE_THRESHOLD_MS) return 'live';
+    if (ageMs <= STALE_THRESHOLD_MS) return 'stale';
+    return 'offline';
+}
+
+function refreshRegistryStatuses(now = Date.now()) {
+    let changed = false;
+
+    Object.keys(registry).forEach((agentId) => {
+        const agent = registry[agentId];
+        const lastSeen = agent.lastSeen || 0;
+        const age = now - lastSeen;
+        const nextStatus = statusFromAge(age);
+
+        if (agent.status !== nextStatus) {
+            agent.status = nextStatus;
+            changed = true;
+        }
+    });
+
+    return changed;
 }
 
 // Socket Logic
@@ -618,6 +658,7 @@ app.post('/api/v2/registry/connect', (req, res) => {
             stream_key: `sk_${Math.random().toString(36).substr(2, 9)}`
         };
         console.log(`Agent Registered: ${identity.name} (${agent_id})`);
+        saveRegistry();
         res.json({
             success: true,
             stream_key: registry[agent_id].stream_key,
@@ -646,6 +687,7 @@ app.post('/api/v2/registry/heartbeat', (req, res) => {
 
     registry[agentId].lastSeen = Date.now();
     registry[agentId].status = "live";
+    saveRegistry();
 
     res.json({
         status: "ok",
@@ -663,6 +705,7 @@ app.post('/api/v2/swarm/broadcast', (req, res) => {
         registry[agentId].lastSeen = Date.now();
         registry[agentId].lastEventAt = Date.now();
         registry[agentId].status = "live";
+        saveRegistry();
 
         const { type, message, priority } = req.body;
         const signal = {
@@ -917,43 +960,48 @@ app.post('/api/stream', (req, res) => {
 });
 
 // Phase 0.5: Liveness scheduler (always-on without continuous LLM)
-const LIVE_THRESHOLD_MS = 30 * 1000;
-const STALE_THRESHOLD_MS = 120 * 1000;
-
 app.get('/api/v2/registry/status', (req, res) => {
-    const summary = Object.entries(registry).map(([agentId, agent]) => ({
-        agentId,
-        name: agent.identity?.name || agentId,
-        status: agent.status || 'offline',
-        lastSeen: agent.lastSeen || null,
-        lastEventAt: agent.lastEventAt || null
-    }));
+    const now = Date.now();
+    refreshRegistryStatuses(now);
+
+    const counts = { live: 0, stale: 0, offline: 0 };
+    const summary = Object.entries(registry).map(([agentId, agent]) => {
+        const status = agent.status || 'offline';
+        if (counts[status] !== undefined) counts[status]++;
+
+        return {
+            agentId,
+            name: agent.identity?.name || agentId,
+            status,
+            lastSeen: agent.lastSeen || null,
+            lastEventAt: agent.lastEventAt || null
+        };
+    });
+
     res.json({
-        now: Date.now(),
+        now,
+        counts,
         agents: summary
     });
 });
 
 setInterval(() => {
     const now = Date.now();
-    let changed = false;
+    let changed = refreshRegistryStatuses(now);
 
     Object.keys(registry).forEach((agentId) => {
         const agent = registry[agentId];
-        const lastSeen = agent.lastSeen || 0;
-        const age = now - lastSeen;
-
-        let nextStatus = 'offline';
-        if (age <= LIVE_THRESHOLD_MS) nextStatus = 'live';
-        else if (age <= STALE_THRESHOLD_MS) nextStatus = 'stale';
-
-        if (agent.status !== nextStatus) {
-            agent.status = nextStatus;
-            changed = true;
+        if (agent.status === 'offline') {
+            const offlineAge = now - (agent.lastSeen || 0);
+            if (offlineAge > OFFLINE_CLEANUP_TTL_MS) {
+                delete registry[agentId];
+                changed = true;
+            }
         }
     });
 
     if (changed) {
+        saveRegistry();
         io.emit('session_status', {
             ts: now,
             agents: Object.entries(registry).map(([agentId, agent]) => ({
