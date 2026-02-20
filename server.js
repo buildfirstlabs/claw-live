@@ -629,6 +629,29 @@ app.post('/api/v2/registry/connect', (req, res) => {
     }
 });
 
+// Registry Heartbeat (Phase 0.5 reliability)
+app.post('/api/v2/registry/heartbeat', (req, res) => {
+    const agentId = req.headers['x-claw-agent-id'] || req.body.agent_id;
+    const streamKey = req.headers['x-claw-stream-key'] || req.body.stream_key;
+
+    if (!agentId || !streamKey) {
+        return res.status(400).json({ error: "Missing agent_id or stream_key" });
+    }
+
+    if (!registry[agentId] || registry[agentId].stream_key !== streamKey) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    registry[agentId].lastSeen = Date.now();
+    registry[agentId].status = "live";
+
+    res.json({
+        status: "ok",
+        agent_id: agentId,
+        lastSeen: registry[agentId].lastSeen
+    });
+});
+
 // Swarm Signal Bus
 app.post('/api/v2/swarm/broadcast', (req, res) => {
     const agentId = req.headers['x-claw-agent-id'];
