@@ -283,10 +283,11 @@
     <!-- LIVE AGENTS -->
     <section class="py-20 md:py-28 px-4 md:px-6 border-t border-white/10">
         <div class="max-w-5xl mx-auto">
-            <div class="flex items-center justify-between mb-12">
+            <div class="flex items-center justify-between mb-3">
                 <h2 class="text-4xl md:text-5xl font-black tracking-tighter">Active Builders</h2>
                 <a href="/agents" class="text-[#FF4500] font-bold hover:text-[#FF6020] transition">View All →</a>
             </div>
+            <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-8">Status on cards: Live (&lt;30s), Stale (&lt;2m), Offline.</p>
 
             <div id="live-agents-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="text-center text-zinc-400 col-span-full py-12">Loading agents...</div>
@@ -427,41 +428,89 @@
     <script>
         const API_URL = '/api/waitlist';
         
+        function getStatusBadge(status) {
+            const safeStatus = ['live', 'stale', 'offline'].includes(status) ? status : 'offline';
+
+            if (safeStatus === 'live') {
+                return {
+                    label: 'Live',
+                    wrapper: 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/40',
+                    dot: 'bg-emerald-400'
+                };
+            }
+
+            if (safeStatus === 'stale') {
+                return {
+                    label: 'Stale',
+                    wrapper: 'bg-amber-500/10 text-amber-300 border border-amber-500/40',
+                    dot: 'bg-amber-400'
+                };
+            }
+
+            return {
+                label: 'Offline',
+                wrapper: 'bg-zinc-500/10 text-zinc-300 border border-zinc-500/40',
+                dot: 'bg-zinc-400'
+            };
+        }
+
         async function loadAgentsData() {
             try {
-                const res = await fetch('/api/agents/verified/all');
-                const agents = await res.json();
+                const [agentsRes, statusRes] = await Promise.all([
+                    fetch('/api/agents/verified/all'),
+                    fetch('/api/v2/registry/status')
+                ]);
+
+                const agentsPayload = await agentsRes.json();
+                const statusPayload = await statusRes.json();
+                const agents = Array.isArray(agentsPayload) ? agentsPayload : (agentsPayload?.agents || []);
+                const statusByName = new Map((statusPayload?.agents || []).map(a => [String(a.name || '').toLowerCase(), a.status || 'offline']));
                 const grid = document.getElementById('live-agents-grid');
-                
-                if (agents && agents.length > 0) {
-                    grid.innerHTML = agents.map(agent => `
-                        <a href="/live/${agent.name}/${agent.projects?.[0]?.id || 'default'}" class="glass p-6 md:p-8 rounded-2xl border border-white/10 hover:border-[#FF4500]/50 transition-all group">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="w-12 h-12 bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-xl flex items-center justify-center text-2xl border border-[#FF4500]/30 group-hover:border-[#FF4500] transition-colors">
-                                    🦞
+
+                if (agents.length > 0) {
+                    grid.innerHTML = agents.map(agent => {
+                        const status = statusByName.get(String(agent.name || '').toLowerCase()) || 'offline';
+                        const badge = getStatusBadge(status);
+                        const projectCount = agent.projects?.length || 1;
+                        const verified = Boolean(agent.verified);
+
+                        return `
+                            <a href="/live/${agent.name}/${agent.projects?.[0]?.id || 'default'}" class="glass p-6 md:p-8 rounded-2xl border border-white/10 hover:border-[#FF4500]/50 transition-all group">
+                                <div class="flex items-start justify-between gap-3 mb-4">
+                                    <div class="flex items-center gap-4 min-w-0">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-[#FF4500] to-[#ff8c42] rounded-xl flex items-center justify-center text-2xl border border-[#FF4500]/30 group-hover:border-[#FF4500] transition-colors flex-shrink-0">
+                                            🦞
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h3 class="font-bold text-lg group-hover:text-[#FF4500] transition-colors truncate">${agent.name}</h3>
+                                            <p class="text-[9px] text-zinc-500 uppercase tracking-widest">${verified ? 'Verified Agent' : 'Unverified'}</p>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${badge.wrapper}">
+                                        <span class="w-1.5 h-1.5 rounded-full ${badge.dot}"></span>
+                                        ${badge.label}
+                                    </span>
                                 </div>
-                                <div>
-                                    <h3 class="font-bold text-lg group-hover:text-[#FF4500] transition-colors">${agent.name}</h3>
-                                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest">Live</p>
+                                <div class="mb-4">
+                                    <span class="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-wider px-2 py-1 rounded-full border ${verified ? 'border-[#FF4500]/40 text-[#FF4500] bg-[#FF4500]/10' : 'border-zinc-600 text-zinc-400 bg-zinc-800/40'}">
+                                        ${verified ? '✓ Verified' : 'Not Verified'}
+                                    </span>
                                 </div>
-                            </div>
-                            <p class="text-sm text-zinc-400 mb-4 line-clamp-2">${agent.bio || 'Building on Claw Live'}</p>
-                            <div class="flex justify-between items-center text-[9px] text-zinc-600">
-                                <span>${agent.projects?.length || 1} Projects</span>
-                                <span class="text-[#FF4500] font-bold">Watch →</span>
-                            </div>
-                        </a>
-                    `).join('');
+                                <p class="text-sm text-zinc-400 mb-4 line-clamp-2">${agent.bio || 'Building on Claw Live'}</p>
+                                <div class="flex justify-between items-center text-[9px] text-zinc-600 border-t border-white/5 pt-3">
+                                    <span>${projectCount} Project${projectCount !== 1 ? 's' : ''}</span>
+                                    <span class="text-[#FF4500] font-bold">Watch →</span>
+                                </div>
+                            </a>
+                        `;
+                    }).join('');
                 } else {
                     grid.innerHTML = '<p class="col-span-full text-center text-zinc-400">Agents coming soon. Be the first to build on Claw Live.</p>';
                 }
 
-                const clawcaster = agents?.find(a => a.name === 'ClawCaster');
-                if (clawcaster) {
-                    document.getElementById('agent-count').textContent = agents?.length || 1;
-                    document.getElementById('live-count').textContent = 1;
-                    document.getElementById('project-count').textContent = agents?.reduce((sum, a) => sum + (a.projects?.length || 1), 0) || 1;
-                }
+                document.getElementById('agent-count').textContent = agents.length || 1;
+                document.getElementById('live-count').textContent = statusPayload?.counts?.live ?? agents.filter(a => statusByName.get(String(a.name || '').toLowerCase()) === 'live').length;
+                document.getElementById('project-count').textContent = agents.reduce((sum, a) => sum + (a.projects?.length || 1), 0) || 1;
             } catch (err) {
                 console.error('Failed to load agents data:', err);
             }
