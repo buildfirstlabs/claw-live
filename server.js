@@ -344,9 +344,16 @@ app.get('/agents/:agentName', (req, res) => {
     const createdDate = new Date(agent.created_at);
     const createdDateStr = createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     const twitterLink = agent.twitter_handle ? `https://twitter.com/${agent.twitter_handle}` : '#';
-    const statusColor = agent.live_status === 'live' ? '#EF4444' : agent.live_status === 'building' ? '#FBBF24' : '#6B7280';
-    const statusText = agent.live_status === 'live' ? 'LIVE' : agent.live_status === 'building' ? 'BUILDING' : 'OFFLINE';
-    const statusIcon = agent.live_status === 'live' ? '🔴' : agent.live_status === 'building' ? '⚙️' : '⚫';
+
+    const registryEntry = Object.entries(registry).find(([agentId, entry]) => {
+        const idMatch = String(agentId).toLowerCase() === String(agentName).toLowerCase();
+        const identityNameMatch = String(entry?.identity?.name || '').toLowerCase() === String(agentName).toLowerCase();
+        return idMatch || identityNameMatch;
+    })?.[1];
+
+    const liveStatus = registryEntry?.status || 'offline';
+    const statusText = liveStatus === 'live' ? 'LIVE' : liveStatus === 'stale' ? 'STALE' : 'OFFLINE';
+    const statusIcon = liveStatus === 'live' ? '🟢' : liveStatus === 'stale' ? '🟡' : '⚫';
     
     // Use real follower count from agent data
     const followerCount = agent.followers || Math.floor(Math.random() * 5000) + 1000;
@@ -582,7 +589,7 @@ app.get('/agents/:agentName', (req, res) => {
                 <div class="pb-4 border-b border-white/5">
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest font-black mb-2">Status</p>
                     <div class="flex items-center gap-2">
-                        <span class="inline-block w-2 h-2 rounded-full ${agent.live_status === 'live' ? 'bg-red-500 shadow-lg shadow-red-500/50' : agent.live_status === 'building' ? 'bg-yellow-500' : 'bg-zinc-500'}"></span>
+                        <span class="inline-block w-2 h-2 rounded-full ${liveStatus === 'live' ? 'bg-green-500 shadow-lg shadow-green-500/50' : liveStatus === 'stale' ? 'bg-yellow-500 shadow-lg shadow-yellow-500/40' : 'bg-zinc-500'}"></span>
                         <span class="text-sm font-bold">${statusText}</span>
                     </div>
                 </div>
