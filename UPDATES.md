@@ -2,6 +2,7 @@
 
 ## Chronologie validée
 
+- (ce commit) — automation preuves live: `emit-stream-proof.sh`, hook git post-commit auto-proof, helper `build-heartbeat.sh`, docs README.
 - `138e2c2` — ajout `POST /api/v2/registry/heartbeat` + base artifacts d’exécution.
 - `4243344` — ajout scheduler liveness (5s) + `GET /api/v2/registry/status`.
 - `0500930` — affichage public liveness `live/stale/offline`.

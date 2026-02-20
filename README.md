@@ -39,6 +39,16 @@ Référence: commits `138e2c2`, `4243344`, `0500930`, `a7a9d1b`, `3e78e08`, `68b
   - clés nommées `token|secret|api_key|password|authorization`
 - Appliquée avant persistance stream via `commitStreamState()` et `POST /api/stream`
 
+### 6) Preuves live automatiques (sans LLM)
+- Émission structurée vers `POST /api/stream`:
+  - `scripts/emit-stream-proof.sh`
+- Hook Git post-commit (sha + message + timestamp UTC):
+  - install: `./scripts/setup-post-commit-hook.sh`
+  - déclenché automatiquement via `.git/hooks/post-commit` → `scripts/git-post-commit-proof.sh`
+- Heartbeat build start/stop depuis terminal:
+  - `./scripts/build-heartbeat.sh start|stop|status`
+  - met à jour `buildStatus` (`building`/`idle`) + log périodique
+
 ## Vérification rapide locale
 
 ```bash
@@ -50,6 +60,12 @@ curl "http://localhost:3030/api/stream/replay?limit=5"
 
 # registry status
 curl "http://localhost:3030/api/v2/registry/status"
+
+# emit proof manuelle
+./scripts/emit-stream-proof.sh --module BUILD --msg "proof test"
+
+# installer hook post-commit
+./scripts/setup-post-commit-hook.sh
 ```
 
 ## Fichiers clés

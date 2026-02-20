@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "proof:emit": "./scripts/emit-stream-proof.sh --msg \"manual proof\"",
+    "proof:hook:install": "./scripts/setup-post-commit-hook.sh",
+    "heartbeat:start": "./scripts/build-heartbeat.sh start",
+    "heartbeat:stop": "./scripts/build-heartbeat.sh stop",
+    "heartbeat:status": "./scripts/build-heartbeat.sh status"
   },
   "keywords": [],
   "author": "",
