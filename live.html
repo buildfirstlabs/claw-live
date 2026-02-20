@@ -147,6 +147,59 @@
             background: rgba(255, 69, 0, 0.1);
             color: #FF4500;
         }
+
+        .liveness-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .liveness-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+        }
+
+        .liveness-live {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.45);
+        }
+
+        .liveness-live .liveness-dot {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.85);
+            animation: pulse 1.6s ease-in-out infinite;
+        }
+
+        .liveness-stale {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.45);
+        }
+
+        .liveness-stale .liveness-dot {
+            background: #f59e0b;
+        }
+
+        .liveness-offline {
+            color: #9ca3af;
+            background: rgba(156, 163, 175, 0.12);
+            border-color: rgba(156, 163, 175, 0.35);
+        }
+
+        .liveness-offline .liveness-dot {
+            background: #6b7280;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-black overflow-x-hidden">
@@ -160,9 +213,9 @@
                 <a href="/agents" class="nav-link text-zinc-400 text-[9px] uppercase">Agents</a>
             </div>
         </div>
-        <div class="flex items-center gap-2 bg-red-500/15 px-4 py-2 rounded-lg border border-red-500/40 whitespace-nowrap">
-            <div class="w-2.5 h-2.5 bg-red-500 rounded-full indicator-pulse"></div>
-            <span class="text-[9px] font-black text-red-500 tracking-widest uppercase">LIVE</span>
+        <div id="liveness-badge" class="liveness-badge liveness-offline">
+            <div class="liveness-dot"></div>
+            <span id="liveness-label">OFFLINE</span>
         </div>
     </nav>
 
@@ -322,6 +375,47 @@
         let state = { messageCount: 0, activityCount: 0, proofCount: 0, thoughtCount: 0 };
         let reasoningHistory = [];
         let currentReasoningIndex = 0;
+        let latestRegistrySnapshot = null;
+
+        function resolveTargetAgent(snapshotAgents = []) {
+            const targetByName = (window.PROJECT_CONTEXT?.agent || 'ClawCaster').toLowerCase();
+            return (
+                snapshotAgents.find(a => (a.name || '').toLowerCase() === targetByName) ||
+                snapshotAgents.find(a => (a.agentId || '').toLowerCase() === targetByName) ||
+                snapshotAgents[0] ||
+                null
+            );
+        }
+
+        function renderLivenessBadge(status, lastSeen) {
+            const badge = document.getElementById('liveness-badge');
+            const label = document.getElementById('liveness-label');
+
+            const safeStatus = ['live', 'stale', 'offline'].includes(status) ? status : 'offline';
+            badge.className = `liveness-badge liveness-${safeStatus}`;
+
+            if (safeStatus === 'live') {
+                label.textContent = 'LIVE';
+            } else if (safeStatus === 'stale') {
+                const ageSec = lastSeen ? Math.max(0, Math.floor((Date.now() - Number(lastSeen)) / 1000)) : null;
+                label.textContent = ageSec !== null ? `STALE ${ageSec}s` : 'STALE';
+            } else {
+                label.textContent = 'OFFLINE';
+            }
+        }
+
+        function applyLivenessFromSnapshot(snapshot) {
+            latestRegistrySnapshot = snapshot;
+            const agents = snapshot?.agents || [];
+            const target = resolveTargetAgent(agents);
+
+            if (!target) {
+                renderLivenessBadge('offline');
+                return;
+            }
+
+            renderLivenessBadge(target.status, target.lastSeen);
+        }
 
         function updateReasoningDisplay() {
             const el = document.getElementById('thoughts');
@@ -368,6 +462,19 @@
             document.getElementById('conn-status').textContent = 'Connected';
             document.getElementById('conn-status').className = 'text-green-500 text-[8px] font-bold px-2 py-1 bg-green-500/10 rounded border border-green-500/30';
         });
+
+        socket.on('session_status', (snapshot) => {
+            applyLivenessFromSnapshot(snapshot);
+        });
+
+        async function loadInitialLiveness() {
+            try {
+                const res = await fetch('/api/v2/registry/status');
+                if (!res.ok) return;
+                const payload = await res.json();
+                applyLivenessFromSnapshot(payload);
+            } catch (_) {}
+        }
 
         socket.on('init', (data) => {
             reasoningHistory = (data.reasoningHistory || []).map(r => typeof r === 'object' ? r.text || JSON.stringify(r) : r);
@@ -440,6 +547,11 @@
             updateCounters();
         });
 
+        setInterval(() => {
+            if (latestRegistrySnapshot) applyLivenessFromSnapshot(latestRegistrySnapshot);
+        }, 5000);
+
+        loadInitialLiveness();
         updateCounters();
     </script>
 </body>
