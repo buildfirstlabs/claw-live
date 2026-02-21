@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
+const { execSync } = require('child_process');
 const cors = require('cors');
 
 const app = express();
@@ -28,6 +29,14 @@ const ACTIVE_AGENT_PROJECT = process.env.CLAW_ACTIVE_AGENT_PROJECT || 'claw-live
 const RUNTIME_EMITTER_ENABLED = process.env.CLAW_RUNTIME_EMITTER !== '0';
 const RUNTIME_EMITTER_INTERVAL_MS = Math.max(3000, Math.min(Number.parseInt(process.env.CLAW_RUNTIME_EMITTER_INTERVAL_MS || '10000', 10) || 10000, 60000));
 const RUNTIME_IDLE_GRACE_MS = Math.max(5000, Math.min(Number.parseInt(process.env.CLAW_RUNTIME_IDLE_GRACE_MS || '15000', 10) || 15000, 120000));
+const RUNTIME_SIGNAL_ROTATION = ['status_snapshot', 'git_commit', 'replay_stats', 'registry_counts', 'uptime_tick'];
+const RUNTIME_SIGNAL_MIN_INTERVALS = {
+    status_snapshot: 1,
+    git_commit: 6,
+    replay_stats: 3,
+    registry_counts: 2,
+    uptime_tick: 1
+};
 
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 app.use(express.json());
@@ -52,6 +61,7 @@ let streamData = {
     terminal: "root@phoenix:~# _",
     chat: [],
     logs: [],
+    proof: [],
     isLive: true,
     currentFile: { name: "server.js", content: "" },
     version: "v0.4",
@@ -64,7 +74,11 @@ let analytics = { views: 0, publicOffset: 1542, uniqueIps: [] };
 let registry = {}; 
 let swarmSignals = [];
 let lastStreamMutationAt = Date.now();
+let runtimeBootAt = Date.now();
 let lastRuntimeEmitAt = 0;
+let runtimeSignalIndex = 0;
+let runtimeSignalCycle = 0;
+let runtimeLastByType = Object.create(null);
 
 // ============== PHASE 0: CLAIMING SYSTEM ==============
 let agents = {}; // { agentName: { owner_email, verified, created_at, verified_at, ... } }
@@ -281,6 +295,119 @@ function ensureActiveRegistryEntry(now = Date.now()) {
     return true;
 }
 
+function formatDuration(ms) {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+    if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+    return `${minutes}m ${seconds}s`;
+}
+
+function safeGitSnapshot() {
+    try {
+        const hash = execSync('git rev-parse --short=8 HEAD', { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+        const messageRaw = execSync('git log -1 --pretty=%s', { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+        const message = redactStringSecrets(messageRaw).slice(0, 100) || '(no commit message)';
+        return { hash, message };
+    } catch (e) {
+        return { hash: 'unknown', message: 'git metadata unavailable' };
+    }
+}
+
+function countReplayEvents() {
+    if (!fs.existsSync(STREAM_EVENTS_FILE)) return 0;
+    try {
+        const content = fs.readFileSync(STREAM_EVENTS_FILE, 'utf8');
+        if (!content.trim()) return 0;
+        return content.split('\n').filter(Boolean).length;
+    } catch (e) {
+        return 0;
+    }
+}
+
+function registryStatusCounts() {
+    const counts = { live: 0, stale: 0, offline: 0, total: 0 };
+    Object.values(registry).forEach((agent) => {
+        const status = agent.status || 'offline';
+        counts.total += 1;
+        if (counts[status] !== undefined) counts[status] += 1;
+    });
+    return counts;
+}
+
+function nextRuntimeSignalType(now = Date.now()) {
+    let guard = 0;
+    while (guard < RUNTIME_SIGNAL_ROTATION.length) {
+        const type = RUNTIME_SIGNAL_ROTATION[runtimeSignalIndex % RUNTIME_SIGNAL_ROTATION.length];
+        runtimeSignalIndex = (runtimeSignalIndex + 1) % RUNTIME_SIGNAL_ROTATION.length;
+        if (runtimeSignalIndex === 0) runtimeSignalCycle += 1;
+
+        const minIntervals = RUNTIME_SIGNAL_MIN_INTERVALS[type] || 1;
+        const last = runtimeLastByType[type] || 0;
+        if (last === 0 || now - last >= (RUNTIME_EMITTER_INTERVAL_MS * minIntervals)) {
+            runtimeLastByType[type] = now;
+            return type;
+        }
+        guard += 1;
+    }
+
+    runtimeLastByType.uptime_tick = now;
+    return 'uptime_tick';
+}
+
+function buildRuntimeSignal(type, now = Date.now()) {
+    const statusCounts = registryStatusCounts();
+    const replayCount = countReplayEvents();
+
+    if (type === 'status_snapshot') {
+        return {
+            type,
+            activity: `status snapshot · stream live=${streamData.isLive ? 'yes' : 'no'} · commits=${streamData.commitCount || 0} · build=${streamData.buildStatus || 'n/a'}`,
+            thoughts: `Runtime status: ${statusCounts.live} live / ${statusCounts.stale} stale / ${statusCounts.offline} offline agents monitored.`,
+            proof: `snapshot: version ${streamData.version || 'unknown'}, logs ${streamData.logs.length}, replay ${replayCount}`
+        };
+    }
+
+    if (type === 'git_commit') {
+        const git = safeGitSnapshot();
+        return {
+            type,
+            activity: `git head · ${git.hash} · ${git.message}`,
+            thoughts: `Latest repo checkpoint is ${git.hash}.`,
+            proof: `git: ${git.hash} "${git.message}"`
+        };
+    }
+
+    if (type === 'replay_stats') {
+        return {
+            type,
+            activity: `replay stats · events=${replayCount} · activity_logs=${streamData.logs.length} · reasoning=${streamData.reasoningHistory.length}`,
+            thoughts: `Replay buffer now contains ${replayCount} append-only events.`,
+            proof: `replay_count=${replayCount}, reasoning_entries=${streamData.reasoningHistory.length}`
+        };
+    }
+
+    if (type === 'registry_counts') {
+        return {
+            type,
+            activity: `registry counts · total=${statusCounts.total} live=${statusCounts.live} stale=${statusCounts.stale} offline=${statusCounts.offline}`,
+            thoughts: `Registry pulse: ${statusCounts.total} agents tracked.`,
+            proof: `registry(total=${statusCounts.total}, live=${statusCounts.live}, stale=${statusCounts.stale}, offline=${statusCounts.offline})`
+        };
+    }
+
+    return {
+        type: 'uptime_tick',
+        activity: `uptime tick · ${formatDuration(now - runtimeBootAt)} since runtime boot · cycle=${runtimeSignalCycle}`,
+        thoughts: `Runtime steady for ${formatDuration(now - runtimeBootAt)}.`,
+        proof: `uptime_ms=${now - runtimeBootAt}`
+    };
+}
+
 function emitRuntimeHeartbeat(reason = 'runtime.keepalive') {
     const now = Date.now();
     const inserted = ensureActiveRegistryEntry(now);
@@ -289,21 +416,39 @@ function emitRuntimeHeartbeat(reason = 'runtime.keepalive') {
     registry[ACTIVE_AGENT_ID].lastEventAt = now;
     registry[ACTIVE_AGENT_ID].status = 'live';
 
+    const signalType = reason === 'runtime.start' ? 'status_snapshot' : nextRuntimeSignalType(now);
+    const signal = buildRuntimeSignal(signalType, now);
+
     const log = {
         level: 'info',
         module: 'RUNTIME',
-        msg: `${reason} agent=${ACTIVE_AGENT_NAME}`,
+        msg: `${reason} · ${signal.activity}`,
         time: new Date(now).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     };
 
     streamData.logs.push(log);
     if (streamData.logs.length > 200) streamData.logs.shift();
 
+    streamData.thoughts = signal.thoughts;
+    streamData.reasoningHistory.push({
+        text: signal.thoughts,
+        timestamp: new Date(now).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    });
+    if (streamData.reasoningHistory.length > 200) streamData.reasoningHistory = streamData.reasoningHistory.slice(-200);
+
+    streamData.proof = Array.isArray(streamData.proof) ? streamData.proof : [];
+    streamData.proof.push({ time: log.time, text: signal.proof });
+    if (streamData.proof.length > 80) streamData.proof = streamData.proof.slice(-80);
+
     touchStreamMutation(now);
     commitStreamState({
-        type: 'runtime.heartbeat',
+        type: 'runtime.signal',
         payload: {
             reason,
+            signal_type: signal.type,
+            activity: signal.activity,
+            thoughts: signal.thoughts,
+            proof: signal.proof,
             agent_id: ACTIVE_AGENT_ID,
             agent: ACTIVE_AGENT_NAME,
             inserted
