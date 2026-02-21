@@ -22,6 +22,13 @@ const STATS_FILE = path.join(__dirname, 'analytics.json');
 const AGENTS_FILE = path.join(__dirname, 'agents.json');
 const REGISTRY_FILE = path.join(__dirname, 'registry.json');
 
+const ACTIVE_AGENT_ID = process.env.CLAW_ACTIVE_AGENT_ID || 'clawcaster-main';
+const ACTIVE_AGENT_NAME = process.env.CLAW_ACTIVE_AGENT_NAME || 'ClawCaster';
+const ACTIVE_AGENT_PROJECT = process.env.CLAW_ACTIVE_AGENT_PROJECT || 'claw-live';
+const RUNTIME_EMITTER_ENABLED = process.env.CLAW_RUNTIME_EMITTER !== '0';
+const RUNTIME_EMITTER_INTERVAL_MS = Math.max(3000, Math.min(Number.parseInt(process.env.CLAW_RUNTIME_EMITTER_INTERVAL_MS || '10000', 10) || 10000, 60000));
+const RUNTIME_IDLE_GRACE_MS = Math.max(5000, Math.min(Number.parseInt(process.env.CLAW_RUNTIME_IDLE_GRACE_MS || '15000', 10) || 15000, 120000));
+
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -56,6 +63,8 @@ let waitlist = { count: 0, publicOffset: 124, entries: [] };
 let analytics = { views: 0, publicOffset: 1542, uniqueIps: [] };
 let registry = {}; 
 let swarmSignals = [];
+let lastStreamMutationAt = Date.now();
+let lastRuntimeEmitAt = 0;
 
 // ============== PHASE 0: CLAIMING SYSTEM ==============
 let agents = {}; // { agentName: { owner_email, verified, created_at, verified_at, ... } }
@@ -163,6 +172,10 @@ if (fs.existsSync(REGISTRY_FILE)) {
     } catch (e) {}
 }
 
+if (ensureActiveRegistryEntry(Date.now())) {
+    saveRegistry();
+}
+
 // PHASE 0 Bootstrap: Create ClawCaster demo agent with enhanced metadata
 if (!agents['ClawCaster']) {
     agents['ClawCaster'] = {
@@ -244,6 +257,74 @@ function refreshRegistryStatuses(now = Date.now()) {
     });
 
     return changed;
+}
+
+function touchStreamMutation(now = Date.now()) {
+    lastStreamMutationAt = now;
+}
+
+function ensureActiveRegistryEntry(now = Date.now()) {
+    const existing = registry[ACTIVE_AGENT_ID];
+    if (existing) return false;
+
+    registry[ACTIVE_AGENT_ID] = {
+        identity: {
+            name: ACTIVE_AGENT_NAME,
+            project: ACTIVE_AGENT_PROJECT,
+            runtime: 'openclaw'
+        },
+        lastSeen: now,
+        lastEventAt: now,
+        status: 'live',
+        stream_key: process.env.CLAW_ACTIVE_STREAM_KEY || 'runtime-local'
+    };
+    return true;
+}
+
+function emitRuntimeHeartbeat(reason = 'runtime.keepalive') {
+    const now = Date.now();
+    const inserted = ensureActiveRegistryEntry(now);
+
+    registry[ACTIVE_AGENT_ID].lastSeen = now;
+    registry[ACTIVE_AGENT_ID].lastEventAt = now;
+    registry[ACTIVE_AGENT_ID].status = 'live';
+
+    const log = {
+        level: 'info',
+        module: 'RUNTIME',
+        msg: `${reason} agent=${ACTIVE_AGENT_NAME}`,
+        time: new Date(now).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    };
+
+    streamData.logs.push(log);
+    if (streamData.logs.length > 200) streamData.logs.shift();
+
+    touchStreamMutation(now);
+    commitStreamState({
+        type: 'runtime.heartbeat',
+        payload: {
+            reason,
+            agent_id: ACTIVE_AGENT_ID,
+            agent: ACTIVE_AGENT_NAME,
+            inserted
+        }
+    });
+
+    io.emit('log', log);
+    io.emit('update', streamData);
+    io.emit('session_status', {
+        ts: now,
+        agents: Object.entries(registry).map(([agentId, agent]) => ({
+            agentId,
+            name: agent.identity?.name || agentId,
+            status: agent.status,
+            lastSeen: agent.lastSeen || null
+        }))
+    });
+
+    saveAll();
+    saveRegistry();
+    lastRuntimeEmitAt = now;
 }
 
 // Socket Logic
@@ -864,6 +945,7 @@ app.post('/api/v2/registry/connect', (req, res) => {
             stream_key: `sk_${Math.random().toString(36).substr(2, 9)}`
         };
         console.log(`Agent Registered: ${identity.name} (${agent_id})`);
+        touchStreamMutation();
         saveRegistry();
         res.json({
             success: true,
@@ -893,6 +975,7 @@ app.post('/api/v2/registry/heartbeat', (req, res) => {
 
     registry[agentId].lastSeen = Date.now();
     registry[agentId].status = "live";
+    touchStreamMutation(registry[agentId].lastSeen);
     saveRegistry();
 
     res.json({
@@ -911,6 +994,7 @@ app.post('/api/v2/swarm/broadcast', (req, res) => {
         registry[agentId].lastSeen = Date.now();
         registry[agentId].lastEventAt = Date.now();
         registry[agentId].status = "live";
+        touchStreamMutation(registry[agentId].lastEventAt);
         saveRegistry();
 
         const { type, message, priority } = req.body;
@@ -1167,6 +1251,7 @@ app.post('/api/stream', (req, res) => {
     if (fileUpdate) { streamData.currentFile = fileUpdate; updated = true; }
 
     if (updated) {
+        touchStreamMutation();
         io.emit('update', streamData);
         commitStreamState({ type: 'stream.update', payload: incoming });
     }
@@ -1178,6 +1263,8 @@ app.post('/api/stream', (req, res) => {
 // Phase 0.5: Liveness scheduler (always-on without continuous LLM)
 app.get('/api/v2/registry/status', (req, res) => {
     const now = Date.now();
+    const inserted = ensureActiveRegistryEntry(now);
+    if (inserted) saveRegistry();
     refreshRegistryStatuses(now);
 
     const counts = { live: 0, stale: 0, offline: 0 };
@@ -1206,6 +1293,7 @@ setInterval(() => {
     let changed = refreshRegistryStatuses(now);
 
     Object.keys(registry).forEach((agentId) => {
+        if (agentId === ACTIVE_AGENT_ID) return;
         const agent = registry[agentId];
         if (agent.status === 'offline') {
             const offlineAge = now - (agent.lastSeen || 0);
@@ -1230,4 +1318,18 @@ setInterval(() => {
     }
 }, 5000);
 
-server.listen(port, '0.0.0.0', () => console.log(`ClawLive Server Active`));
+if (RUNTIME_EMITTER_ENABLED) {
+    setInterval(() => {
+        const now = Date.now();
+        const idleFor = now - lastStreamMutationAt;
+        const sinceRuntime = now - lastRuntimeEmitAt;
+        if (idleFor >= RUNTIME_IDLE_GRACE_MS && sinceRuntime >= RUNTIME_EMITTER_INTERVAL_MS) {
+            emitRuntimeHeartbeat('runtime.keepalive');
+        }
+    }, Math.max(3000, Math.floor(RUNTIME_EMITTER_INTERVAL_MS / 2)));
+}
+
+server.listen(port, '0.0.0.0', () => {
+    console.log(`ClawLive Server Active`);
+    if (RUNTIME_EMITTER_ENABLED) emitRuntimeHeartbeat('runtime.start');
+});
