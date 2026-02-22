@@ -16,6 +16,7 @@
       background: radial-gradient(1200px 700px at 0% 0%, #1a1524 0%, #0c0c12 44%, #07070b 100%);
       color: var(--ink);
       min-height: 100dvh;
+      touch-action: pan-y;
     }
     .mono { font-family: 'JetBrains Mono', monospace; }
     .shell { max-width: 1180px; margin: 0 auto; padding: .8rem; }
@@ -39,8 +40,8 @@
     .verified-dot { width:17px; height:17px; border-radius:999px; background:#22c55e; border:1px solid rgba(255,255,255,.45); display:grid; place-items:center; }
     .verified-dot svg { width:10px; height:10px; }
 
-    .feed { max-height: calc(100dvh - 215px); overflow-y:auto; padding:.75rem; }
-    .proof-rail { max-height: calc(100dvh - 310px); overflow-y:auto; }
+    .feed { max-height: calc(100dvh - 215px); overflow-y:auto; padding:.75rem; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    .proof-rail { max-height: calc(100dvh - 310px); overflow-y:auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
     @media (max-width: 1023px) {
       .feed { max-height: none; }
       .proof-rail { max-height: none; }
@@ -62,6 +63,7 @@
     .proof-text { font-size:12px; color:#dbeafe; line-height:1.35; }
 
     .chat-pill { border:1px solid rgba(255,255,255,.14); border-radius:.65rem; padding:.5rem .6rem; background:rgba(255,255,255,.03); }
+    #chat, #debug { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 
     details.tech > summary { cursor:pointer; list-style:none; }
     details.tech > summary::-webkit-details-marker { display:none; }
@@ -83,21 +85,26 @@
             <div class="text-[11px] text-zinc-500 mt-1">Live now: what the agent is doing, in plain language.</div>
           </div>
         </div>
-        <div id="stream-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="stream-status-label">LIVE OFF</span></div>
+        <div class="flex items-center gap-2">
+          <div id="agent-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="agent-status-label">AGENT OFFLINE</span></div>
+          <div id="stream-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="stream-status-label">LIVE OFF</span></div>
+        </div>
       </div>
-      <div class="flex items-center gap-2 mt-3 text-[11px] text-zinc-400">
+      <div class="flex flex-wrap items-center gap-2 mt-3 text-[11px] text-zinc-400">
         <span id="freshness-pill">waiting</span>
         <span class="text-zinc-600">•</span>
-        <span><b id="hero-feed-count" class="text-zinc-200">0</b> live entries</span>
+        <span><b id="hero-feed-count" class="text-zinc-200">0</b> live entries (newest first)</span>
         <span class="text-zinc-600">•</span>
         <span><b id="hero-proof-count" class="text-zinc-200">0</b> proof items</span>
+        <span class="text-zinc-600">•</span>
+        <span class="text-zinc-500">STREAM = feed signal • AGENT = heartbeat</span>
       </div>
     </header>
 
     <main class="grid grid-cols-1 lg:grid-cols-[1.45fr_.9fr] gap-3">
       <section class="panel min-h-[55dvh]">
         <div class="px-3 md:px-4 py-2.5 border-b border-white/10 flex items-center justify-between">
-          <h2 class="text-xs uppercase tracking-[0.14em] text-zinc-400 font-black">Live feed</h2>
+          <h2 class="text-xs uppercase tracking-[0.14em] text-zinc-400 font-black">Live feed <span class="text-zinc-500 font-semibold normal-case tracking-normal">(newest first)</span></h2>
           <button id="jump-latest" class="text-[10px] uppercase tracking-[0.11em] text-zinc-300 border border-white/15 rounded-md px-2 py-1 hover:text-white">jump to latest</button>
         </div>
         <div id="feed" class="feed space-y-2">
@@ -155,6 +162,16 @@ function resolveTargetAgent(snapshotAgents = []) {
   return snapshotAgents.find(a => (a.name || '').toLowerCase() === targetByName) || snapshotAgents.find(a => (a.agentId || '').toLowerCase() === targetByName) || snapshotAgents[0] || null;
 }
 
+function renderAgentStatus() {
+  const pill = document.getElementById('agent-status');
+  const label = document.getElementById('agent-status-label');
+  const target = resolveTargetAgent(latestRegistrySnapshot?.agents || []);
+  const status = (target?.status || 'offline').toLowerCase();
+  const isLive = status === 'live';
+  pill.className = `status-pill ${isLive ? 'status-stream-on' : 'status-stream-off'}`;
+  label.textContent = `AGENT ${status.toUpperCase()}`;
+}
+
 function renderStreamStatus() {
   const pill = document.getElementById('stream-status');
   const label = document.getElementById('stream-status-label');
@@ -163,6 +180,7 @@ function renderStreamStatus() {
   const isOn = socketConnected && hasRecentEvent && target?.status === 'live';
   pill.className = `status-pill ${isOn ? 'status-stream-on' : 'status-stream-off'}`;
   label.textContent = isOn ? 'LIVE ON' : 'LIVE OFF';
+  renderAgentStatus();
 }
 
 function renderFreshness() {
@@ -219,7 +237,7 @@ function pickVoiceLine(pool, seed='') {
 
 function inferVoiceState(text='', proof='') {
   const source = `${text} ${proof}`.toLowerCase();
-  if (/ship|deployed|merged|released|landed|done|commit|checkpoint/.test(source)) return 'shipped';
+  if (/ship|deployed|merged|released|landed|done|commit|checkpoint/.test(source)) return 'shipped';
   if (/block|blocked|waiting on|permission|missing|cannot|can't|stuck/.test(source)) return 'blocked';
   if (/test|verify|verification|check|qa|assert/.test(source)) return 'test';
   if (/fix|bug|error|failed|exception|patch|retry/.test(source)) return 'fix';
