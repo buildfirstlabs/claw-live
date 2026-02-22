@@ -37,6 +37,12 @@ const RUNTIME_SIGNAL_MIN_INTERVALS = {
     registry_counts: 2,
     uptime_tick: 1
 };
+const SIGNAL_GATE_DEDUPE_WINDOW_MS = Math.max(5000, Math.min(Number.parseInt(process.env.CLAW_SIGNAL_DEDUPE_WINDOW_MS || '20000', 10) || 20000, 120000));
+const SIGNAL_GATE_QUOTA_WINDOW_MS = Math.max(30000, Math.min(Number.parseInt(process.env.CLAW_SIGNAL_QUOTA_WINDOW_MS || '180000', 10) || 180000, 900000));
+const SIGNAL_GATE_MAX_KEEPALIVE_PER_WINDOW = Math.max(1, Math.min(Number.parseInt(process.env.CLAW_SIGNAL_MAX_KEEPALIVE || '2', 10) || 2, 20));
+const SIGNAL_GATE_MAX_STATUS_PER_WINDOW = Math.max(2, Math.min(Number.parseInt(process.env.CLAW_SIGNAL_MAX_STATUS || '6', 10) || 6, 50));
+const SIGNAL_GATE_MAX_PROOF_PER_WINDOW = Math.max(3, Math.min(Number.parseInt(process.env.CLAW_SIGNAL_MAX_PROOF || '12', 10) || 12, 100));
+const SIGNAL_GATE_PROOF_STALE_MS = Math.max(30000, Math.min(Number.parseInt(process.env.CLAW_SIGNAL_PROOF_STALE_MS || '300000', 10) || 300000, 3600000));
 
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 app.use(express.json());
@@ -160,6 +166,123 @@ function readStreamReplay(limit = 200) {
     } catch (e) {
         return [];
     }
+}
+
+function eventTimestampMs(event) {
+    const ms = Date.parse(event?.ts || '');
+    return Number.isFinite(ms) ? ms : 0;
+}
+
+function truncateForReplay(value, maxLen = 360) {
+    const cleaned = redactStringSecrets(String(value || '')).replace(/\s+/g, ' ').trim();
+    if (cleaned.length <= maxLen) return cleaned;
+    return `${cleaned.slice(0, maxLen)}…`;
+}
+
+function classifyReplaySignal(event) {
+    const payload = event?.payload || {};
+    const reason = String(payload.reason || '').toLowerCase();
+    const signalType = String(payload.signal_type || event?.type || 'unknown').toLowerCase();
+
+    const hasProof = typeof payload.proof === 'string' && payload.proof.trim().length > 0;
+    const hasStatus = reason.includes('start') || signalType.includes('status') || signalType.includes('registry') || signalType.includes('replay_stats') || Object.prototype.hasOwnProperty.call(payload, 'status');
+    const isKeepalive = reason.includes('keepalive') || signalType.includes('uptime_tick') || signalType.includes('keepalive');
+
+    if (hasProof) return { kind: 'proof', priority: 3, signalType };
+    if (hasStatus && !isKeepalive) return { kind: 'status', priority: 2, signalType };
+    if (isKeepalive) return { kind: 'keepalive', priority: 1, signalType };
+    return { kind: 'status', priority: 2, signalType };
+}
+
+function replaySummary(event) {
+    const payload = event?.payload || {};
+    if (typeof payload.proof === 'string' && payload.proof.trim()) return truncateForReplay(payload.proof);
+    if (typeof payload.activity === 'string' && payload.activity.trim()) return truncateForReplay(payload.activity);
+    if (payload.log && typeof payload.log.msg === 'string' && payload.log.msg.trim()) return truncateForReplay(payload.log.msg);
+    if (typeof payload.thoughts === 'string' && payload.thoughts.trim()) return truncateForReplay(payload.thoughts);
+    if (typeof payload.terminal === 'string' && payload.terminal.trim()) return truncateForReplay(payload.terminal);
+    return truncateForReplay(JSON.stringify(payload));
+}
+
+function buildSignalQualityFeed(rawEvents, limit = 200, now = Date.now()) {
+    const prepared = rawEvents.map((event) => {
+        const { kind, priority, signalType } = classifyReplaySignal(event);
+        return {
+            raw: event,
+            tsMs: eventTimestampMs(event),
+            kind,
+            priority,
+            signalType,
+            summary: replaySummary(event)
+        };
+    }).sort((a, b) => b.tsMs - a.tsMs);
+
+    const dedupeBySignalType = Object.create(null);
+    const quotas = { proof: 0, status: 0, keepalive: 0 };
+    const selected = [];
+
+    prepared.forEach((item) => {
+        if (!item.tsMs) return;
+
+        const lastTs = dedupeBySignalType[item.signalType];
+        if (lastTs && Math.abs(lastTs - item.tsMs) < SIGNAL_GATE_DEDUPE_WINDOW_MS) return;
+
+        const ageInWindow = now - item.tsMs;
+        if (ageInWindow <= SIGNAL_GATE_QUOTA_WINDOW_MS) {
+            if (item.kind === 'keepalive' && quotas.keepalive >= SIGNAL_GATE_MAX_KEEPALIVE_PER_WINDOW) return;
+            if (item.kind === 'status' && quotas.status >= SIGNAL_GATE_MAX_STATUS_PER_WINDOW) return;
+            if (item.kind === 'proof' && quotas.proof >= SIGNAL_GATE_MAX_PROOF_PER_WINDOW) return;
+            quotas[item.kind] += 1;
+        }
+
+        dedupeBySignalType[item.signalType] = item.tsMs;
+        selected.push(item);
+    });
+
+    selected.sort((a, b) => {
+        if (b.priority !== a.priority) return b.priority - a.priority;
+        return b.tsMs - a.tsMs;
+    });
+
+    let hasRecentProof = false;
+    let latestProofTs = 0;
+    selected.forEach((item) => {
+        if (item.kind === 'proof') {
+            latestProofTs = Math.max(latestProofTs, item.tsMs);
+            if ((now - item.tsMs) <= SIGNAL_GATE_PROOF_STALE_MS) hasRecentProof = true;
+        }
+    });
+
+    if (!hasRecentProof) {
+        const ageText = latestProofTs ? formatDuration(now - latestProofTs) : 'unknown duration';
+        selected.unshift({
+            raw: {
+                type: 'signal.quality.fallback',
+                ts: new Date(now).toISOString(),
+                payload: {
+                    activity: 'proof freshness warning',
+                    thoughts: 'No recent proof signal inside freshness window; feed prioritized latest status while waiting for new proof.',
+                    proof: latestProofTs ? `latest_proof_age=${ageText}` : 'latest_proof_age=none_seen'
+                }
+            },
+            tsMs: now,
+            kind: 'proof',
+            priority: 3,
+            signalType: 'signal.quality.fallback',
+            summary: latestProofTs
+                ? `No recent proof. Latest proof is ${ageText} old. Monitoring for fresh execution evidence.`
+                : 'No proof events available yet. Monitoring for first execution evidence.'
+        });
+    }
+
+    const sliced = selected.slice(0, limit);
+    return sliced.map((item) => ({
+        ...redactSecrets(item.raw),
+        signal_kind: item.kind,
+        signal_priority: item.priority,
+        signal_type: item.signalType,
+        summary: item.summary
+    }));
 }
 
 // Loaders
@@ -989,6 +1112,9 @@ app.get('/agents/:agentName/history', (req, res) => {
         }
 
         function eventSummary(event) {
+            if (event?.summary) return event.summary;
+            if (event?.payload?.proof) return event.payload.proof;
+            if (event?.payload?.activity) return event.payload.activity;
             if (event?.payload?.log?.msg) return event.payload.log.msg;
             if (event?.payload?.terminal) return event.payload.terminal;
             if (event?.payload?.thoughts) return typeof event.payload.thoughts === 'string' ? event.payload.thoughts : JSON.stringify(event.payload.thoughts);
@@ -1008,7 +1134,7 @@ app.get('/agents/:agentName/history', (req, res) => {
                     return;
                 }
 
-                listEl.innerHTML = events.reverse().map((event) => {
+                listEl.innerHTML = events.map((event) => {
                     const ts = event?.ts ? new Date(event.ts).toLocaleString() : 'Unknown time';
                     return \`
                         <article class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
@@ -1056,8 +1182,24 @@ app.get('/api/stream', (req, res) => res.json(streamData));
 app.get('/api/stream/replay', (req, res) => {
     const requested = Number.parseInt(req.query.limit, 10);
     const limit = Number.isFinite(requested) ? Math.max(1, Math.min(requested, 1000)) : 200;
-    const events = readStreamReplay(limit);
-    res.json({ count: events.length, events });
+    const rawLimit = Math.max(limit * 6, 200);
+    const rawEvents = readStreamReplay(rawLimit);
+    const qualityGateDisabled = String(req.query.raw || '').toLowerCase() === '1';
+    const events = qualityGateDisabled ? rawEvents.slice(-limit).reverse().map((event) => redactSecrets(event)) : buildSignalQualityFeed(rawEvents, limit);
+
+    res.json({
+        count: events.length,
+        mode: qualityGateDisabled ? 'raw' : 'quality_gate',
+        gate: {
+            dedupeWindowMs: SIGNAL_GATE_DEDUPE_WINDOW_MS,
+            quotaWindowMs: SIGNAL_GATE_QUOTA_WINDOW_MS,
+            maxKeepalivePerWindow: SIGNAL_GATE_MAX_KEEPALIVE_PER_WINDOW,
+            maxStatusPerWindow: SIGNAL_GATE_MAX_STATUS_PER_WINDOW,
+            maxProofPerWindow: SIGNAL_GATE_MAX_PROOF_PER_WINDOW,
+            proofFreshMs: SIGNAL_GATE_PROOF_STALE_MS
+        },
+        events
+    });
 });
 app.get('/api/status', (req, res) => res.json({
     version: streamData.version,
