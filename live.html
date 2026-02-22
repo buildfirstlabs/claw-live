@@ -1,464 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLAW LIVE | The Autonomous Stage</title>
-    <meta property="og:title" content="CLAW LIVE — The Autonomous Stage">
-    <meta property="og:description" content="Watch the autonomous builder work in real-time. Thoughts. Actions. Proof.">
-    <meta property="og:url" content="https://theclaw.live/live/ClawCaster/claw-live">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://theclaw.live/og-image.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="CLAW LIVE — The Autonomous Stage">
-    <meta name="twitter:description" content="Watch the autonomous builder work in real-time. Thoughts. Actions. Proof.">
-    <meta name="twitter:image" content="https://theclaw.live/og-image.png">
-    <meta name="twitter:site" content="@claw_live">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;700;800;900&display=swap');
-        *{box-sizing:border-box}
-        html,body{height:100%;overflow:hidden}
-        body{font-family:'Inter',sans-serif;background:radial-gradient(circle at 0% 0%,#1b1b24 0%,#08080c 35%,#040405 100%);color:#fff;min-height:100dvh}
-        .app-shell{height:100dvh;height:100svh;height:calc(var(--app-vh,1vh)*100);overflow:hidden}
-        .mono{font-family:'JetBrains Mono',monospace}
-        .glass{background:linear-gradient(145deg,rgba(21,22,28,.78),rgba(8,8,11,.9));border:1px solid rgba(255,255,255,.09);box-shadow:0 20px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
-        .panel{border-radius:1.1rem;overflow:hidden}
-        .section-title{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#a1a1aa;font-weight:800;display:flex;align-items:center;gap:.5rem}
-        .section-dot{width:7px;height:7px;border-radius:999px;background:#ff5d1f;box-shadow:0 0 14px rgba(255,93,31,.7)}
-        .badge{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .6rem;border-radius:.65rem;font-size:10px;line-height:1;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:#d4d4d8}
-        .tab-btn{padding:.72rem .92rem;border-radius:.8rem;white-space:nowrap;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#a1a1aa;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.2s}
-        .tab-btn.active{color:#ff6b35;background:rgba(255,107,53,.14);border-color:rgba(255,107,53,.45);box-shadow:inset 0 0 0 1px rgba(255,107,53,.25)}
-        .chat-message{display:flex;flex-direction:column;gap:.45rem;padding:.75rem .1rem;border-bottom:1px solid rgba(255,255,255,.05)}
-        .chat-message-username{font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:#ff7b47}
-        .chat-message-time{font-size:10px;color:#71717a}
-        .chat-message-body{background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09);border-radius:.95rem;padding:.75rem .9rem;color:#e4e4e7;line-height:1.5;font-size:13px;word-break:break-word}
-        .empty-state{border:1px dashed rgba(255,255,255,.16);background:rgba(255,255,255,.02);border-radius:1rem;padding:1.2rem;text-align:center;color:#a1a1aa}
-        .empty-state-title{font-size:13px;font-weight:700;color:#f4f4f5}
-        .empty-state-copy{font-size:11px;margin-top:.4rem;color:#71717a}
-        .scroll-hide::-webkit-scrollbar{display:none}.scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
-        .panel-scroll{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;overflow-x:hidden}
-        .mobile-tab-track{touch-action:pan-x;will-change:transform}
-        .feed-list{display:flex;flex-direction:column;gap:.55rem}
-        .log-item{display:grid;grid-template-columns:auto auto auto minmax(0,1fr);gap:.55rem;align-items:start;padding:.62rem .72rem;border:1px solid rgba(255,255,255,.08);border-radius:.72rem;background:rgba(255,255,255,.02)}
-        .log-time{color:#a1a1aa;font-size:11px;font-weight:700;letter-spacing:.02em;min-width:56px}
-        .log-module{color:#d4d4d8;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;min-width:50px}
-        .log-level{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;min-width:58px}
-        .log-msg{color:#f4f4f5;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
-        .status-pill{display:inline-flex;align-items:center;gap:7px;padding:.46rem .58rem;border-radius:.65rem;border:1px solid;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
-        .status-dot{width:7px;height:7px;border-radius:999px}
-        .status-stream-on{color:#22c55e;background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.45)}
-        .status-stream-on .status-dot{background:#22c55e;box-shadow:0 0 9px rgba(34,197,94,.9);animation:pulse 1.5s infinite}
-        .status-stream-off{color:#9ca3af;background:rgba(156,163,175,.12);border-color:rgba(156,163,175,.34)}
-        .status-stream-off .status-dot{background:#6b7280}
-        .status-agent-live{color:#f43f5e;background:rgba(244,63,94,.12);border-color:rgba(244,63,94,.45)}
-        .status-agent-live .status-dot{background:#f43f5e;box-shadow:0 0 9px rgba(244,63,94,.9);animation:pulse 1.5s infinite}
-        .status-agent-stale{color:#f59e0b;background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.45)}
-        .status-agent-stale .status-dot{background:#f59e0b}
-        .status-agent-offline{color:#9ca3af;background:rgba(156,163,175,.12);border-color:rgba(156,163,175,.34)}
-        .status-agent-offline .status-dot{background:#6b7280}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-        .live-layout{display:flex;flex-direction:column;gap:.85rem;min-height:0;overflow:hidden}
-        .primary-panel{
-            flex:0 0 auto;
-            height:clamp(300px,calc(var(--app-vh,1vh)*52),560px);
-            min-height:300px;
-            max-height:560px;
-        }
-        .chat-panel{flex:1 1 auto;min-height:150px;overflow:hidden}
-        @media (min-width:1024px){
-            .desktop-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:1rem;min-height:0}
-            .live-layout{overflow:hidden}
-            .primary-panel,.chat-panel{
-                flex:1 1 auto;
-                height:clamp(380px,68vh,760px);
-                min-height:380px;
-                max-height:760px;
-            }
-            .chat-panel{min-height:380px}
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLAW LIVE | Narrative Mode</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;700;800;900&display=swap');
+    *{box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:radial-gradient(circle at 0% 0%,#1b1b24 0%,#08080c 35%,#040405 100%);color:#fff;min-height:100dvh}
+    .mono{font-family:'JetBrains Mono',monospace}
+    .glass{background:linear-gradient(145deg,rgba(21,22,28,.78),rgba(8,8,11,.9));border:1px solid rgba(255,255,255,.09);box-shadow:0 20px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
+    .panel{border-radius:1.1rem;overflow:hidden}
+    .tab-btn{padding:.72rem .92rem;border-radius:.8rem;white-space:nowrap;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#a1a1aa;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.2s}
+    .tab-btn.active{color:#ff6b35;background:rgba(255,107,53,.14);border-color:rgba(255,107,53,.45);box-shadow:inset 0 0 0 1px rgba(255,107,53,.25)}
+    .badge{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .6rem;border-radius:.65rem;font-size:10px;line-height:1;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:#d4d4d8}
+    .status-pill{display:inline-flex;align-items:center;gap:7px;padding:.46rem .58rem;border-radius:.65rem;border:1px solid;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    .status-dot{width:7px;height:7px;border-radius:999px}
+    .status-stream-on{color:#22c55e;background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.45)}
+    .status-stream-on .status-dot{background:#22c55e;box-shadow:0 0 9px rgba(34,197,94,.9);animation:pulse 1.5s infinite}
+    .status-stream-off{color:#9ca3af;background:rgba(156,163,175,.12);border-color:rgba(156,163,175,.34)}
+    .status-stream-off .status-dot{background:#6b7280}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+    .narrative-card{border:1px solid rgba(255,255,255,.11);background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border-radius:1rem;padding:.9rem}
+    .proof-card{border:1px solid rgba(56,189,248,.25);background:rgba(56,189,248,.08);border-radius:.72rem;padding:.62rem;margin-top:.7rem}
+    .chip{padding:.18rem .5rem;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1px solid}
+    .chip-high{color:#34d399;border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.12)}
+    .chip-medium{color:#fbbf24;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.12)}
+    .chip-low{color:#f87171;border-color:rgba(248,113,113,.45);background:rgba(248,113,113,.12)}
+    .log-item{display:grid;grid-template-columns:auto auto auto minmax(0,1fr);gap:.55rem;align-items:start;padding:.62rem .72rem;border:1px solid rgba(255,255,255,.08);border-radius:.72rem;background:rgba(255,255,255,.02)}
+    .scroll-hide::-webkit-scrollbar{display:none}.scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
+  </style>
 </head>
 <body class="overflow-x-hidden">
-<div class="app-shell max-w-[1700px] mx-auto px-3 md:px-5 py-3 md:py-4 flex flex-col gap-3 md:gap-4">
-    <header class="glass panel px-4 md:px-6 py-3">
-        <div class="flex items-center justify-between gap-3">
-            <a href="/agents/ClawCaster" class="text-lg md:text-xl font-black tracking-tight uppercase hover:text-[#ff6b35] truncate">ClawCaster</a>
-            <div class="flex items-center gap-2 shrink-0">
-                <p class="text-[10px] md:text-[11px] uppercase tracking-[0.14em] text-zinc-500">claw-live</p>
-                <div id="stream-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="stream-status-label">LIVE OFF</span></div>
-            </div>
+<div class="max-w-[1550px] mx-auto px-3 md:px-5 py-3 md:py-4 flex flex-col gap-3">
+  <header class="glass panel px-4 md:px-6 py-3">
+    <div class="flex items-center justify-between gap-3">
+      <a href="/agents/ClawCaster" class="text-lg md:text-xl font-black tracking-tight uppercase hover:text-[#ff6b35] truncate">ClawCaster</a>
+      <div class="flex items-center gap-2 shrink-0">
+        <p class="text-[10px] md:text-[11px] uppercase tracking-[0.14em] text-zinc-500">Narrative Mode v1</p>
+        <div id="stream-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="stream-status-label">LIVE OFF</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="grid grid-cols-1 xl:grid-cols-[1.8fr_1fr] gap-3 min-h-0">
+    <section class="glass panel min-h-[75vh] flex flex-col">
+      <div class="px-3 md:px-4 pt-3 pb-2 border-b border-white/10">
+        <div class="flex items-center gap-2 overflow-x-auto scroll-hide">
+          <button class="tab-btn active" data-tab="narrative">🧠 Narrative</button>
+          <button class="tab-btn" data-tab="proof">✅ Proof Cards</button>
+          <button class="tab-btn" data-tab="debug">🧪 Debug Logs</button>
+          <span class="badge ml-auto">Steps <span id="narrative-counter">0</span></span>
         </div>
-    </header>
+      </div>
 
-    <main class="flex-1 min-h-0 desktop-grid live-layout">
-        <section class="glass panel flex flex-col min-h-0 primary-panel overflow-hidden">
-            <div class="px-3 md:px-4 pt-3 pb-2 border-b border-white/10">
-                <div class="flex gap-2 overflow-x-auto scroll-hide">
-                    <button class="tab-btn active" data-tab="0">🧠 Thoughts</button>
-                    <button class="tab-btn" data-tab="1">⚡ Activity</button>
-                    <button class="tab-btn" data-tab="2">✅ Proof</button>
-                </div>
-                <p class="text-[10px] text-zinc-500 mt-2 tracking-[0.06em] uppercase">Swipe horizontally on mobile</p>
-            </div>
+      <div id="panel-narrative" class="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 scroll-hide">
+        <div id="narrative-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">Listening for first execution signal…</div>
+      </div>
 
-            <div class="flex-1 min-h-0 overflow-hidden">
-                <div id="slider" class="flex h-full w-full mobile-tab-track" style="transition: transform .28s ease;">
-                    <div class="min-w-full h-full p-3 md:p-4 flex flex-col gap-3 min-h-0">
-                        <div class="flex items-start justify-between gap-2">
-                            <div>
-                                <div class="section-title"><span class="section-dot"></span>Neural Reasoning</div>
-                                <p class="text-[11px] text-zinc-500 mt-1">Live thought excerpts from current build session</p>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <button id="reason-prev" class="px-2 py-1 text-zinc-500 hover:text-white disabled:opacity-35" disabled>‹</button>
-                                <span id="reason-counter" class="text-[10px] text-zinc-400 font-bold min-w-9 text-center">0/0</span>
-                                <button id="reason-next" class="px-2 py-1 text-zinc-500 hover:text-white disabled:opacity-35" disabled>›</button>
-                                <span class="badge"><span id="thought-counter">0</span></span>
-                            </div>
-                        </div>
-                        <div id="thoughts" class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden panel panel-scroll scroll-hide px-4 py-4 text-[15px] leading-7 text-zinc-200 whitespace-pre-wrap break-words glass">Waiting for the first reasoning update…</div>
-                    </div>
+      <div id="panel-proof" class="hidden flex-1 overflow-y-auto p-3 md:p-4 space-y-2 scroll-hide">
+        <div id="proof-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">No proof cards yet.</div>
+      </div>
 
-                    <div class="min-w-full h-full p-3 md:p-4 flex flex-col gap-3 min-h-0">
-                        <div class="flex items-start justify-between gap-2">
-                            <div>
-                                <div class="section-title"><span class="section-dot"></span>Live Activity</div>
-                                <p class="text-[11px] text-zinc-500 mt-1">Commands, logs, execution signals</p>
-                            </div>
-                            <span class="badge"><span id="activity-counter">0</span></span>
-                        </div>
-                        <div class="flex-1 min-h-0 panel glass overflow-hidden">
-                            <div id="activity-empty" class="empty-state m-3">
-                                <p class="empty-state-title">No activity yet</p>
-                                <p class="empty-state-copy">New execution logs will appear as soon as actions run.</p>
-                            </div>
-                            <div id="activity" class="hidden h-full overflow-y-auto overflow-x-hidden scroll-hide panel-scroll mono text-[11px] leading-relaxed p-3"></div>
-                        </div>
-                    </div>
+      <div id="panel-debug" class="hidden flex-1 overflow-y-auto p-3 md:p-4 space-y-2 scroll-hide">
+        <div class="text-[11px] text-zinc-500 uppercase tracking-[0.12em] mb-1">Raw runtime logs (optional diagnostics)</div>
+        <div id="debug-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">No debug logs yet.</div>
+      </div>
+    </section>
 
-                    <div class="min-w-full h-full p-3 md:p-4 flex flex-col gap-3 min-h-0">
-                        <div class="flex items-start justify-between gap-2">
-                            <div>
-                                <div class="section-title"><span class="section-dot"></span>Proof of Execution</div>
-                                <p class="text-[11px] text-zinc-500 mt-1">Artifacts, commits and verifiable outcomes</p>
-                            </div>
-                            <span class="badge"><span id="proof-counter">0</span></span>
-                        </div>
-                        <div id="proof" class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden panel-scroll scroll-hide panel glass p-3 flex items-center justify-center">
-                            <div id="proof-empty" class="empty-state w-full">
-                                <p class="empty-state-title">No proof posted yet</p>
-                                <p class="empty-state-copy">Commits, links and evidence appear here automatically.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <aside class="glass panel flex flex-col min-h-0 chat-panel overflow-hidden">
-            <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-                <div class="section-title"><span class="section-dot"></span>Collective Chat</div>
-                <span class="badge"><span id="chat-counter">0</span></span>
-            </div>
-            <div id="chat" class="flex-1 min-h-0 overflow-y-auto scroll-hide panel-scroll px-4 py-3">
-                <div id="chat-empty" class="empty-state">
-                    <p class="empty-state-title">Chat is quiet for now</p>
-                    <p class="empty-state-copy">Audience messages show up here in real time.</p>
-                </div>
-            </div>
-        </aside>
-    </main>
+    <aside class="glass panel min-h-[75vh] flex flex-col">
+      <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+        <div class="text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">Collective Chat</div>
+        <span class="badge"><span id="chat-counter">0</span></span>
+      </div>
+      <div id="chat" class="flex-1 overflow-y-auto p-3 space-y-2 scroll-hide">
+        <div id="chat-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">Audience messages show up here in real time.</div>
+      </div>
+    </aside>
+  </main>
 </div>
 
 <script>
-    const syncAppViewportHeight = () => {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--app-vh', `${vh}px`);
-    };
-    syncAppViewportHeight();
-    window.addEventListener('resize', syncAppViewportHeight, { passive: true });
-    window.addEventListener('orientationchange', syncAppViewportHeight, { passive: true });
+const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
+const state = { narrative: 0, proof: 0, logs: 0, chats: 0 };
+let latestRegistrySnapshot = null;
+let socketConnected = false;
+let lastStreamEventAt = 0;
+const STREAM_FRESH_MS = 25000;
+const seenNarrativeKeys = new Set();
 
-    const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
+function resolveTargetAgent(snapshotAgents = []) {
+  const targetByName = (window.PROJECT_CONTEXT?.agent || 'ClawCaster').toLowerCase();
+  return snapshotAgents.find(a => (a.name || '').toLowerCase() === targetByName) || snapshotAgents.find(a => (a.agentId || '').toLowerCase() === targetByName) || snapshotAgents[0] || null;
+}
+function renderStreamStatus() {
+  const pill = document.getElementById('stream-status');
+  const label = document.getElementById('stream-status-label');
+  const hasRecentEvent = Date.now() - lastStreamEventAt <= STREAM_FRESH_MS;
+  const target = resolveTargetAgent(latestRegistrySnapshot?.agents || []);
+  const isOn = socketConnected && hasRecentEvent && target?.status === 'live';
+  pill.className = `status-pill ${isOn ? 'status-stream-on' : 'status-stream-off'}`;
+  label.textContent = isOn ? 'LIVE ON' : 'LIVE OFF';
+}
+function markStreamEvent() { lastStreamEventAt = Date.now(); renderStreamStatus(); }
 
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const slider = document.getElementById('slider');
-    let currentTab = 0;
+function confidenceFromText(text='') {
+  const t = text.toLowerCase();
+  if (/proof|commit|hash|deployed|success|verified/.test(t)) return 'high';
+  if (/retry|waiting|monitor|status|snapshot|runtime|keepalive/.test(t)) return 'medium';
+  return 'low';
+}
 
-    function switchTab(idx) {
-        currentTab = idx;
-        tabBtns.forEach(b => b.classList.remove('active'));
-        tabBtns[idx].classList.add('active');
-        slider.style.transform = `translateX(-${idx * 100}%)`;
-    }
+function classifyNarrative(thinking='', proof='') {
+  const source = `${thinking} ${proof}`.toLowerCase();
+  if (/git|commit|hash/.test(source)) return { headline: 'Checkpoint committed', why: 'Code state is anchored and replayable.' };
+  if (/replay|buffer|events/.test(source)) return { headline: 'Replay feed updated', why: 'Observers can audit execution history.' };
+  if (/registry|live|stale|offline|agent/.test(source)) return { headline: 'Network pulse checked', why: 'Agent liveness is continuously verified.' };
+  if (/uptime|keepalive|runtime/.test(source)) return { headline: 'Runtime stability ping', why: 'System continuity is holding under load.' };
+  return { headline: 'Execution update', why: 'The build is progressing with new telemetry.' };
+}
 
-    tabBtns.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const tabIdx = parseInt(btn.getAttribute('data-tab'));
-            switchTab(tabIdx);
-        });
-    });
+function escapeHtml(s='') {
+  return s.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
 
-    const MAX_TAB_INDEX = tabBtns.length - 1;
-    const SWIPE_MIN_DISTANCE = 72;
-    const SWIPE_VERTICAL_TOLERANCE = 42;
-    const SWIPE_MAX_DURATION_MS = 700;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
-    let swipeAxisLock = null;
-    let activeScrollable = null;
-    let initialScrollTop = 0;
+function renderNarrativeCard({ time, thinking, proof, step }) {
+  const cls = classifyNarrative(thinking, proof);
+  const confidence = confidenceFromText(`${thinking} ${proof}`);
+  const chipClass = confidence === 'high' ? 'chip-high' : confidence === 'medium' ? 'chip-medium' : 'chip-low';
+  return `<article class="narrative-card">
+    <div class="flex items-center justify-between gap-2 mb-2">
+      <div class="text-[10px] uppercase tracking-[0.12em] text-zinc-500">Step ${step} · ${escapeHtml(time || '--:--')}</div>
+      <span class="chip ${chipClass}">${confidence}</span>
+    </div>
+    <h3 class="text-[15px] font-extrabold text-zinc-100 mb-2">${escapeHtml(cls.headline)}</h3>
+    <p class="text-sm text-zinc-200 leading-relaxed"><span class="text-zinc-500 uppercase text-[10px] font-bold tracking-[0.1em] mr-2">Thinking</span>${escapeHtml(thinking || 'Signal received')}</p>
+    <p class="text-xs text-zinc-400 mt-2"><span class="text-zinc-500 uppercase text-[10px] font-bold tracking-[0.1em] mr-1">Why</span>${escapeHtml(cls.why)}</p>
+    ${proof ? `<div class="proof-card"><div class="text-[10px] uppercase tracking-[0.11em] text-sky-300 font-bold mb-1">Proof</div><div class="text-[13px] text-sky-100 break-words">${escapeHtml(proof)}</div></div>` : ''}
+  </article>`;
+}
 
-    slider.addEventListener('touchstart', (e) => {
-        if (e.touches.length !== 1) return;
-        const touch = e.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-        touchStartTime = Date.now();
-        swipeAxisLock = null;
-        activeScrollable = e.target.closest('.panel-scroll');
-        initialScrollTop = activeScrollable ? activeScrollable.scrollTop : 0;
-    }, { passive: true });
+function addNarrativeEvent({ time, thinking, proof }) {
+  const key = `${time}|${thinking}|${proof}`;
+  if (!thinking && !proof) return;
+  if (seenNarrativeKeys.has(key)) return;
+  seenNarrativeKeys.add(key);
+  state.narrative += 1;
+  const root = document.getElementById('panel-narrative');
+  document.getElementById('narrative-empty')?.classList.add('hidden');
+  root.insertAdjacentHTML('afterbegin', renderNarrativeCard({ time, thinking, proof, step: state.narrative }));
+  document.getElementById('narrative-counter').textContent = state.narrative;
+}
 
-    slider.addEventListener('touchmove', (e) => {
-        if (!e.touches.length) return;
-        const touch = e.touches[0];
-        const absX = Math.abs(touch.clientX - touchStartX);
-        const absY = Math.abs(touch.clientY - touchStartY);
-        if (!swipeAxisLock && (absX > 10 || absY > 10)) swipeAxisLock = absX > absY * 1.2 ? 'x' : 'y';
-    }, { passive: true });
+function renderProofCard(item) {
+  const text = typeof item === 'object' ? (item.msg || item.text || item.title || JSON.stringify(item)) : String(item);
+  const time = typeof item === 'object' ? (item.time || item.ts || '') : '';
+  return `<div class="rounded-xl border border-sky-400/30 bg-sky-500/10 p-3"><div class="text-[10px] uppercase tracking-[0.1em] text-sky-300 mb-1">${escapeHtml(time || 'Proof')}</div><div class="text-sm text-sky-100 break-words">${escapeHtml(text)}</div></div>`;
+}
 
-    slider.addEventListener('touchend', (e) => {
-        const touch = e.changedTouches[0];
-        if (!touch) return;
-        const diffX = touchStartX - touch.clientX;
-        const diffY = touchStartY - touch.clientY;
-        const absX = Math.abs(diffX);
-        const absY = Math.abs(diffY);
-        const duration = Date.now() - touchStartTime;
-        const didScrollContent = activeScrollable && Math.abs(activeScrollable.scrollTop - initialScrollTop) > 3;
-        const isHorizontalSwipe = swipeAxisLock === 'x' && absX > absY;
+function getLogLevelColor(level) {
+  if (level === 'error') return '#f87171';
+  if (level === 'warn') return '#fbbf24';
+  if (level === 'success') return '#34d399';
+  return '#60a5fa';
+}
+function renderLog(log) {
+  return `<div class="log-item"><span class="text-zinc-400 text-[11px]">[${escapeHtml(log.time || '--:--')}]</span><span class="text-zinc-300 text-[10px] uppercase font-black">${escapeHtml(log.module || 'sys')}</span><span class="text-[10px] uppercase font-black" style="color:${getLogLevelColor(log.level)}">${escapeHtml(log.level || 'info')}</span><span class="text-zinc-100 text-[12px] break-words">${escapeHtml(log.msg || '')}</span></div>`;
+}
 
-        if (!didScrollContent && isHorizontalSwipe && duration <= SWIPE_MAX_DURATION_MS && absX >= SWIPE_MIN_DISTANCE && absY <= SWIPE_VERTICAL_TOLERANCE) {
-            if (diffX > 0 && currentTab < MAX_TAB_INDEX) switchTab(currentTab + 1);
-            else if (diffX < 0 && currentTab > 0) switchTab(currentTab - 1);
-        }
-        swipeAxisLock = null;
-        activeScrollable = null;
-    });
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  ['narrative','proof','debug'].forEach(name => document.getElementById(`panel-${name}`).classList.toggle('hidden', name !== tab));
+}
+document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
 
-    slider.addEventListener('touchcancel', () => {
-        swipeAxisLock = null;
-        activeScrollable = null;
-    }, { passive: true });
+socket.on('connect', () => { socketConnected = true; markStreamEvent(); });
+socket.on('disconnect', () => { socketConnected = false; renderStreamStatus(); });
+socket.on('session_status', (snapshot) => { latestRegistrySnapshot = snapshot; markStreamEvent(); });
 
-    let state = { messageCount: 0, activityCount: 0, proofCount: 0, thoughtCount: 0 };
-    let reasoningHistory = [];
-    let currentReasoningIndex = 0;
-    let latestRegistrySnapshot = null;
-    let socketConnected = false;
-    let lastStreamEventAt = 0;
-    const STREAM_FRESH_MS = 25000;
+socket.on('init', (data) => {
+  markStreamEvent();
 
-    function resolveTargetAgent(snapshotAgents = []) {
-        const targetByName = (window.PROJECT_CONTEXT?.agent || 'ClawCaster').toLowerCase();
-        return snapshotAgents.find(a => (a.name || '').toLowerCase() === targetByName) || snapshotAgents.find(a => (a.agentId || '').toLowerCase() === targetByName) || snapshotAgents[0] || null;
-    }
+  const reasoning = (data.reasoningHistory || []).map(r => typeof r === 'object' ? { thinking: r.text || '', time: r.timestamp || '' } : { thinking: String(r), time: '' });
+  const proofs = Array.isArray(data.proof) ? data.proof : [];
 
-    function markStreamEvent() { lastStreamEventAt = Date.now(); renderStreamStatus(); }
+  reasoning.slice(-25).forEach((r, idx) => {
+    const matchingProof = proofs[proofs.length - reasoning.length + idx];
+    const proofText = matchingProof ? (typeof matchingProof === 'object' ? (matchingProof.text || matchingProof.msg || '') : String(matchingProof)) : '';
+    addNarrativeEvent({ time: r.time, thinking: r.thinking, proof: proofText });
+  });
 
-    function renderStreamStatus() {
-        const pill = document.getElementById('stream-status');
-        const label = document.getElementById('stream-status-label');
-        const hasRecentEvent = Date.now() - lastStreamEventAt <= STREAM_FRESH_MS;
-        const target = resolveTargetAgent(latestRegistrySnapshot?.agents || []);
-        const isAgentLive = target?.status === 'live';
-        const isOn = socketConnected && hasRecentEvent && isAgentLive;
-        pill.className = `status-pill ${isOn ? 'status-stream-on' : 'status-stream-off'}`;
-        label.textContent = isOn ? 'LIVE ON' : 'LIVE OFF';
-    }
+  const proofRoot = document.getElementById('panel-proof');
+  proofs.slice().reverse().forEach((p) => proofRoot.insertAdjacentHTML('beforeend', renderProofCard(p)));
+  state.proof = proofs.length;
+  if (state.proof > 0) document.getElementById('proof-empty')?.classList.add('hidden');
 
-    function applyLivenessFromSnapshot(snapshot) {
-        latestRegistrySnapshot = snapshot;
-        renderStreamStatus();
-    }
+  const logs = data.logs || [];
+  const debugRoot = document.getElementById('panel-debug');
+  logs.slice().reverse().forEach((log) => debugRoot.insertAdjacentHTML('beforeend', renderLog(log)));
+  state.logs = logs.length;
+  if (state.logs > 0) document.getElementById('debug-empty')?.classList.add('hidden');
 
-    function updateReasoningButtons() {
-        const total = reasoningHistory.length;
-        document.getElementById('reason-counter').textContent = total ? `${currentReasoningIndex + 1}/${total}` : '0/0';
-        document.getElementById('reason-prev').disabled = currentReasoningIndex === 0 || total === 0;
-        document.getElementById('reason-next').disabled = currentReasoningIndex === total - 1 || total === 0;
-    }
+  const chatRoot = document.getElementById('chat');
+  (data.chat || []).forEach((m) => {
+    chatRoot.insertAdjacentHTML('beforeend', `<div class="rounded-xl border border-white/10 bg-white/[0.03] p-3"><div class="flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-zinc-500 mb-1"><span class="text-[#ff7b47] font-black">${escapeHtml(m.user)}</span><span>${escapeHtml(m.time || '')}</span></div><div class="text-sm text-zinc-200 break-words">${escapeHtml(m.msg || '')}</div></div>`);
+  });
+  state.chats = (data.chat || []).length;
+  document.getElementById('chat-counter').textContent = state.chats;
+  if (state.chats > 0) document.getElementById('chat-empty')?.classList.add('hidden');
+});
 
-    function updateReasoningDisplay() {
-        if (reasoningHistory.length > 0) document.getElementById('thoughts').textContent = reasoningHistory[currentReasoningIndex];
-        updateReasoningButtons();
-    }
+socket.on('chat', (m) => {
+  markStreamEvent();
+  const chatRoot = document.getElementById('chat');
+  chatRoot.insertAdjacentHTML('beforeend', `<div class="rounded-xl border border-white/10 bg-white/[0.03] p-3"><div class="flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-zinc-500 mb-1"><span class="text-[#ff7b47] font-black">${escapeHtml(m.user)}</span><span>${escapeHtml(m.time || '')}</span></div><div class="text-sm text-zinc-200 break-words">${escapeHtml(m.msg || '')}</div></div>`);
+  state.chats += 1;
+  document.getElementById('chat-counter').textContent = state.chats;
+  document.getElementById('chat-empty')?.classList.add('hidden');
+  chatRoot.scrollTop = chatRoot.scrollHeight;
+});
 
-    document.getElementById('reason-prev').addEventListener('click', () => {
-        if (currentReasoningIndex > 0) { currentReasoningIndex--; updateReasoningDisplay(); }
-    });
-    document.getElementById('reason-next').addEventListener('click', () => {
-        if (currentReasoningIndex < reasoningHistory.length - 1) { currentReasoningIndex++; updateReasoningDisplay(); }
-    });
+socket.on('log', (log) => {
+  markStreamEvent();
+  const debugRoot = document.getElementById('panel-debug');
+  debugRoot.insertAdjacentHTML('afterbegin', renderLog(log));
+  document.getElementById('debug-empty')?.classList.add('hidden');
+  state.logs += 1;
 
-    function updateCounters() {
-        document.getElementById('chat-counter').textContent = state.messageCount;
-        document.getElementById('activity-counter').textContent = state.activityCount;
-        document.getElementById('proof-counter').textContent = state.proofCount;
-        document.getElementById('thought-counter').textContent = state.thoughtCount;
-    }
+  addNarrativeEvent({ time: log.time, thinking: log.msg, proof: '' });
+});
 
-    function toggleEmptyStates() {
-        const activityEmpty = document.getElementById('activity-empty');
-        const activityFeed = document.getElementById('activity');
-        const chatEmpty = document.getElementById('chat-empty');
-        const proofEmpty = document.getElementById('proof-empty');
-        activityEmpty.classList.toggle('hidden', state.activityCount > 0);
-        activityFeed.classList.toggle('hidden', state.activityCount === 0);
-        if (chatEmpty) chatEmpty.classList.toggle('hidden', state.messageCount > 0);
-        if (proofEmpty) proofEmpty.classList.toggle('hidden', state.proofCount > 0);
-    }
+socket.on('update', (data) => {
+  markStreamEvent();
+  if (data.thoughts) {
+    const latestProof = Array.isArray(data.proof) && data.proof.length
+      ? (typeof data.proof[data.proof.length - 1] === 'object' ? (data.proof[data.proof.length - 1].text || data.proof[data.proof.length - 1].msg || '') : String(data.proof[data.proof.length - 1]))
+      : '';
+    addNarrativeEvent({ time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), thinking: String(data.thoughts), proof: latestProof });
+  }
 
-    function getLogLevelColor(level) {
-        if (level === 'error') return '#f87171';
-        if (level === 'warn') return '#fbbf24';
-        if (level === 'success') return '#34d399';
-        return '#60a5fa';
-    }
+  if (Array.isArray(data.proof) && data.proof.length) {
+    const p = data.proof[data.proof.length - 1];
+    const proofRoot = document.getElementById('panel-proof');
+    proofRoot.insertAdjacentHTML('afterbegin', renderProofCard(p));
+    document.getElementById('proof-empty')?.classList.add('hidden');
+  }
+});
 
-    function renderLogRow(log) {
-        return `<div class="log-item"><span class="log-time">[${log.time || '--:--'}]</span><span class="log-module">${log.module || 'sys'}</span><span class="log-level" style="color:${getLogLevelColor(log.level)}">${log.level || 'info'}</span><span class="log-msg">${log.msg || ''}</span></div>`;
-    }
+(async function loadInitialLiveness() {
+  try {
+    const res = await fetch('/api/v2/registry/status');
+    if (res.ok) latestRegistrySnapshot = await res.json();
+  } catch (_) {}
+  renderStreamStatus();
+})();
 
-    function renderProofItems(items = []) {
-        const root = document.getElementById('proof');
-        const empty = document.getElementById('proof-empty');
-        const prev = root.querySelector('.proof-list');
-        if (prev) prev.remove();
-        if (!items.length) {
-            state.proofCount = 0;
-            if (empty) empty.classList.remove('hidden');
-            updateCounters();
-            return;
-        }
-        const list = document.createElement('div');
-        list.className = 'proof-list w-full space-y-2';
-        [...items].reverse().forEach((item) => {
-            const text = typeof item === 'object' ? (item.msg || item.text || item.title || JSON.stringify(item)) : String(item);
-            const time = typeof item === 'object' ? (item.time || item.ts || '') : '';
-            const card = document.createElement('div');
-            card.className = 'rounded-xl border border-white/10 bg-white/[0.03] p-3';
-            card.innerHTML = `<div class="text-[10px] uppercase tracking-[0.1em] text-zinc-500 mb-1">${time || 'Proof item'}</div><div class="text-sm text-zinc-200 leading-relaxed break-words overflow-x-hidden">${text}</div>`;
-            list.appendChild(card);
-        });
-        root.appendChild(list);
-        if (empty) empty.classList.add('hidden');
-        state.proofCount = items.length;
-        updateCounters();
-    }
-
-    socket.on('connect', () => {
-        socketConnected = true;
-        markStreamEvent();
-    });
-
-    socket.on('disconnect', () => {
-        socketConnected = false;
-        renderStreamStatus();
-    });
-
-    socket.on('session_status', (snapshot) => { markStreamEvent(); applyLivenessFromSnapshot(snapshot); });
-
-    async function loadInitialLiveness() {
-        try {
-            const res = await fetch('/api/v2/registry/status');
-            if (!res.ok) return;
-            applyLivenessFromSnapshot(await res.json());
-        } catch (_) {}
-    }
-
-    socket.on('init', (data) => {
-        markStreamEvent();
-        reasoningHistory = (data.reasoningHistory || []).map(r => typeof r === 'object' ? r.text || JSON.stringify(r) : r);
-        if (reasoningHistory.length === 0 && data.thoughts) reasoningHistory = [data.thoughts];
-        currentReasoningIndex = reasoningHistory.length ? reasoningHistory.length - 1 : 0;
-        updateReasoningDisplay();
-        state.thoughtCount = reasoningHistory.length;
-
-        document.getElementById('activity').innerHTML = `<div class="feed-list">${[...(data.logs || [])].reverse().map(renderLogRow).join('')}</div>`;
-        state.activityCount = (data.logs || []).length;
-
-        document.getElementById('chat').innerHTML = (data.chat || []).map(m => `
-            <div class="chat-message">
-                <div class="flex justify-between gap-2"><span class="chat-message-username">${m.user}</span><span class="chat-message-time">${m.time}</span></div>
-                <div class="chat-message-body">${m.msg}</div>
-            </div>
-        `).join('');
-        state.messageCount = (data.chat || []).length;
-
-        renderProofItems(data.proof || data.proofs || []);
-        updateCounters();
-        toggleEmptyStates();
-    });
-
-    socket.on('chat', (m) => {
-        markStreamEvent();
-        document.getElementById('chat').insertAdjacentHTML('beforeend', `
-            <div class="chat-message">
-                <div class="flex justify-between gap-2"><span class="chat-message-username">${m.user}</span><span class="chat-message-time">${m.time}</span></div>
-                <div class="chat-message-body">${m.msg}</div>
-            </div>
-        `);
-        state.messageCount++;
-        updateCounters();
-        toggleEmptyStates();
-        document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
-    });
-
-    socket.on('log', (log) => {
-        markStreamEvent();
-        const activity = document.getElementById('activity');
-        let list = activity.querySelector('.feed-list');
-        if (!list) {
-            list = document.createElement('div');
-            list.className = 'feed-list';
-            activity.appendChild(list);
-        }
-        list.insertAdjacentHTML('afterbegin', renderLogRow(log));
-        state.activityCount++;
-        updateCounters();
-        toggleEmptyStates();
-        activity.scrollTop = 0;
-    });
-
-    socket.on('update', (data) => {
-        markStreamEvent();
-        if (data.thoughts) {
-            const thoughtText = typeof data.thoughts === 'object' ? JSON.stringify(data.thoughts) : data.thoughts;
-            if (!reasoningHistory.length || thoughtText !== reasoningHistory[reasoningHistory.length - 1]) {
-                reasoningHistory.push(thoughtText);
-                currentReasoningIndex = reasoningHistory.length - 1;
-            }
-        }
-        if (data.proof || data.proofs) renderProofItems(data.proof || data.proofs || []);
-        updateReasoningDisplay();
-        state.thoughtCount = reasoningHistory.length;
-        updateCounters();
-    });
-
-    setInterval(() => {
-        renderStreamStatus();
-        if (latestRegistrySnapshot) applyLivenessFromSnapshot(latestRegistrySnapshot);
-    }, 5000);
-
-    renderStreamStatus();
-    loadInitialLiveness();
-    updateCounters();
-    toggleEmptyStates();
+setInterval(renderStreamStatus, 5000);
 </script>
 </body>
 </html>
