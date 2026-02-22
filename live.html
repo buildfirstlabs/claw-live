@@ -54,6 +54,7 @@
     }
     .entry-meta { font-size:10px; color:#a1a1aa; letter-spacing:.1em; text-transform:uppercase; font-weight:700; }
     .entry-text { font-size:15px; line-height:1.45; color:#fafafa; }
+    .entry-text.voice-line { font-weight: 600; letter-spacing: .01em; }
     .entry-sub { font-size:12px; color:#d4d4d8; }
 
     .proof-item { border:1px solid rgba(56,189,248,.35); background:rgba(56,189,248,.1); border-radius:.75rem; padding:.55rem .62rem; }
@@ -197,6 +198,41 @@ function confidenceFromText(text='') {
   return 'progress';
 }
 
+const LIVE_VOICE_SYSTEM = {
+  states: {
+    build: ['I'm building the next piece now.', 'Putting the core part in place.', 'New piece is going in now.'],
+    fix: ['Found the break — patching it now.', 'Issue confirmed, applying the fix.', 'I'm cleaning up a bug path.'],
+    test: ['Quick verification run in progress.', 'Running checks before we lock this.', 'Testing this path now.'],
+    blocked: ['Blocked on this edge — isolating root cause.', 'Hit a blocker; collecting facts before next move.', 'This path is stuck for now; tracing why.'],
+    shipped: ['Shipped ✅ change is live with proof.', 'Done and landed — checkpoint locked.', 'This one is out the door.']
+  },
+  fallback: ['Progressing the run with a fresh signal.', 'Advancing the task and logging proof.', 'Execution moving with traceable updates.']
+};
+
+function pickVoiceLine(pool, seed='') {
+  if (!Array.isArray(pool) || !pool.length) return '';
+  const s = String(seed || '');
+  let hash = 0;
+  for (let i = 0; i < s.length; i += 1) hash = ((hash << 5) - hash + s.charCodeAt(i)) | 0;
+  return pool[Math.abs(hash) % pool.length];
+}
+
+function inferVoiceState(text='', proof='') {
+  const source = `${text} ${proof}`.toLowerCase();
+  if (/ship|deployed|merged|released|landed|done|commit|checkpoint/.test(source)) return 'shipped';
+  if (/block|blocked|waiting on|permission|missing|cannot|can't|stuck/.test(source)) return 'blocked';
+  if (/test|verify|verification|check|qa|assert/.test(source)) return 'test';
+  if (/fix|bug|error|failed|exception|patch|retry/.test(source)) return 'fix';
+  if (/build|implement|wire|create|add|refactor|update|render/.test(source)) return 'build';
+  return 'fallback';
+}
+
+function toVoiceMicroMessage(text='', proof='', seed='') {
+  const state = inferVoiceState(text, proof);
+  const pool = state === 'fallback' ? LIVE_VOICE_SYSTEM.fallback : LIVE_VOICE_SYSTEM.states[state];
+  return pickVoiceLine(pool, `${seed}|${state}|${text}|${proof}`);
+}
+
 function summarize(thinking='', proof='') {
   const source = `${thinking} ${proof}`.toLowerCase();
   if (/error|failed|exception/.test(source)) return 'Hit an issue, capturing context before retry.';
@@ -206,24 +242,30 @@ function summarize(thinking='', proof='') {
   return 'Execution moved forward with a new signal.';
 }
 
-function renderEntry({ actor='agent', time='', text='', proof='', raw='' }) {
+function renderEntry({ actor='agent', time='', text='', proof='', raw='', state='' }) {
   const tone = actor === 'human' ? 'Audience' : 'Agent';
   const confidence = confidenceFromText(`${text} ${proof}`);
   return `<article class="entry">
     <div class="entry-meta">${escapeHtml(tone)} • ${escapeHtml(time || '--:--')} • ${escapeHtml(confidence)}</div>
-    <div class="entry-text mt-1">${escapeHtml(text || summarize('', proof))}</div>
+    <div class="entry-text voice-line mt-1">${escapeHtml(text || summarize('', proof))}</div>
     ${proof ? `<div class="entry-sub mt-2">Proof: ${escapeHtml(proof)}</div>` : ''}
     ${raw ? `<details class="mt-2"><summary class="text-[10px] uppercase tracking-[.1em] text-zinc-500">raw</summary><pre class="mono text-[11px] text-zinc-400 whitespace-pre-wrap break-words mt-1">${escapeHtml(raw)}</pre></details>` : ''}
   </article>`;
 }
 
 function addFeedEntry(entry) {
-  const key = `${entry.actor}|${entry.time}|${entry.text}|${entry.proof}`;
-  if (!entry.text && !entry.proof) return;
+  const normalized = { ...entry };
+  if (normalized.actor === 'agent') {
+    normalized.state = inferVoiceState(normalized.text || '', normalized.proof || '');
+    normalized.text = toVoiceMicroMessage(normalized.text || '', normalized.proof || '', `${normalized.time || ''}`);
+  }
+
+  const key = `${normalized.actor}|${normalized.time}|${normalized.text}|${normalized.proof}`;
+  if (!normalized.text && !normalized.proof) return;
   if (seenFeed.has(key)) return;
   seenFeed.add(key);
   document.getElementById('feed-empty')?.classList.add('hidden');
-  document.getElementById('feed').insertAdjacentHTML('afterbegin', renderEntry(entry));
+  document.getElementById('feed').insertAdjacentHTML('afterbegin', renderEntry(normalized));
   state.feed += 1;
   updateCounters();
 }
