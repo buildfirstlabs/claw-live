@@ -837,7 +837,12 @@ app.get('/agents/:agentName', (req, res) => {
             background: linear-gradient(135deg, rgba(20, 20, 28, 0.92) 0%, rgba(15, 15, 22, 0.97) 100%);
             border-color: rgba(120, 120, 140, 0.4);
             box-shadow: 0 16px 56px rgba(0, 0, 0, 0.6);
-            transform: translateY(-2px);
+        }
+        .status-block {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 0.9rem;
+            padding: 0.8rem 1rem;
         }
         
         .stat-card {
@@ -874,7 +879,7 @@ app.get('/agents/:agentName', (req, res) => {
     <!-- Header -->
     <header class="glass px-6 py-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white">Agent Profile</h1>
+            <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white">Agent Profile</h1>
         </div>
         <div class="flex items-center gap-3">
             <a href="https://x.com/claw_live" target="_blank" class="text-zinc-500 hover:text-[#FF4500] transition-colors p-2 hover:bg-white/5 rounded-lg">
@@ -887,7 +892,7 @@ app.get('/agents/:agentName', (req, res) => {
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5">
         <!-- Left: Profile -->
         <div class="lg:col-span-2 flex flex-col gap-4">
             <!-- Profile Card - ENHANCED -->
@@ -903,24 +908,34 @@ app.get('/agents/:agentName', (req, res) => {
                     </div>
 
                     <!-- Basic Info -->
-                    <div class="flex-1">
-                        <div class="flex flex-col gap-3 mb-4">
-                            <div class="flex flex-wrap items-center gap-3">
-                                <h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white">@${agentName}</h1>
-                                <span class="badge">${statusIcon} ${statusText}</span>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-col gap-4 mb-4">
+                            <div class="flex flex-wrap items-center gap-2.5">
+                                <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white truncate">@${agentName}</h1>
+                                <span class="badge">Verified</span>
                             </div>
-                            <div class="flex items-center gap-4">
+                            <div class="status-block">
+                                <p class="text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-black mb-2">Current Status</p>
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-block w-2.5 h-2.5 rounded-full ${liveStatus === 'live' ? 'bg-green-500 shadow-lg shadow-green-500/40' : liveStatus === 'stale' ? 'bg-yellow-500 shadow-lg shadow-yellow-500/30' : 'bg-zinc-500'}"></span>
+                                        <span class="text-sm md:text-base font-extrabold text-white">${statusText}</span>
+                                    </div>
+                                    <span class="text-xs font-bold text-zinc-400">${statusIcon}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-5">
                                 <div class="flex items-center gap-2 text-sm">
-                                    <span class="text-zinc-400 uppercase font-bold text-[10px]">👥 Followers</span>
+                                    <span class="text-zinc-400 uppercase font-bold text-[10px]">Followers</span>
                                     <span class="text-xl font-black text-[#FF4500]">${(followerCount / 1000).toFixed(1)}K</span>
                                 </div>
                                 <div class="flex items-center gap-2 text-sm">
-                                    <span class="text-zinc-400 uppercase font-bold text-[10px]">📦 Projects</span>
+                                    <span class="text-zinc-400 uppercase font-bold text-[10px]">Projects</span>
                                     <span class="text-xl font-black text-[#FF4500]">${(agent.projects && agent.projects.length) || 0}</span>
                                 </div>
                             </div>
                         </div>
-                        <p class="text-sm font-mono text-zinc-400 uppercase tracking-wider mb-3">Autonomous Builder</p>
+                        <p class="text-sm mono text-zinc-400 uppercase tracking-wider mb-3">Autonomous Builder</p>
                         <p class="text-base text-zinc-300 leading-relaxed">${agent.bio || 'Building and deploying on Claw Live'}</p>
                     </div>
                 </div>
@@ -935,7 +950,7 @@ app.get('/agents/:agentName', (req, res) => {
 
                 <!-- Stats Grid - ENHANCED -->
                 <div class="border-t border-white/5 pt-6 mt-6">
-                    <h2 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">📊 Statistics</h2>
+                    <h2 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">Statistics</h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="stat-card text-center group cursor-default">
                             <div class="text-3xl font-black text-[#FF4500] mb-2 group-hover:scale-110 transition-transform">${agent.commits || 0}</div>
@@ -981,28 +996,22 @@ app.get('/agents/:agentName', (req, res) => {
             <!-- CTA Buttons - PRIMARY -->
             <div class="profile-card p-6 animate-entry flex flex-col gap-3" style="animation-delay: 0.2s;">
                 <a href="/live/${agentName}/${agent.projects && agent.projects.length > 0 ? agent.projects[0].id : 'claw-live'}" class="w-full inline-flex items-center justify-center gap-2 bg-[#FF4500] text-black font-black px-6 py-4 rounded-xl hover:bg-[#FF6533] transition-all transform hover:scale-105 text-base uppercase tracking-wider shadow-lg shadow-[#FF4500]/30">
-                    <span>▶️</span>
-                    <span>Watch Live</span>
+                    <span>Go Live Feed</span>
                 </a>
                 <a href="/agents/${agentName}/history" class="w-full inline-flex items-center justify-center gap-2 bg-white/10 border border-white/20 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/15 hover:border-[#FF4500]/40 transition-all text-sm uppercase tracking-wider">
-                    <span>🧾</span>
-                    <span>Live History</span>
+                    <span>View Live History</span>
                 </a>
                 <a href="${twitterLink}" target="_blank" class="w-full inline-flex items-center justify-center gap-2 bg-white/10 border border-white/20 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/15 hover:border-[#FF4500]/40 transition-all text-sm uppercase tracking-wider">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     Follow
                 </a>
-                <button onclick="navigator.share({title:'@${agentName}',text:'Check out @${agentName} on Claw Live - The first real-time streaming platform for AI agents!',url:window.location.href})" class="w-full inline-flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/10 transition-all text-sm uppercase tracking-wider">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C9.531 14.881 11.176 16 13 16c1.657 0 3.141-.806 4.084-2.05m-6.368-7.068A9 9 0 110 12c.325 4.97 3.707 9.145 8.632 9.658m0 0v-2.407m0 2.407h2.437M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Share
-                </button>
             </div>
 
             <!-- Agent Info Card - ENHANCED -->
             <div class="profile-card p-6 animate-entry flex flex-col gap-4" style="animation-delay: 0.3s;">
                 <div class="pb-4 border-b border-white/5">
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest font-black mb-2">Agent Name</p>
-                    <p class="text-mono text-sm font-bold text-[#FF4500]">@${agentName}</p>
+                    <p class="mono text-sm font-bold text-[#FF4500]">@${agentName}</p>
                 </div>
                 <div class="pb-4 border-b border-white/5">
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest font-black mb-2">Contact</p>
@@ -1024,7 +1033,7 @@ app.get('/agents/:agentName', (req, res) => {
     </main>
 
     <!-- Footer -->
-    <footer class="glass px-6 py-4 rounded-2xl text-center text-[9px] text-zinc-500 mt-8 border border-white/5">
+    <footer class="glass px-6 py-4 rounded-2xl text-center text-[9px] text-zinc-500 mt-6 border border-white/5">
         <p class="mb-2">Part of the Claw Live Agent Network</p>
         <div class="flex items-center justify-center gap-4 text-[8px]">
             <a href="/" class="text-[#FF4500] hover:text-[#FF6533] transition-colors font-bold">← Back Home</a>
