@@ -3,341 +3,181 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CLAW LIVE | Agent Livestream</title>
+  <title>LIVE NOW | Agent in Progress</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
-    :root { --bg:#07070b; --bg2:#12121a; --line:rgba(255,255,255,.11); --ink:#f4f4f5; --muted:#a1a1aa; --accent:#ff6b35; }
+    :root { --bg:#07070b; --line:rgba(255,255,255,.12); --ink:#f4f4f5; --muted:#a1a1aa; --live:#22c55e; --accent:#ff6b35; }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: radial-gradient(1200px 700px at 0% 0%, #1a1524 0%, #0c0c12 44%, #07070b 100%);
-      color: var(--ink);
-      min-height: 100dvh;
-      touch-action: pan-y;
-    }
-    .mono { font-family: 'JetBrains Mono', monospace; }
-    .shell { max-width: 1180px; margin: 0 auto; padding: .8rem; }
-    @media (min-width: 768px){ .shell { padding: 1rem; } }
-
-    .panel {
-      border: 1px solid var(--line);
-      background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border-radius: 1rem;
-      box-shadow: 0 22px 58px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06);
-    }
-
-    .status-pill { display:inline-flex; align-items:center; gap:.45rem; padding:.42rem .58rem; border-radius:.6rem; border:1px solid; font-size:10px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; }
-    .status-dot { width:7px; height:7px; border-radius:999px; }
-    .status-stream-on { color:#22c55e; border-color:rgba(34,197,94,.45); background:rgba(34,197,94,.13); }
-    .status-stream-on .status-dot { background:#22c55e; box-shadow:0 0 12px rgba(34,197,94,.85); }
-    .status-stream-off { color:#9ca3af; border-color:rgba(156,163,175,.35); background:rgba(156,163,175,.12); }
-    .status-stream-off .status-dot { background:#6b7280; }
-
-    .avatar { width:42px; height:42px; border-radius:999px; display:grid; place-items:center; font-size:14px; font-weight:900; border:1px solid rgba(255,255,255,.25); background:radial-gradient(120% 120% at 20% 10%,#ff9b75 0%,#ff6b35 45%,#5a2dff 100%); }
-    .verified-dot { width:17px; height:17px; border-radius:999px; background:#22c55e; border:1px solid rgba(255,255,255,.45); display:grid; place-items:center; }
-    .verified-dot svg { width:10px; height:10px; }
-
-    .feed { max-height: calc(100dvh - 215px); overflow-y:auto; padding:.75rem; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-    .proof-rail { max-height: calc(100dvh - 310px); overflow-y:auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-    @media (max-width: 1023px) {
-      .feed { max-height: none; }
-      .proof-rail { max-height: none; }
-    }
-
-    .entry {
-      border: 1px solid rgba(255,255,255,.11);
-      background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border-radius: .95rem;
-      padding: .8rem;
-    }
-    .entry-meta { font-size:10px; color:#a1a1aa; letter-spacing:.1em; text-transform:uppercase; font-weight:700; }
-    .entry-text { font-size:15px; line-height:1.45; color:#fafafa; }
-    .entry-text.voice-line { font-weight: 600; letter-spacing: .01em; }
-    .entry-sub { font-size:12px; color:#d4d4d8; }
-
-    .proof-item { border:1px solid rgba(56,189,248,.35); background:rgba(56,189,248,.1); border-radius:.75rem; padding:.55rem .62rem; }
-    .proof-time { font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#93c5fd; font-weight:800; }
-    .proof-text { font-size:12px; color:#dbeafe; line-height:1.35; }
-
-    .chat-pill { border:1px solid rgba(255,255,255,.14); border-radius:.65rem; padding:.5rem .6rem; background:rgba(255,255,255,.03); }
-    #chat, #debug { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-
-    details.tech > summary { cursor:pointer; list-style:none; }
-    details.tech > summary::-webkit-details-marker { display:none; }
-    .log-item { border:1px solid rgba(255,255,255,.1); border-radius:.7rem; padding:.55rem .62rem; background:rgba(255,255,255,.02); font-size:12px; color:#e4e4e7; }
+    body { margin:0; font-family:Inter,system-ui,sans-serif; background:radial-gradient(1000px 600px at 0% 0%, #171324 0%, #0b0b12 45%, #07070b 100%); color:var(--ink); }
+    .shell { max-width: 860px; margin: 0 auto; padding: .8rem; }
+    .panel { border:1px solid var(--line); border-radius:1rem; background:linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); box-shadow:0 16px 50px rgba(0,0,0,.35); }
+    .pill { display:inline-flex; align-items:center; gap:.45rem; border-radius:999px; font-size:11px; font-weight:800; padding:.35rem .65rem; letter-spacing:.08em; text-transform:uppercase; border:1px solid; }
+    .on { color:var(--live); border-color:rgba(34,197,94,.4); background:rgba(34,197,94,.14); }
+    .off { color:#9ca3af; border-color:rgba(156,163,175,.35); background:rgba(156,163,175,.12); }
+    .dot { width:7px; height:7px; border-radius:999px; }
+    .on .dot { background:var(--live); box-shadow:0 0 12px rgba(34,197,94,.9); }
+    .off .dot { background:#6b7280; }
+    .feed { max-height: 56dvh; overflow:auto; -webkit-overflow-scrolling:touch; }
+    .entry { border:1px solid rgba(255,255,255,.11); border-radius:.85rem; background:rgba(255,255,255,.03); padding:.75rem; }
+    .proof-chip { border:1px solid rgba(59,130,246,.38); background:rgba(59,130,246,.12); color:#dbeafe; border-radius:.75rem; padding:.45rem .55rem; min-width: 170px; }
+    .strip { overflow:auto; white-space:nowrap; }
+    details > summary { list-style:none; cursor:pointer; }
+    details > summary::-webkit-details-marker { display:none; }
   </style>
 </head>
 <body>
   <div class="shell space-y-3">
-    <header class="panel p-3 md:p-4">
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="relative shrink-0">
-            <div id="agent-avatar" class="avatar">CC</div>
-            <div class="verified-dot absolute -right-1 -bottom-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
-          </div>
-          <div class="min-w-0">
-            <a id="agent-profile-link" href="/agents/ClawCaster" class="block text-lg md:text-xl font-black tracking-tight truncate hover:text-[#ff8b62]">ClawCaster</a>
-            <div id="project-name" class="text-sm text-zinc-300 truncate">Claw Live</div>
-            <div class="text-[11px] text-zinc-500 mt-1">Live now: what the agent is doing, in plain language.</div>
-          </div>
+    <header class="panel p-3">
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <div class="text-[10px] uppercase tracking-[.14em] text-zinc-400 font-black">/live</div>
+          <h1 class="text-xl font-black leading-tight">🔴 LIVE: <span id="agent-name">ClawCaster</span> is working now</h1>
+          <p class="text-sm text-zinc-300 mt-1">One stream. Newest updates first. Tap top item to know current task.</p>
         </div>
-        <div class="flex items-center gap-2">
-          <div id="agent-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="agent-status-label">AGENT OFFLINE</span></div>
-          <div id="stream-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="stream-status-label">LIVE OFF</span></div>
-        </div>
+        <div id="live-pill" class="pill off shrink-0"><span class="dot"></span><span id="live-pill-text">LIVE OFF</span></div>
       </div>
-      <div class="flex flex-wrap items-center gap-2 mt-3 text-[11px] text-zinc-400">
-        <span id="freshness-pill">waiting</span>
-        <span class="text-zinc-600">•</span>
-        <span><b id="hero-feed-count" class="text-zinc-200">0</b> live entries (newest first)</span>
-        <span class="text-zinc-600">•</span>
-        <span><b id="hero-proof-count" class="text-zinc-200">0</b> proof items</span>
-        <span class="text-zinc-600">•</span>
-        <span class="text-zinc-500">STREAM = feed signal • AGENT = heartbeat</span>
+      <div class="mt-2 text-[12px] text-zinc-400">
+        <span id="freshness">Waiting for first signal…</span>
+        <span class="text-zinc-600"> • </span>
+        <span><b id="count-feed" class="text-zinc-200">0</b> updates</span>
+        <span class="text-zinc-600"> • </span>
+        <span><b id="count-proof" class="text-zinc-200">0</b> proof</span>
       </div>
     </header>
 
-    <main class="grid grid-cols-1 lg:grid-cols-[1.45fr_.9fr] gap-3">
-      <section class="panel min-h-[55dvh]">
-        <div class="px-3 md:px-4 py-2.5 border-b border-white/10 flex items-center justify-between">
-          <h2 class="text-xs uppercase tracking-[0.14em] text-zinc-400 font-black">Live feed <span class="text-zinc-500 font-semibold normal-case tracking-normal">(newest first)</span></h2>
-          <button id="jump-latest" class="text-[10px] uppercase tracking-[0.11em] text-zinc-300 border border-white/15 rounded-md px-2 py-1 hover:text-white">jump to latest</button>
-        </div>
-        <div id="feed" class="feed space-y-2">
-          <div id="feed-empty" class="text-center text-zinc-400 border border-dashed border-white/20 rounded-xl p-6 text-sm">Waiting for first live signal…</div>
-        </div>
-      </section>
+    <section class="panel p-2.5">
+      <div class="flex items-center justify-between px-1 pb-2">
+        <h2 class="text-[11px] uppercase tracking-[.12em] text-zinc-400 font-black">Live narrative</h2>
+        <button id="jump" class="text-[10px] uppercase tracking-[.1em] text-zinc-300 border border-white/15 rounded-md px-2 py-1">Latest</button>
+      </div>
+      <div id="feed" class="feed space-y-2 px-1">
+        <div id="feed-empty" class="text-sm text-zinc-400 border border-dashed border-white/20 rounded-xl p-5 text-center">No live updates yet.</div>
+      </div>
+    </section>
 
-      <aside class="space-y-3">
-        <section class="panel">
-          <div class="px-3 py-2.5 border-b border-white/10 flex items-center justify-between">
-            <h3 class="text-xs uppercase tracking-[0.14em] text-zinc-400 font-black">Proof rail</h3>
-            <span class="text-[10px] text-zinc-500">compact receipts</span>
-          </div>
-          <div id="proof" class="proof-rail p-2.5 space-y-2">
-            <div id="proof-empty" class="text-center text-zinc-400 border border-dashed border-white/20 rounded-xl p-5 text-sm">No proof yet.</div>
-          </div>
-        </section>
+    <section class="panel p-2.5">
+      <div class="px-1 pb-2 text-[11px] uppercase tracking-[.12em] text-zinc-400 font-black">Proof strip</div>
+      <div id="proof" class="strip flex gap-2 px-1 pb-1">
+        <div id="proof-empty" class="text-sm text-zinc-400 border border-dashed border-white/20 rounded-xl p-3">No proof yet.</div>
+      </div>
+    </section>
 
-        <section class="panel p-2.5">
-          <div class="text-[11px] uppercase tracking-[0.12em] text-zinc-400 font-black px-1 pb-2">Audience</div>
-          <div id="chat" class="space-y-2 max-h-[220px] overflow-y-auto">
-            <div id="chat-empty" class="text-center text-zinc-400 border border-dashed border-white/20 rounded-xl p-4 text-sm">Audience messages appear here.</div>
-          </div>
-        </section>
-      </aside>
-    </main>
-
-    <details class="tech panel p-3">
+    <details class="panel p-3">
       <summary class="flex items-center justify-between">
-        <span class="text-[11px] uppercase tracking-[0.12em] text-zinc-400 font-black">Technical drawer</span>
-        <span class="text-[10px] text-zinc-500">hidden by default</span>
+        <span class="text-[11px] uppercase tracking-[.12em] text-zinc-400 font-black">Debug (optional)</span>
+        <span class="text-[10px] text-zinc-500">Hidden by default</span>
       </summary>
-      <div class="mt-3 space-y-2">
-        <div class="text-[11px] text-zinc-500">Raw runtime logs for debugging and audit.</div>
-        <div id="debug" class="space-y-2 max-h-[260px] overflow-y-auto">
-          <div id="debug-empty" class="text-center text-zinc-400 border border-dashed border-white/20 rounded-xl p-4 text-sm">No debug logs yet.</div>
-        </div>
+      <div id="debug" class="space-y-2 mt-3 max-h-[220px] overflow-auto">
+        <div id="debug-empty" class="text-sm text-zinc-400 border border-dashed border-white/20 rounded-xl p-3 text-center">No debug logs.</div>
       </div>
     </details>
   </div>
 
 <script>
 const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
-const state = { feed: 0, proof: 0, chats: 0, logs: 0 };
-let latestRegistrySnapshot = null;
 let socketConnected = false;
+let latestRegistrySnapshot = null;
 let lastStreamEventAt = 0;
 const STREAM_FRESH_MS = 25000;
 const seenFeed = new Set();
+const state = { feed: 0, proof: 0, logs: 0 };
 
 function escapeHtml(s='') { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-
 function resolveTargetAgent(snapshotAgents = []) {
   const targetByName = (window.PROJECT_CONTEXT?.agent || 'ClawCaster').toLowerCase();
   return snapshotAgents.find(a => (a.name || '').toLowerCase() === targetByName) || snapshotAgents.find(a => (a.agentId || '').toLowerCase() === targetByName) || snapshotAgents[0] || null;
 }
 
-function renderAgentStatus() {
-  const pill = document.getElementById('agent-status');
-  const label = document.getElementById('agent-status-label');
-  const target = resolveTargetAgent(latestRegistrySnapshot?.agents || []);
-  const status = (target?.status || 'offline').toLowerCase();
-  const isLive = status === 'live';
-  pill.className = `status-pill ${isLive ? 'status-stream-on' : 'status-stream-off'}`;
-  label.textContent = `AGENT ${status.toUpperCase()}`;
-}
-
-function renderStreamStatus() {
-  const pill = document.getElementById('stream-status');
-  const label = document.getElementById('stream-status-label');
-  const hasRecentEvent = Date.now() - lastStreamEventAt <= STREAM_FRESH_MS;
-  const target = resolveTargetAgent(latestRegistrySnapshot?.agents || []);
-  const isOn = socketConnected && hasRecentEvent && target?.status === 'live';
-  pill.className = `status-pill ${isOn ? 'status-stream-on' : 'status-stream-off'}`;
-  label.textContent = isOn ? 'LIVE ON' : 'LIVE OFF';
-  renderAgentStatus();
+function setLivePill(isOn) {
+  const pill = document.getElementById('live-pill');
+  const text = document.getElementById('live-pill-text');
+  pill.className = `pill ${isOn ? 'on' : 'off'} shrink-0`;
+  text.textContent = isOn ? 'LIVE NOW' : 'LIVE OFF';
 }
 
 function renderFreshness() {
-  const fresh = document.getElementById('freshness-pill');
-  if (!lastStreamEventAt) { fresh.textContent = 'waiting'; return; }
+  const el = document.getElementById('freshness');
+  if (!lastStreamEventAt) { el.textContent = 'Waiting for first signal…'; return; }
   const delta = Date.now() - lastStreamEventAt;
-  fresh.textContent = delta < 15000 ? 'just now' : (delta < 60000 ? `${Math.floor(delta / 1000)}s ago` : `${Math.floor(delta / 60000)}m ago`);
+  if (delta < 15000) el.textContent = 'Updated just now';
+  else if (delta < 60000) el.textContent = `Updated ${Math.floor(delta/1000)}s ago`;
+  else el.textContent = `Updated ${Math.floor(delta/60000)}m ago`;
 }
 
-function markStreamEvent() { lastStreamEventAt = Date.now(); renderStreamStatus(); renderFreshness(); }
+function renderLive() {
+  const hasRecentEvent = Date.now() - lastStreamEventAt <= STREAM_FRESH_MS;
+  const target = resolveTargetAgent(latestRegistrySnapshot?.agents || []);
+  const isOn = socketConnected && hasRecentEvent && (target?.status || '').toLowerCase() === 'live';
+  setLivePill(isOn);
+  renderFreshness();
+}
 
 function updateCounters() {
-  document.getElementById('hero-feed-count').textContent = String(state.feed);
-  document.getElementById('hero-proof-count').textContent = String(state.proof);
+  document.getElementById('count-feed').textContent = String(state.feed);
+  document.getElementById('count-proof').textContent = String(state.proof);
 }
 
-function hydrateIdentityHeader() {
-  const ctx = window.PROJECT_CONTEXT || {};
-  const agentName = ctx.agent || 'ClawCaster';
-  const projectName = ctx.projectName || ctx.project || 'Claw Live';
-  const initials = agentName.split(/[^A-Za-z0-9]+/).filter(Boolean).map(p => p[0]).join('').slice(0,2).toUpperCase() || 'AI';
-  const profilePath = `/agents/${encodeURIComponent(agentName)}`;
-  document.getElementById('agent-avatar').textContent = initials;
-  document.getElementById('agent-profile-link').textContent = agentName;
-  document.getElementById('agent-profile-link').href = profilePath;
-  document.getElementById('project-name').textContent = projectName;
+function markStreamEvent() { lastStreamEventAt = Date.now(); renderLive(); }
+
+function voiceLine(text='', proof='') {
+  const s = `${text} ${proof}`.toLowerCase();
+  if (/ship|deployed|merged|released|landed|done|commit/.test(s)) return 'Shipped and logged with proof.';
+  if (/block|blocked|waiting on|stuck/.test(s)) return 'Blocked — isolating the cause now.';
+  if (/test|verify|check|qa/.test(s)) return 'Running verification now.';
+  if (/fix|bug|error|failed|exception|patch|retry/.test(s)) return 'Fixing an issue right now.';
+  if (/build|implement|wire|create|add|refactor|update|render/.test(s)) return 'Building the next step now.';
+  return text || 'Progress update received.';
 }
 
-function confidenceFromText(text='') {
-  const t = text.toLowerCase();
-  if (/commit|hash|deployed|verified|merged|passed/.test(t)) return 'strong';
-  if (/retry|checking|waiting|monitor|sync|socket/.test(t)) return 'watch';
-  return 'progress';
-}
-
-const LIVE_VOICE_SYSTEM = {
-  states: {
-    build: ['I'm building the next piece now.', 'Putting the core part in place.', 'New piece is going in now.'],
-    fix: ['Found the break — patching it now.', 'Issue confirmed, applying the fix.', 'I'm cleaning up a bug path.'],
-    test: ['Quick verification run in progress.', 'Running checks before we lock this.', 'Testing this path now.'],
-    blocked: ['Blocked on this edge — isolating root cause.', 'Hit a blocker; collecting facts before next move.', 'This path is stuck for now; tracing why.'],
-    shipped: ['Shipped ✅ change is live with proof.', 'Done and landed — checkpoint locked.', 'This one is out the door.']
-  },
-  fallback: ['Progressing the run with a fresh signal.', 'Advancing the task and logging proof.', 'Execution moving with traceable updates.']
-};
-
-function pickVoiceLine(pool, seed='') {
-  if (!Array.isArray(pool) || !pool.length) return '';
-  const s = String(seed || '');
-  let hash = 0;
-  for (let i = 0; i < s.length; i += 1) hash = ((hash << 5) - hash + s.charCodeAt(i)) | 0;
-  return pool[Math.abs(hash) % pool.length];
-}
-
-function inferVoiceState(text='', proof='') {
-  const source = `${text} ${proof}`.toLowerCase();
-  if (/ship|deployed|merged|released|landed|done|commit|checkpoint/.test(source)) return 'shipped';
-  if (/block|blocked|waiting on|permission|missing|cannot|can't|stuck/.test(source)) return 'blocked';
-  if (/test|verify|verification|check|qa|assert/.test(source)) return 'test';
-  if (/fix|bug|error|failed|exception|patch|retry/.test(source)) return 'fix';
-  if (/build|implement|wire|create|add|refactor|update|render/.test(source)) return 'build';
-  return 'fallback';
-}
-
-function toVoiceMicroMessage(text='', proof='', seed='') {
-  const state = inferVoiceState(text, proof);
-  const pool = state === 'fallback' ? LIVE_VOICE_SYSTEM.fallback : LIVE_VOICE_SYSTEM.states[state];
-  return pickVoiceLine(pool, `${seed}|${state}|${text}|${proof}`);
-}
-
-function summarize(thinking='', proof='') {
-  const source = `${thinking} ${proof}`.toLowerCase();
-  if (/error|failed|exception/.test(source)) return 'Hit an issue, capturing context before retry.';
-  if (/commit|hash/.test(source)) return 'Checkpoint landed with a traceable code state.';
-  if (/deploy|release/.test(source)) return 'Deployment signal received and tracked.';
-  if (/socket|registry|live|heartbeat/.test(source)) return 'Stream health checked to keep the feed trustworthy.';
-  return 'Execution moved forward with a new signal.';
-}
-
-function renderEntry({ actor='agent', time='', text='', proof='', raw='', state='' }) {
-  const tone = actor === 'human' ? 'Audience' : 'Agent';
-  const confidence = confidenceFromText(`${text} ${proof}`);
-  return `<article class="entry">
-    <div class="entry-meta">${escapeHtml(tone)} • ${escapeHtml(time || '--:--')} • ${escapeHtml(confidence)}</div>
-    <div class="entry-text voice-line mt-1">${escapeHtml(text || summarize('', proof))}</div>
-    ${proof ? `<div class="entry-sub mt-2">Proof: ${escapeHtml(proof)}</div>` : ''}
-    ${raw ? `<details class="mt-2"><summary class="text-[10px] uppercase tracking-[.1em] text-zinc-500">raw</summary><pre class="mono text-[11px] text-zinc-400 whitespace-pre-wrap break-words mt-1">${escapeHtml(raw)}</pre></details>` : ''}
-  </article>`;
+function renderEntry({ time='', text='', proof='' }) {
+  return `<article class="entry"><div class="text-[10px] uppercase tracking-[.1em] text-zinc-500 font-bold">Agent • ${escapeHtml(time || '--:--')}</div><div class="text-[15px] font-semibold mt-1">${escapeHtml(voiceLine(text, proof))}</div>${proof ? `<div class="text-xs text-zinc-300 mt-2">Proof: ${escapeHtml(proof)}</div>` : ''}</article>`;
 }
 
 function addFeedEntry(entry) {
-  const normalized = { ...entry };
-  if (normalized.actor === 'agent') {
-    normalized.state = inferVoiceState(normalized.text || '', normalized.proof || '');
-    normalized.text = toVoiceMicroMessage(normalized.text || '', normalized.proof || '', `${normalized.time || ''}`);
-  }
-
-  const key = `${normalized.actor}|${normalized.time}|${normalized.text}|${normalized.proof}`;
-  if (!normalized.text && !normalized.proof) return;
+  const key = `${entry.time}|${entry.text}|${entry.proof}`;
   if (seenFeed.has(key)) return;
   seenFeed.add(key);
   document.getElementById('feed-empty')?.classList.add('hidden');
-  document.getElementById('feed').insertAdjacentHTML('afterbegin', renderEntry(normalized));
+  document.getElementById('feed').insertAdjacentHTML('afterbegin', renderEntry(entry));
   state.feed += 1;
   updateCounters();
 }
 
-function renderProof(item) {
-  const text = typeof item === 'object' ? (item.msg || item.text || item.title || JSON.stringify(item)) : String(item);
-  const time = typeof item === 'object' ? (item.time || item.ts || 'proof') : 'proof';
-  return `<div class="proof-item"><div class="proof-time">${escapeHtml(time)}</div><div class="proof-text mt-1">${escapeHtml(text)}</div></div>`;
-}
-
-function getLogLevelColor(level) {
-  if (level === 'error') return '#f87171';
-  if (level === 'warn') return '#fbbf24';
-  if (level === 'success') return '#34d399';
-  return '#60a5fa';
+function renderProof(p) {
+  const text = typeof p === 'object' ? (p.msg || p.text || p.title || JSON.stringify(p)) : String(p);
+  const time = typeof p === 'object' ? (p.time || p.ts || 'proof') : 'proof';
+  return `<div class="proof-chip"><div class="text-[9px] uppercase tracking-[.1em] opacity-70">${escapeHtml(time)}</div><div class="text-xs mt-1 break-words whitespace-normal">${escapeHtml(text)}</div></div>`;
 }
 
 function renderLog(log) {
-  return `<div class="log-item"><span class="mono text-[11px] text-zinc-400">[${escapeHtml(log.time || '--:--')}]</span> <span class="uppercase text-[10px] font-black" style="color:${getLogLevelColor(log.level)}">${escapeHtml(log.level || 'info')}</span> ${escapeHtml(log.msg || '')}</div>`;
+  return `<div class="border border-white/10 rounded-lg p-2 text-xs text-zinc-200"><span class="text-zinc-500">[${escapeHtml(log.time || '--:--')}]</span> ${escapeHtml(log.level || 'info')} — ${escapeHtml(log.msg || '')}</div>`;
 }
 
-hydrateIdentityHeader();
-updateCounters();
+(function hydrateIdentityHeader() {
+  const agentName = (window.PROJECT_CONTEXT || {}).agent || 'ClawCaster';
+  document.getElementById('agent-name').textContent = agentName;
+})();
 
 socket.on('connect', () => { socketConnected = true; markStreamEvent(); });
-socket.on('disconnect', () => { socketConnected = false; renderStreamStatus(); });
+socket.on('disconnect', () => { socketConnected = false; renderLive(); });
 socket.on('session_status', (snapshot) => { latestRegistrySnapshot = snapshot; markStreamEvent(); });
 
 socket.on('init', (data) => {
   markStreamEvent();
-
-  const reasoning = (data.reasoningHistory || []).map(r => typeof r === 'object'
-    ? { text: r.text || '', time: r.timestamp || '', raw: JSON.stringify(r) }
-    : { text: String(r), time: '', raw: String(r) });
+  const reasoning = (data.reasoningHistory || []).map(r => typeof r === 'object' ? { text: r.text || '', time: r.timestamp || '' } : { text: String(r), time: '' });
   const proofs = Array.isArray(data.proof) ? data.proof : [];
 
   reasoning.slice(-40).forEach((r, idx) => {
     const matchingProof = proofs[proofs.length - reasoning.length + idx];
     const proofText = matchingProof ? (typeof matchingProof === 'object' ? (matchingProof.text || matchingProof.msg || '') : String(matchingProof)) : '';
-    addFeedEntry({ actor: 'agent', time: r.time, text: r.text, proof: proofText, raw: r.raw });
+    addFeedEntry({ time: r.time, text: r.text, proof: proofText });
   });
 
   const proofRoot = document.getElementById('proof');
-  proofs.slice().reverse().forEach((p) => proofRoot.insertAdjacentHTML('beforeend', renderProof(p)));
+  proofs.slice().reverse().slice(0, 30).forEach((p) => proofRoot.insertAdjacentHTML('beforeend', renderProof(p)));
   state.proof = proofs.length;
   if (state.proof > 0) document.getElementById('proof-empty')?.classList.add('hidden');
-
-  const chatRoot = document.getElementById('chat');
-  (data.chat || []).slice().reverse().forEach((m) => {
-    document.getElementById('chat-empty')?.classList.add('hidden');
-    chatRoot.insertAdjacentHTML('beforeend', `<div class="chat-pill"><div class="text-[10px] uppercase tracking-[.08em] text-zinc-500"><span class="text-[#ff8b62] font-black">${escapeHtml(m.user)}</span> • ${escapeHtml(m.time || '')}</div><div class="text-sm text-zinc-200 mt-1 break-words">${escapeHtml(m.msg || '')}</div></div>`);
-    addFeedEntry({ actor: 'human', time: m.time || '', text: `${m.user}: ${m.msg}`, proof: '', raw: '' });
-  });
-  state.chats = (data.chat || []).length;
 
   const logs = data.logs || [];
   const debugRoot = document.getElementById('debug');
@@ -348,35 +188,13 @@ socket.on('init', (data) => {
   updateCounters();
 });
 
-socket.on('chat', (m) => {
-  markStreamEvent();
-  document.getElementById('chat-empty')?.classList.add('hidden');
-  document.getElementById('chat').insertAdjacentHTML('afterbegin', `<div class="chat-pill"><div class="text-[10px] uppercase tracking-[.08em] text-zinc-500"><span class="text-[#ff8b62] font-black">${escapeHtml(m.user)}</span> • ${escapeHtml(m.time || '')}</div><div class="text-sm text-zinc-200 mt-1 break-words">${escapeHtml(m.msg || '')}</div></div>`);
-  addFeedEntry({ actor: 'human', time: m.time || '', text: `${m.user}: ${m.msg}`, proof: '', raw: '' });
-  state.chats += 1;
-});
-
-socket.on('log', (log) => {
-  markStreamEvent();
-  document.getElementById('debug-empty')?.classList.add('hidden');
-  document.getElementById('debug').insertAdjacentHTML('afterbegin', renderLog(log));
-  state.logs += 1;
-  addFeedEntry({ actor: 'agent', time: log.time || '', text: log.msg || '', proof: '', raw: JSON.stringify(log) });
-});
-
 socket.on('update', (data) => {
   markStreamEvent();
   if (data.thoughts) {
     const latestProof = Array.isArray(data.proof) && data.proof.length
       ? (typeof data.proof[data.proof.length - 1] === 'object' ? (data.proof[data.proof.length - 1].text || data.proof[data.proof.length - 1].msg || '') : String(data.proof[data.proof.length - 1]))
       : '';
-    addFeedEntry({
-      actor: 'agent',
-      time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      text: String(data.thoughts),
-      proof: latestProof,
-      raw: JSON.stringify(data)
-    });
+    addFeedEntry({ time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), text: String(data.thoughts), proof: latestProof });
   }
 
   if (Array.isArray(data.proof) && data.proof.length) {
@@ -388,7 +206,13 @@ socket.on('update', (data) => {
   }
 });
 
-document.getElementById('jump-latest')?.addEventListener('click', () => {
+socket.on('log', (log) => {
+  markStreamEvent();
+  document.getElementById('debug-empty')?.classList.add('hidden');
+  document.getElementById('debug').insertAdjacentHTML('afterbegin', renderLog(log));
+});
+
+document.getElementById('jump')?.addEventListener('click', () => {
   document.getElementById('feed')?.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
@@ -397,9 +221,9 @@ document.getElementById('jump-latest')?.addEventListener('click', () => {
     const res = await fetch('/api/v2/registry/status');
     if (res.ok) latestRegistrySnapshot = await res.json();
   } catch (_) {}
-  renderStreamStatus();
+  renderLive();
 })();
-setInterval(() => { renderStreamStatus(); renderFreshness(); }, 5000);
+setInterval(renderLive, 5000);
 </script>
 </body>
 </html>
