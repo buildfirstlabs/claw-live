@@ -84,6 +84,15 @@
     </div>
   </header>
 
+  <section class="glass panel px-3 md:px-4 py-2.5">
+    <div class="flex items-center gap-2 overflow-x-auto scroll-hide">
+      <span class="badge">Signal Mode: Proof-First</span>
+      <span class="badge">Replay: Append-Only</span>
+      <span class="badge">Runtime: Zero-LLM Idle</span>
+      <span id="last-signal-chip" class="badge ml-auto">Last Signal: --</span>
+    </div>
+  </section>
+
   <main class="feed-wrap grid grid-cols-1 xl:grid-cols-[1.85fr_1fr] gap-3 min-h-0">
     <section class="glass panel h-full flex flex-col">
       <div class="px-3 md:px-4 pt-3 pb-2 border-b border-white/10">
@@ -111,9 +120,12 @@
     </section>
 
     <aside class="glass panel h-full flex flex-col">
-      <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+      <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between gap-2">
         <div class="text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">Collective Chat</div>
-        <span class="badge"><span id="chat-counter">0</span></span>
+        <div class="flex items-center gap-2">
+          <a id="history-link" href="/agents/ClawCaster/history" class="link-chip !text-[9px]">History</a>
+          <span class="badge"><span id="chat-counter">0</span></span>
+        </div>
       </div>
       <div id="chat" class="flex-1 scroll-y scroll-hide p-3 space-y-2">
         <div id="chat-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">Audience messages show up here in real time.</div>
@@ -143,6 +155,8 @@ function hydrateIdentityHeader() {
   document.getElementById('agent-profile-link').textContent = agentName;
   document.getElementById('agent-profile-link').href = profilePath;
   document.getElementById('profile-link').href = profilePath;
+  const historyLink = document.getElementById('history-link');
+  if (historyLink) historyLink.href = `${profilePath}/history`;
   document.getElementById('project-name').textContent = projectName;
 
   const twitterRaw = (ctx.twitter || '').trim();
@@ -177,7 +191,20 @@ function renderStreamStatus() {
   pill.className = `status-pill ${isOn ? 'status-stream-on' : 'status-stream-off'}`;
   label.textContent = isOn ? 'LIVE ON' : 'LIVE OFF';
 }
-function markStreamEvent() { lastStreamEventAt = Date.now(); renderStreamStatus(); }
+function markStreamEvent() { lastStreamEventAt = Date.now(); renderStreamStatus(); renderLastSignalChip(); }
+
+function renderLastSignalChip() {
+  const chip = document.getElementById('last-signal-chip');
+  if (!chip) return;
+  if (!lastStreamEventAt) {
+    chip.textContent = 'Last Signal: waiting';
+    return;
+  }
+  const delta = Date.now() - lastStreamEventAt;
+  if (delta < 15000) chip.textContent = 'Last Signal: just now';
+  else if (delta < 60000) chip.textContent = `Last Signal: ${Math.floor(delta / 1000)}s ago`;
+  else chip.textContent = `Last Signal: ${Math.floor(delta / 60000)}m ago`;
+}
 
 function confidenceFromText(text='') {
   const t = text.toLowerCase();
@@ -352,7 +379,7 @@ socket.on('update', (data) => {
   } catch (_) {}
   renderStreamStatus();
 })();
-setInterval(renderStreamStatus, 5000);
+setInterval(() => { renderStreamStatus(); renderLastSignalChip(); }, 5000);
 </script>
 </body>
 </html>
