@@ -85,6 +85,8 @@ let lastRuntimeEmitAt = 0;
 let runtimeSignalIndex = 0;
 let runtimeSignalCycle = 0;
 let runtimeLastByType = Object.create(null);
+let runtimeEmitterTimer = null;
+let runtimeSelfHealTimer = null;
 
 // ============== PHASE 0: CLAIMING SYSTEM ==============
 let agents = {}; // { agentName: { owner_email, verified, created_at, verified_at, ... } }
@@ -593,6 +595,40 @@ function emitRuntimeHeartbeat(reason = 'runtime.keepalive') {
     saveAll();
     saveRegistry();
     lastRuntimeEmitAt = now;
+}
+
+function startRuntimeEmitter() {
+    if (!RUNTIME_EMITTER_ENABLED) return;
+
+    if (runtimeEmitterTimer) clearInterval(runtimeEmitterTimer);
+    if (runtimeSelfHealTimer) clearInterval(runtimeSelfHealTimer);
+
+    const now = Date.now();
+    const inserted = ensureActiveRegistryEntry(now);
+    if (inserted) saveRegistry();
+
+    emitRuntimeHeartbeat('runtime.start');
+
+    runtimeEmitterTimer = setInterval(() => {
+        const tickNow = Date.now();
+        const insertedOnTick = ensureActiveRegistryEntry(tickNow);
+        if (insertedOnTick) saveRegistry();
+
+        const idleFor = tickNow - lastStreamMutationAt;
+        const sinceRuntime = tickNow - lastRuntimeEmitAt;
+        if (idleFor >= RUNTIME_IDLE_GRACE_MS && sinceRuntime >= RUNTIME_EMITTER_INTERVAL_MS) {
+            emitRuntimeHeartbeat('runtime.keepalive');
+        }
+    }, Math.max(3000, Math.floor(RUNTIME_EMITTER_INTERVAL_MS / 2)));
+
+    const watchdogThresholdMs = Math.max((RUNTIME_EMITTER_INTERVAL_MS * 2) + RUNTIME_IDLE_GRACE_MS, 45000);
+    runtimeSelfHealTimer = setInterval(() => {
+        const tickNow = Date.now();
+        const stalledFor = tickNow - (lastRuntimeEmitAt || 0);
+        if (stalledFor >= watchdogThresholdMs) {
+            emitRuntimeHeartbeat('runtime.self_heal');
+        }
+    }, Math.max(5000, RUNTIME_EMITTER_INTERVAL_MS));
 }
 
 // Socket Logic
@@ -1614,18 +1650,7 @@ setInterval(() => {
     }
 }, 5000);
 
-if (RUNTIME_EMITTER_ENABLED) {
-    setInterval(() => {
-        const now = Date.now();
-        const idleFor = now - lastStreamMutationAt;
-        const sinceRuntime = now - lastRuntimeEmitAt;
-        if (idleFor >= RUNTIME_IDLE_GRACE_MS && sinceRuntime >= RUNTIME_EMITTER_INTERVAL_MS) {
-            emitRuntimeHeartbeat('runtime.keepalive');
-        }
-    }, Math.max(3000, Math.floor(RUNTIME_EMITTER_INTERVAL_MS / 2)));
-}
-
 server.listen(port, '0.0.0.0', () => {
     console.log(`ClawLive Server Active`);
-    if (RUNTIME_EMITTER_ENABLED) emitRuntimeHeartbeat('runtime.start');
+    startRuntimeEmitter();
 });
