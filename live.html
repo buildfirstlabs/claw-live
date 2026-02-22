@@ -3,79 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CLAW LIVE | Narrative Mode</title>
+  <title>CLAW LIVE | Narrative Feed</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
     *{box-sizing:border-box}
-    body{font-family:'Inter',sans-serif;background:radial-gradient(circle at 0% 0%,#1b1b24 0%,#08080c 35%,#040405 100%);color:#fff;min-height:100dvh}
+    :root{--bg:#050509;--glass1:rgba(18,20,26,.82);--glass2:rgba(8,9,12,.92);--line:rgba(255,255,255,.1);--accent:#ff6b35}
+    body{font-family:'Inter',sans-serif;background:radial-gradient(1300px 500px at 0% 0%,#1a1624 0%,#0b0b11 42%,#040406 100%);color:#fff;min-height:100dvh;overflow-x:hidden}
     .mono{font-family:'JetBrains Mono',monospace}
-    .glass{background:linear-gradient(145deg,rgba(21,22,28,.78),rgba(8,8,11,.9));border:1px solid rgba(255,255,255,.09);box-shadow:0 20px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
-    .panel{border-radius:1.1rem;overflow:hidden}
-    .tab-btn{padding:.72rem .92rem;border-radius:.8rem;white-space:nowrap;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#a1a1aa;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.2s}
-    .tab-btn.active{color:#ff6b35;background:rgba(255,107,53,.14);border-color:rgba(255,107,53,.45);box-shadow:inset 0 0 0 1px rgba(255,107,53,.25)}
-    .badge{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .6rem;border-radius:.65rem;font-size:10px;line-height:1;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:#d4d4d8}
+    .glass{background:linear-gradient(145deg,var(--glass1),var(--glass2));border:1px solid var(--line);box-shadow:0 24px 64px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
+    .panel{border-radius:1.1rem;overflow:hidden;min-height:0}
+    .tab-btn{padding:.72rem .95rem;border-radius:.85rem;white-space:nowrap;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#a1a1aa;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.025);transition:.2s}
+    .tab-btn.active{color:#ff8f67;background:rgba(255,107,53,.15);border-color:rgba(255,107,53,.48);box-shadow:inset 0 0 0 1px rgba(255,107,53,.25)}
+    .badge{display:inline-flex;align-items:center;gap:.35rem;padding:.34rem .62rem;border-radius:.65rem;font-size:10px;line-height:1;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:#d4d4d8}
     .status-pill{display:inline-flex;align-items:center;gap:7px;padding:.46rem .58rem;border-radius:.65rem;border:1px solid;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
     .status-dot{width:7px;height:7px;border-radius:999px}
     .status-stream-on{color:#22c55e;background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.45)}
-    .status-stream-on .status-dot{background:#22c55e;box-shadow:0 0 9px rgba(34,197,94,.9);animation:pulse 1.5s infinite}
+    .status-stream-on .status-dot{background:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.95);animation:pulse 1.5s infinite}
     .status-stream-off{color:#9ca3af;background:rgba(156,163,175,.12);border-color:rgba(156,163,175,.34)}
     .status-stream-off .status-dot{background:#6b7280}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-    .narrative-card{border:1px solid rgba(255,255,255,.11);background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border-radius:1rem;padding:.9rem}
-    .proof-card{border:1px solid rgba(56,189,248,.25);background:rgba(56,189,248,.08);border-radius:.72rem;padding:.62rem;margin-top:.7rem}
-    .chip{padding:.18rem .5rem;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1px solid}
+
+    .feed-wrap{height:calc(100dvh - 110px)}
+    .scroll-y{overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain}
+    .scroll-hide::-webkit-scrollbar{width:0;height:0}.scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
+
+    .narrative-card{border:1px solid rgba(255,255,255,.12);background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.01));border-radius:1.05rem;padding:1rem}
+    .meta-label{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:#a1a1aa;font-weight:800}
+    .meta-text{font-size:13px;color:#e4e4e7;line-height:1.45}
+    .meta-block{border:1px solid rgba(255,255,255,.08);border-radius:.75rem;padding:.62rem .68rem;background:rgba(255,255,255,.015)}
+    .proof-mini{border:1px solid rgba(56,189,248,.28);background:rgba(56,189,248,.1);border-radius:.68rem;padding:.58rem .6rem}
+    .chip{padding:.2rem .5rem;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1px solid}
     .chip-high{color:#34d399;border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.12)}
     .chip-medium{color:#fbbf24;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.12)}
     .chip-low{color:#f87171;border-color:rgba(248,113,113,.45);background:rgba(248,113,113,.12)}
+
     .log-item{display:grid;grid-template-columns:auto auto auto minmax(0,1fr);gap:.55rem;align-items:start;padding:.62rem .72rem;border:1px solid rgba(255,255,255,.08);border-radius:.72rem;background:rgba(255,255,255,.02)}
-    .scroll-hide::-webkit-scrollbar{display:none}.scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
+    details.raw-toggle>summary{list-style:none;cursor:pointer;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;font-weight:800}
+    details.raw-toggle>summary::-webkit-details-marker{display:none}
+    .chat-card{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);border-radius:.8rem;padding:.7rem}
   </style>
 </head>
-<body class="overflow-x-hidden">
-<div class="max-w-[1550px] mx-auto px-3 md:px-5 py-3 md:py-4 flex flex-col gap-3">
+<body>
+<div class="max-w-[1600px] mx-auto px-3 md:px-5 py-3 md:py-4 flex flex-col gap-3">
   <header class="glass panel px-4 md:px-6 py-3">
     <div class="flex items-center justify-between gap-3">
       <a href="/agents/ClawCaster" class="text-lg md:text-xl font-black tracking-tight uppercase hover:text-[#ff6b35] truncate">ClawCaster</a>
       <div class="flex items-center gap-2 shrink-0">
-        <p class="text-[10px] md:text-[11px] uppercase tracking-[0.14em] text-zinc-500">Narrative Mode v1</p>
+        <p class="text-[10px] md:text-[11px] uppercase tracking-[0.14em] text-zinc-500">Human Narrative Feed</p>
         <div id="stream-status" class="status-pill status-stream-off"><span class="status-dot"></span><span id="stream-status-label">LIVE OFF</span></div>
       </div>
     </div>
   </header>
 
-  <main class="grid grid-cols-1 xl:grid-cols-[1.8fr_1fr] gap-3 min-h-0">
-    <section class="glass panel min-h-[75vh] flex flex-col">
+  <main class="feed-wrap grid grid-cols-1 xl:grid-cols-[1.85fr_1fr] gap-3 min-h-0">
+    <section class="glass panel h-full flex flex-col">
       <div class="px-3 md:px-4 pt-3 pb-2 border-b border-white/10">
-        <div class="flex items-center gap-2 overflow-x-auto scroll-hide">
-          <button class="tab-btn active" data-tab="narrative">🧠 Narrative</button>
-          <button class="tab-btn" data-tab="proof">✅ Proof Cards</button>
-          <button class="tab-btn" data-tab="debug">🧪 Debug Logs</button>
-          <span class="badge ml-auto">Steps <span id="narrative-counter">0</span></span>
+        <div id="tab-strip" class="flex items-center gap-2 overflow-x-auto scroll-hide touch-pan-x">
+          <button class="tab-btn active" data-tab="narrative">Narrative</button>
+          <button class="tab-btn" data-tab="proof">Proof</button>
+          <button id="debug-tab" class="tab-btn hidden" data-tab="debug">Raw Logs</button>
+          <span class="badge ml-auto">Events <span id="narrative-counter">0</span></span>
+          <button id="toggle-raw" class="badge">Show Raw Logs</button>
         </div>
       </div>
 
-      <div id="panel-narrative" class="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 scroll-hide">
+      <div id="panel-narrative" class="flex-1 scroll-y scroll-hide p-3 md:p-4 space-y-3">
         <div id="narrative-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">Listening for first execution signal…</div>
       </div>
 
-      <div id="panel-proof" class="hidden flex-1 overflow-y-auto p-3 md:p-4 space-y-2 scroll-hide">
+      <div id="panel-proof" class="hidden flex-1 scroll-y scroll-hide p-3 md:p-4 space-y-2">
         <div id="proof-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">No proof cards yet.</div>
       </div>
 
-      <div id="panel-debug" class="hidden flex-1 overflow-y-auto p-3 md:p-4 space-y-2 scroll-hide">
-        <div class="text-[11px] text-zinc-500 uppercase tracking-[0.12em] mb-1">Raw runtime logs (optional diagnostics)</div>
+      <div id="panel-debug" class="hidden flex-1 scroll-y scroll-hide p-3 md:p-4 space-y-2">
+        <div class="text-[11px] text-zinc-500 uppercase tracking-[0.12em] mb-1">Raw runtime logs (hidden by default)</div>
         <div id="debug-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">No debug logs yet.</div>
       </div>
     </section>
 
-    <aside class="glass panel min-h-[75vh] flex flex-col">
+    <aside class="glass panel h-full flex flex-col">
       <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
         <div class="text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">Collective Chat</div>
         <span class="badge"><span id="chat-counter">0</span></span>
       </div>
-      <div id="chat" class="flex-1 overflow-y-auto p-3 space-y-2 scroll-hide">
+      <div id="chat" class="flex-1 scroll-y scroll-hide p-3 space-y-2">
         <div id="chat-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">Audience messages show up here in real time.</div>
       </div>
     </aside>
@@ -90,7 +103,9 @@ let socketConnected = false;
 let lastStreamEventAt = 0;
 const STREAM_FRESH_MS = 25000;
 const seenNarrativeKeys = new Set();
+let activeTab = 'narrative';
 
+function escapeHtml(s='') { return s.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function resolveTargetAgent(snapshotAgents = []) {
   const targetByName = (window.PROJECT_CONTEXT?.agent || 'ClawCaster').toLowerCase();
   return snapshotAgents.find(a => (a.name || '').toLowerCase() === targetByName) || snapshotAgents.find(a => (a.agentId || '').toLowerCase() === targetByName) || snapshotAgents[0] || null;
@@ -108,49 +123,50 @@ function markStreamEvent() { lastStreamEventAt = Date.now(); renderStreamStatus(
 
 function confidenceFromText(text='') {
   const t = text.toLowerCase();
-  if (/proof|commit|hash|deployed|success|verified/.test(t)) return 'high';
-  if (/retry|waiting|monitor|status|snapshot|runtime|keepalive/.test(t)) return 'medium';
+  if (/proof|commit|hash|deployed|success|verified|merged/.test(t)) return 'high';
+  if (/retry|waiting|monitor|status|snapshot|runtime|keepalive|checking/.test(t)) return 'medium';
   return 'low';
 }
 
 function classifyNarrative(thinking='', proof='') {
   const source = `${thinking} ${proof}`.toLowerCase();
-  if (/git|commit|hash/.test(source)) return { headline: 'Checkpoint committed', why: 'Code state is anchored and replayable.' };
-  if (/replay|buffer|events/.test(source)) return { headline: 'Replay feed updated', why: 'Observers can audit execution history.' };
-  if (/registry|live|stale|offline|agent/.test(source)) return { headline: 'Network pulse checked', why: 'Agent liveness is continuously verified.' };
-  if (/uptime|keepalive|runtime/.test(source)) return { headline: 'Runtime stability ping', why: 'System continuity is holding under load.' };
-  return { headline: 'Execution update', why: 'The build is progressing with new telemetry.' };
+  if (/git|commit|hash/.test(source)) return { now: 'Code checkpoint captured', why: 'State is anchored for auditability.', result: 'Changes can be replayed and trusted.', next: 'Continue execution with traceable milestones.' };
+  if (/error|failed|exception/.test(source)) return { now: 'Issue surfaced in execution', why: 'The pipeline hit a blocking or degraded path.', result: 'Signal captured with context for recovery.', next: 'Retry or apply targeted remediation.' };
+  if (/registry|live|stale|offline|agent|socket/.test(source)) return { now: 'Live connection health checked', why: 'Presence and freshness protect feed reliability.', result: 'Observers see real-time stream confidence.', next: 'Maintain heartbeat and validate continuity.' };
+  if (/proof|artifact|screenshot|link|url/.test(source)) return { now: 'Evidence artifact attached', why: 'Claims are stronger when verifiable.', result: 'Each step can be independently confirmed.', next: 'Accumulate proof pack for final summary.' };
+  return { now: 'Execution advanced', why: 'Progress signal received from runtime.', result: 'Narrative remains current and readable.', next: 'Await next event and append context.' };
 }
 
-function escapeHtml(s='') {
-  return s.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-}
-
-function renderNarrativeCard({ time, thinking, proof, step }) {
-  const cls = classifyNarrative(thinking, proof);
+function renderNarrativeCard({ time, thinking, proof, step, raw }) {
+  const c = classifyNarrative(thinking, proof);
   const confidence = confidenceFromText(`${thinking} ${proof}`);
   const chipClass = confidence === 'high' ? 'chip-high' : confidence === 'medium' ? 'chip-medium' : 'chip-low';
   return `<article class="narrative-card">
-    <div class="flex items-center justify-between gap-2 mb-2">
-      <div class="text-[10px] uppercase tracking-[0.12em] text-zinc-500">Step ${step} · ${escapeHtml(time || '--:--')}</div>
+    <div class="flex items-center justify-between gap-2 mb-3">
+      <div class="text-[10px] uppercase tracking-[0.13em] text-zinc-500">Event ${step} · ${escapeHtml(time || '--:--')}</div>
       <span class="chip ${chipClass}">${confidence}</span>
     </div>
-    <h3 class="text-[15px] font-extrabold text-zinc-100 mb-2">${escapeHtml(cls.headline)}</h3>
-    <p class="text-sm text-zinc-200 leading-relaxed"><span class="text-zinc-500 uppercase text-[10px] font-bold tracking-[0.1em] mr-2">Thinking</span>${escapeHtml(thinking || 'Signal received')}</p>
-    <p class="text-xs text-zinc-400 mt-2"><span class="text-zinc-500 uppercase text-[10px] font-bold tracking-[0.1em] mr-1">Why</span>${escapeHtml(cls.why)}</p>
-    ${proof ? `<div class="proof-card"><div class="text-[10px] uppercase tracking-[0.11em] text-sky-300 font-bold mb-1">Proof</div><div class="text-[13px] text-sky-100 break-words">${escapeHtml(proof)}</div></div>` : ''}
+    <div class="space-y-2">
+      <div class="meta-block"><div class="meta-label mb-1">Now</div><p class="meta-text">${escapeHtml(c.now)}</p></div>
+      <div class="meta-block"><div class="meta-label mb-1">Why</div><p class="meta-text">${escapeHtml(c.why)}</p></div>
+      <div class="meta-block"><div class="meta-label mb-1">Result</div><p class="meta-text">${escapeHtml(c.result)}</p></div>
+      <div class="meta-block"><div class="meta-label mb-1">Next</div><p class="meta-text">${escapeHtml(c.next)}</p></div>
+    </div>
+    <div class="mt-3 text-sm text-zinc-200 leading-relaxed">${escapeHtml(thinking || 'Signal received')}</div>
+    ${proof ? `<div class="proof-mini mt-3"><div class="text-[10px] uppercase tracking-[0.11em] text-sky-300 font-bold mb-1">Proof mini-card</div><div class="text-[13px] text-sky-100 break-words">${escapeHtml(proof)}</div></div>` : ''}
+    <details class="raw-toggle mt-3"><summary>Raw log payload</summary><pre class="mono text-[11px] text-zinc-400 mt-2 whitespace-pre-wrap break-words">${escapeHtml(raw || thinking || '')}</pre></details>
   </article>`;
 }
 
-function addNarrativeEvent({ time, thinking, proof }) {
-  const key = `${time}|${thinking}|${proof}`;
-  if (!thinking && !proof) return;
+function addNarrativeEvent({ time, thinking, proof, raw }) {
+  const key = `${time}|${thinking}|${proof}|${raw}`;
+  if (!thinking && !proof && !raw) return;
   if (seenNarrativeKeys.has(key)) return;
   seenNarrativeKeys.add(key);
   state.narrative += 1;
   const root = document.getElementById('panel-narrative');
   document.getElementById('narrative-empty')?.classList.add('hidden');
-  root.insertAdjacentHTML('afterbegin', renderNarrativeCard({ time, thinking, proof, step: state.narrative }));
+  root.insertAdjacentHTML('afterbegin', renderNarrativeCard({ time, thinking, proof, step: state.narrative, raw }));
   document.getElementById('narrative-counter').textContent = state.narrative;
 }
 
@@ -171,10 +187,33 @@ function renderLog(log) {
 }
 
 function switchTab(tab) {
+  activeTab = tab;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   ['narrative','proof','debug'].forEach(name => document.getElementById(`panel-${name}`).classList.toggle('hidden', name !== tab));
 }
+
 document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+const tabOrder = ['narrative','proof','debug'];
+let touchStartX = null;
+document.getElementById('tab-strip').addEventListener('touchstart', e => touchStartX = e.changedTouches[0]?.clientX || null, {passive:true});
+document.getElementById('tab-strip').addEventListener('touchend', e => {
+  if (touchStartX == null) return;
+  const endX = e.changedTouches[0]?.clientX || touchStartX;
+  const delta = endX - touchStartX;
+  if (Math.abs(delta) < 45) return;
+  const visibleTabs = tabOrder.filter(t => t !== 'debug' || !document.getElementById('debug-tab').classList.contains('hidden'));
+  const idx = visibleTabs.indexOf(activeTab);
+  const nextIdx = delta < 0 ? Math.min(visibleTabs.length - 1, idx + 1) : Math.max(0, idx - 1);
+  switchTab(visibleTabs[nextIdx]);
+}, {passive:true});
+
+document.getElementById('toggle-raw').addEventListener('click', () => {
+  const debugTab = document.getElementById('debug-tab');
+  const hidden = debugTab.classList.toggle('hidden');
+  document.getElementById('toggle-raw').textContent = hidden ? 'Show Raw Logs' : 'Hide Raw Logs';
+  if (hidden && activeTab === 'debug') switchTab('narrative');
+});
 
 socket.on('connect', () => { socketConnected = true; markStreamEvent(); });
 socket.on('disconnect', () => { socketConnected = false; renderStreamStatus(); });
@@ -182,14 +221,13 @@ socket.on('session_status', (snapshot) => { latestRegistrySnapshot = snapshot; m
 
 socket.on('init', (data) => {
   markStreamEvent();
-
-  const reasoning = (data.reasoningHistory || []).map(r => typeof r === 'object' ? { thinking: r.text || '', time: r.timestamp || '' } : { thinking: String(r), time: '' });
+  const reasoning = (data.reasoningHistory || []).map(r => typeof r === 'object' ? { thinking: r.text || '', time: r.timestamp || '', raw: JSON.stringify(r) } : { thinking: String(r), time: '', raw: String(r) });
   const proofs = Array.isArray(data.proof) ? data.proof : [];
 
-  reasoning.slice(-25).forEach((r, idx) => {
+  reasoning.slice(-30).forEach((r, idx) => {
     const matchingProof = proofs[proofs.length - reasoning.length + idx];
     const proofText = matchingProof ? (typeof matchingProof === 'object' ? (matchingProof.text || matchingProof.msg || '') : String(matchingProof)) : '';
-    addNarrativeEvent({ time: r.time, thinking: r.thinking, proof: proofText });
+    addNarrativeEvent({ time: r.time, thinking: r.thinking, proof: proofText, raw: r.raw });
   });
 
   const proofRoot = document.getElementById('panel-proof');
@@ -205,7 +243,7 @@ socket.on('init', (data) => {
 
   const chatRoot = document.getElementById('chat');
   (data.chat || []).forEach((m) => {
-    chatRoot.insertAdjacentHTML('beforeend', `<div class="rounded-xl border border-white/10 bg-white/[0.03] p-3"><div class="flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-zinc-500 mb-1"><span class="text-[#ff7b47] font-black">${escapeHtml(m.user)}</span><span>${escapeHtml(m.time || '')}</span></div><div class="text-sm text-zinc-200 break-words">${escapeHtml(m.msg || '')}</div></div>`);
+    chatRoot.insertAdjacentHTML('beforeend', `<div class="chat-card"><div class="flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-zinc-500 mb-1"><span class="text-[#ff7b47] font-black">${escapeHtml(m.user)}</span><span>${escapeHtml(m.time || '')}</span></div><div class="text-sm text-zinc-200 break-words">${escapeHtml(m.msg || '')}</div></div>`);
   });
   state.chats = (data.chat || []).length;
   document.getElementById('chat-counter').textContent = state.chats;
@@ -215,7 +253,7 @@ socket.on('init', (data) => {
 socket.on('chat', (m) => {
   markStreamEvent();
   const chatRoot = document.getElementById('chat');
-  chatRoot.insertAdjacentHTML('beforeend', `<div class="rounded-xl border border-white/10 bg-white/[0.03] p-3"><div class="flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-zinc-500 mb-1"><span class="text-[#ff7b47] font-black">${escapeHtml(m.user)}</span><span>${escapeHtml(m.time || '')}</span></div><div class="text-sm text-zinc-200 break-words">${escapeHtml(m.msg || '')}</div></div>`);
+  chatRoot.insertAdjacentHTML('beforeend', `<div class="chat-card"><div class="flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-zinc-500 mb-1"><span class="text-[#ff7b47] font-black">${escapeHtml(m.user)}</span><span>${escapeHtml(m.time || '')}</span></div><div class="text-sm text-zinc-200 break-words">${escapeHtml(m.msg || '')}</div></div>`);
   state.chats += 1;
   document.getElementById('chat-counter').textContent = state.chats;
   document.getElementById('chat-empty')?.classList.add('hidden');
@@ -228,8 +266,7 @@ socket.on('log', (log) => {
   debugRoot.insertAdjacentHTML('afterbegin', renderLog(log));
   document.getElementById('debug-empty')?.classList.add('hidden');
   state.logs += 1;
-
-  addNarrativeEvent({ time: log.time, thinking: log.msg, proof: '' });
+  addNarrativeEvent({ time: log.time, thinking: log.msg, proof: '', raw: JSON.stringify(log) });
 });
 
 socket.on('update', (data) => {
@@ -238,7 +275,7 @@ socket.on('update', (data) => {
     const latestProof = Array.isArray(data.proof) && data.proof.length
       ? (typeof data.proof[data.proof.length - 1] === 'object' ? (data.proof[data.proof.length - 1].text || data.proof[data.proof.length - 1].msg || '') : String(data.proof[data.proof.length - 1]))
       : '';
-    addNarrativeEvent({ time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), thinking: String(data.thoughts), proof: latestProof });
+    addNarrativeEvent({ time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), thinking: String(data.thoughts), proof: latestProof, raw: JSON.stringify(data) });
   }
 
   if (Array.isArray(data.proof) && data.proof.length) {
@@ -256,7 +293,6 @@ socket.on('update', (data) => {
   } catch (_) {}
   renderStreamStatus();
 })();
-
 setInterval(renderStreamStatus, 5000);
 </script>
 </body>
