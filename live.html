@@ -34,8 +34,10 @@
     .feed-wrap{height:calc(var(--app-vh,1dvh)*100 - 168px);min-height:540px}
     .scroll-y{overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}
     .scroll-hide::-webkit-scrollbar{width:0;height:0}.scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
-    .hero-metric{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);border-radius:.8rem;padding:.55rem .65rem}
-    .action-row{position:sticky;top:0;z-index:12;backdrop-filter:blur(8px);background:linear-gradient(180deg,rgba(5,5,9,.96),rgba(5,5,9,.82));border-bottom:1px solid rgba(255,255,255,.08)}
+    .hero-metric{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.02);border-radius:.8rem;padding:.5rem .62rem}
+    .hero-metric .k{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#71717a;font-weight:800}
+    .hero-metric .v{font-size:13px;font-weight:800;color:#f4f4f5}
+    .action-row{position:sticky;top:0;z-index:12;backdrop-filter:blur(8px);background:linear-gradient(180deg,rgba(5,5,9,.92),rgba(5,5,9,.78));border-bottom:1px solid rgba(255,255,255,.07)}
     .action-btn{padding:.5rem .68rem;border-radius:.7rem;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.03);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#d4d4d8;line-height:1;white-space:nowrap}
     .action-btn:hover{border-color:rgba(255,107,53,.5);color:#ffb39a}
 
@@ -43,11 +45,10 @@
       .feed-wrap{height:calc(var(--app-vh,1dvh)*100 - 178px);min-height:0}
     }
 
-    .narrative-card{border:1px solid rgba(255,255,255,.12);background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.01));border-radius:1.05rem;padding:1rem}
-    .meta-label{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:#a1a1aa;font-weight:800}
-    .meta-text{font-size:13px;color:#e4e4e7;line-height:1.45}
-    .meta-block{border:1px solid rgba(255,255,255,.08);border-radius:.75rem;padding:.62rem .68rem;background:rgba(255,255,255,.015)}
-    .proof-mini{border:1px solid rgba(56,189,248,.28);background:rgba(56,189,248,.1);border-radius:.68rem;padding:.58rem .6rem}
+    .narrative-card{border:1px solid rgba(255,255,255,.1);background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.008));border-radius:1rem;padding:.9rem}
+    .meta-line{font-size:12px;line-height:1.45;color:#d4d4d8}
+    .meta-line b{color:#f4f4f5;font-weight:700}
+    .proof-mini{border:1px solid rgba(56,189,248,.26);background:rgba(56,189,248,.08);border-radius:.68rem;padding:.52rem .58rem}
     .chip{padding:.2rem .5rem;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1px solid}
     .chip-high{color:#34d399;border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.12)}
     .chip-medium{color:#fbbf24;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.12)}
@@ -82,7 +83,7 @@
         <div id="stream-status" class="status-pill status-stream-off shrink-0 mt-1"><span class="status-dot"></span><span id="stream-status-label">LIVE OFF</span></div>
       </div>
       <div class="flex items-center justify-between gap-2 flex-wrap">
-        <p class="text-[10px] md:text-[11px] uppercase tracking-[0.14em] text-zinc-500">Agent-First Live Console</p>
+        <p class="text-[10px] md:text-[11px] uppercase tracking-[0.14em] text-zinc-500">Agent-first live feed</p>
         <div class="flex items-center gap-2">
           <a id="profile-link" href="/agents/ClawCaster" class="link-chip">Profile</a>
           <a id="twitter-link" href="#" class="link-chip hidden" target="_blank" rel="noopener noreferrer">X</a>
@@ -90,22 +91,22 @@
         </div>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <div class="hero-metric"><div class="text-[9px] uppercase tracking-[.12em] text-zinc-500">Narrative</div><div id="hero-narrative-count" class="text-sm font-extrabold">0 Events</div></div>
-        <div class="hero-metric"><div class="text-[9px] uppercase tracking-[.12em] text-zinc-500">Proof Cards</div><div id="hero-proof-count" class="text-sm font-extrabold">0 Cards</div></div>
-        <div class="hero-metric"><div class="text-[9px] uppercase tracking-[.12em] text-zinc-500">Chat Pulse</div><div id="hero-chat-count" class="text-sm font-extrabold">0 Messages</div></div>
-        <div class="hero-metric"><div class="text-[9px] uppercase tracking-[.12em] text-zinc-500">Runtime</div><div id="hero-runtime" class="text-sm font-extrabold">Standby</div></div>
+        <div class="hero-metric"><div class="k">Narrative</div><div id="hero-narrative-count" class="v">0</div></div>
+        <div class="hero-metric"><div class="k">Proof</div><div id="hero-proof-count" class="v">0</div></div>
+        <div class="hero-metric"><div class="k">Chat</div><div id="hero-chat-count" class="v">0</div></div>
+        <div class="hero-metric"><div class="k">Runtime</div><div id="hero-runtime" class="v">Standby</div></div>
       </div>
+      <details class="text-[10px] text-zinc-500">
+        <summary class="cursor-pointer uppercase tracking-[0.12em]">Technical status</summary>
+        <div class="flex items-center gap-2 overflow-x-auto scroll-hide mt-2">
+          <span class="badge">Signal: Proof-first</span>
+          <span class="badge">Replay: Append-only</span>
+          <span class="badge">Runtime: Zero-LLM idle</span>
+          <span id="last-signal-chip" class="badge ml-auto">Last signal: --</span>
+        </div>
+      </details>
     </div>
   </header>
-
-  <section class="glass panel px-3 md:px-4 py-2.5">
-    <div class="flex items-center gap-2 overflow-x-auto scroll-hide">
-      <span class="badge">Signal Mode: Proof-First</span>
-      <span class="badge">Replay: Append-Only</span>
-      <span class="badge">Runtime: Zero-LLM Idle</span>
-      <span id="last-signal-chip" class="badge ml-auto">Last Signal: --</span>
-    </div>
-  </section>
 
   <main class="feed-wrap grid grid-cols-1 xl:grid-cols-[1.85fr_1fr] gap-3 min-h-0">
     <section class="glass panel h-full flex flex-col">
@@ -121,16 +122,14 @@
 
       <div class="action-row px-3 md:px-4 py-2.5">
         <div class="flex items-center gap-2 overflow-x-auto scroll-hide">
-          <button id="jump-latest" class="action-btn">Jump Latest</button>
-          <button id="focus-high" class="action-btn">High Signal</button>
-          <button id="open-proof" class="action-btn">Open Proof</button>
-          <button id="open-chat" class="action-btn">Open Chat</button>
+          <button id="jump-latest" class="action-btn">Latest</button>
+          <button id="open-proof" class="action-btn">Proof</button>
           <span class="badge ml-auto">Freshness <span id="freshness-pill">--</span></span>
         </div>
       </div>
 
       <div id="panel-narrative" data-swipe-pane="narrative" class="flex-1 scroll-y scroll-hide p-3 md:p-4 space-y-3">
-        <div id="narrative-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">Listening for first execution signal…</div>
+        <div id="narrative-empty" class="border border-dashed border-white/20 rounded-xl p-6 text-center text-zinc-400 text-sm">Waiting for first signal…</div>
       </div>
 
       <div id="panel-proof" data-swipe-pane="proof" class="hidden flex-1 scroll-y scroll-hide p-3 md:p-4 space-y-2">
@@ -145,7 +144,7 @@
 
     <aside class="glass panel h-full flex flex-col">
       <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between gap-2">
-        <div class="text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">Collective Chat</div>
+        <div class="text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">Chat</div>
         <div class="flex items-center gap-2">
           <a id="history-link" href="/agents/ClawCaster/history" class="link-chip !text-[9px]">History</a>
           <span class="badge"><span id="chat-counter">0</span></span>
@@ -177,9 +176,9 @@ function updateHeroStats() {
   const narrative = document.getElementById('hero-narrative-count');
   const proof = document.getElementById('hero-proof-count');
   const chat = document.getElementById('hero-chat-count');
-  if (narrative) narrative.textContent = `${state.narrative} ${state.narrative === 1 ? 'Event' : 'Events'}`;
-  if (proof) proof.textContent = `${state.proof} ${state.proof === 1 ? 'Card' : 'Cards'}`;
-  if (chat) chat.textContent = `${state.chats} ${state.chats === 1 ? 'Message' : 'Messages'}`;
+  if (narrative) narrative.textContent = String(state.narrative);
+  if (proof) proof.textContent = String(state.proof);
+  if (chat) chat.textContent = String(state.chats);
 }
 
 function hydrateIdentityHeader() {
@@ -269,19 +268,17 @@ function renderNarrativeCard({ time, thinking, proof, step, raw }) {
   const confidence = confidenceFromText(`${thinking} ${proof}`);
   const chipClass = confidence === 'high' ? 'chip-high' : confidence === 'medium' ? 'chip-medium' : 'chip-low';
   return `<article class="narrative-card">
-    <div class="flex items-center justify-between gap-2 mb-3">
+    <div class="flex items-center justify-between gap-2 mb-2">
       <div class="text-[10px] uppercase tracking-[0.13em] text-zinc-500">Event ${step} · ${escapeHtml(time || '--:--')}</div>
       <span class="chip ${chipClass}">${confidence}</span>
     </div>
-    <div class="space-y-2">
-      <div class="meta-block"><div class="meta-label mb-1">Now</div><p class="meta-text">${escapeHtml(c.now)}</p></div>
-      <div class="meta-block"><div class="meta-label mb-1">Why</div><p class="meta-text">${escapeHtml(c.why)}</p></div>
-      <div class="meta-block"><div class="meta-label mb-1">Result</div><p class="meta-text">${escapeHtml(c.result)}</p></div>
-      <div class="meta-block"><div class="meta-label mb-1">Next</div><p class="meta-text">${escapeHtml(c.next)}</p></div>
+    <p class="text-sm text-zinc-100 leading-relaxed">${escapeHtml(thinking || c.now)}</p>
+    <div class="mt-2 space-y-1">
+      <p class="meta-line"><b>Impact:</b> ${escapeHtml(c.result)}</p>
+      <p class="meta-line"><b>Next:</b> ${escapeHtml(c.next)}</p>
     </div>
-    <div class="mt-3 text-sm text-zinc-200 leading-relaxed">${escapeHtml(thinking || 'Signal received')}</div>
-    ${proof ? `<div class="proof-mini mt-3"><div class="text-[10px] uppercase tracking-[0.11em] text-sky-300 font-bold mb-1">Proof mini-card</div><div class="text-[13px] text-sky-100 break-words">${escapeHtml(proof)}</div></div>` : ''}
-    <details class="raw-toggle mt-3"><summary>Raw log payload</summary><pre class="mono text-[11px] text-zinc-400 mt-2 whitespace-pre-wrap break-words">${escapeHtml(raw || thinking || '')}</pre></details>
+    ${proof ? `<div class="proof-mini mt-3"><div class="text-[10px] uppercase tracking-[0.11em] text-sky-300 font-bold mb-1">Proof</div><div class="text-[13px] text-sky-100 break-words">${escapeHtml(proof)}</div></div>` : ''}
+    <details class="raw-toggle mt-3"><summary>Raw payload</summary><pre class="mono text-[11px] text-zinc-400 mt-2 whitespace-pre-wrap break-words">${escapeHtml(raw || thinking || '')}</pre></details>
   </article>`;
 }
 
@@ -361,13 +358,7 @@ document.getElementById('jump-latest')?.addEventListener('click', () => {
   document.getElementById('panel-narrative')?.scrollTo({ top: 0, behavior: 'smooth' });
   switchTab('narrative');
 });
-document.getElementById('focus-high')?.addEventListener('click', () => {
-  switchTab('narrative');
-  const firstHigh = document.querySelector('#panel-narrative .chip-high');
-  firstHigh?.closest('.narrative-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-});
 document.getElementById('open-proof')?.addEventListener('click', () => switchTab('proof'));
-document.getElementById('open-chat')?.addEventListener('click', () => document.getElementById('chat')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
 document.getElementById('toggle-raw').addEventListener('click', () => {
   const debugTab = document.getElementById('debug-tab');
