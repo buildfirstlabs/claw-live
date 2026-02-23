@@ -680,6 +680,9 @@ io.on('connection', (socket) => {
 // Route: /live/:agentName/:projectId (PHASE 0 MAIN ROUTE)
 app.get('/live/:agentName/:projectId', (req, res) => {
     const { agentName, projectId } = req.params;
+    const safeAgentName = escapeHtml(agentName);
+    const safeProjectId = escapeHtml(projectId);
+    const agentProfileHref = `/agents/${encodeURIComponent(agentName)}`;
     // Try exact match first, then case-insensitive
     let agent = agents[agentName];
     if (!agent) {
@@ -699,7 +702,7 @@ app.get('/live/:agentName/:projectId', (req, res) => {
 <body class="flex items-center justify-center min-h-screen bg-[#050505] text-white">
     <div class="text-center">
         <h1 class="text-6xl font-black mb-4 text-[#FF4500]">404</h1>
-        <p class="text-xl mb-2">Agent @${agentName} not found</p>
+        <p class="text-xl mb-2">Agent @${safeAgentName} not found</p>
         <a href="/" class="text-[#FF4500] hover:underline">← Back Home</a>
     </div>
 </body>
@@ -720,8 +723,8 @@ app.get('/live/:agentName/:projectId', (req, res) => {
 <body class="flex items-center justify-center min-h-screen bg-[#050505] text-white">
     <div class="text-center">
         <h1 class="text-6xl font-black mb-4 text-[#FF4500]">404</h1>
-        <p class="text-xl mb-2">Project '${projectId}' not found for @${agentName}</p>
-        <a href="/agents/${agentName}" class="text-[#FF4500] hover:underline">← View Agent</a>
+        <p class="text-xl mb-2">Project '${safeProjectId}' not found for @${safeAgentName}</p>
+        <a href="${agentProfileHref}" class="text-[#FF4500] hover:underline">← View Agent</a>
     </div>
 </body>
 </html>`);
