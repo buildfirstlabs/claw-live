@@ -1184,12 +1184,13 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
 
     const safeAgentName = escapeHtml(agentName);
     const safeProjectName = escapeHtml(project.name || project.id || 'Untitled project');
-    const safeProjectStatus = escapeHtml(project.status || 'UNKNOWN');
+    const normalizedProjectStatus = String(project.status || 'UNKNOWN').trim().toUpperCase() || 'UNKNOWN';
+    const safeProjectStatus = escapeHtml(normalizedProjectStatus);
     const safeDescription = escapeHtml(project.description || 'No description provided yet.');
     const safeProjectGithub = escapeHtml(project.github || 'Not linked');
     const safeProjectId = escapeHtml(project.id || projectId);
     const projectRepoHref = toSafeExternalHref(project.github);
-    const projectIsLive = String(project.status || '').toUpperCase() === 'LIVE';
+    const projectIsLive = normalizedProjectStatus === 'LIVE';
     const profileHref = `/agents/${encodeURIComponent(agentName)}`;
     const projectIdRaw = String(project.id || '').trim();
     const liveHref = projectIdRaw
