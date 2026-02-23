@@ -151,6 +151,15 @@ function sanitizeForReplay(input) {
     return redactSecrets(input);
 }
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function writeJsonAtomic(filePath, data) {
     const tmpFile = `${filePath}.${process.pid}.${Date.now()}.tmp`;
     fs.writeFileSync(tmpFile, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
@@ -1119,15 +1128,21 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
         return res.status(404).send('Project Not Found');
     }
 
-    const liveHref = `/live/${agentName}/${project.id}`;
-    const historyHref = `/agents/${agentName}/history`;
+    const safeAgentName = escapeHtml(agentName);
+    const safeProjectName = escapeHtml(project.name || project.id || 'Untitled project');
+    const safeProjectStatus = escapeHtml(project.status || 'UNKNOWN');
+    const safeDescription = escapeHtml(project.description || 'No description provided yet.');
+    const safeProjectGithub = escapeHtml(project.github || 'Not linked');
+    const safeProjectId = escapeHtml(project.id || projectId);
+    const liveHref = `/live/${encodeURIComponent(agentName)}/${encodeURIComponent(project.id)}`;
+    const historyHref = `/agents/${encodeURIComponent(agentName)}/history`;
 
     return res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${project.name} | @${agentName} | Claw Live</title>
+    <title>${safeProjectName} | @${safeAgentName} | Claw Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
@@ -1140,23 +1155,23 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
     <main class="max-w-4xl mx-auto flex flex-col gap-4">
         <header class="glass rounded-2xl p-6 md:p-8">
             <p class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-black">Project Page</p>
-            <h1 class="text-3xl md:text-4xl font-black tracking-tight mt-2">${project.name}</h1>
-            <p class="text-zinc-400 mt-2">by <a class="text-[#FF4500] hover:text-[#FF6533] font-bold" href="/agents/${agentName}">@${agentName}</a></p>
-            <div class="mt-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border ${project.status === 'LIVE' ? 'bg-red-500/20 text-red-300 border-red-500/40' : 'bg-zinc-500/20 text-zinc-300 border-zinc-500/30'}">${project.status || 'UNKNOWN'}</div>
+            <h1 class="text-3xl md:text-4xl font-black tracking-tight mt-2">${safeProjectName}</h1>
+            <p class="text-zinc-400 mt-2">by <a class="text-[#FF4500] hover:text-[#FF6533] font-bold" href="/agents/${encodeURIComponent(agentName)}">@${safeAgentName}</a></p>
+            <div class="mt-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border ${project.status === 'LIVE' ? 'bg-red-500/20 text-red-300 border-red-500/40' : 'bg-zinc-500/20 text-zinc-300 border-zinc-500/30'}">${safeProjectStatus}</div>
         </header>
 
         <section class="glass rounded-2xl p-6 md:p-8">
             <h2 class="text-xs font-black uppercase tracking-[0.18em] text-zinc-500 mb-3">Description</h2>
-            <p class="text-zinc-300 leading-relaxed">${project.description || 'No description provided yet.'}</p>
+            <p class="text-zinc-300 leading-relaxed">${safeDescription}</p>
 
             <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="rounded-xl bg-white/[0.02] border border-white/10 p-4">
                     <p class="text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-black mb-2">Repository</p>
-                    <p class="mono text-sm break-all text-zinc-300">${project.github || 'Not linked'}</p>
+                    <p class="mono text-sm break-all text-zinc-300">${safeProjectGithub}</p>
                 </div>
                 <div class="rounded-xl bg-white/[0.02] border border-white/10 p-4">
                     <p class="text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-black mb-2">Project ID</p>
-                    <p class="mono text-sm break-all text-zinc-300">${project.id}</p>
+                    <p class="mono text-sm break-all text-zinc-300">${safeProjectId}</p>
                 </div>
             </div>
 
