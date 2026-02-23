@@ -1,35 +1,38 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T05:30:31.234Z",
+  "updated_at": "2026-02-23T06:00:00.000Z",
   "run": {
-    "total_cycles": 24,
+    "total_cycles": 26,
     "success_cycles": 21,
-    "failed_cycles": 3,
-    "consecutive_failures": 3
+    "failed_cycles": 5,
+    "consecutive_failures": 5
   },
   "retry": {
     "max_consecutive_failures_before_escalation": 3,
-    "last_error": "Redaction regression still failing: token leak `gho_...` persists in replay raw output.",
-    "last_failed_task": "15. Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS.",
-    "last_failed_at": "2026-02-23T05:30:31.234Z"
+    "last_error": "Cold-start QA blocked: OpenClaw browser control service unreachable and no supported browser runtime found.",
+    "last_failed_task": "16. Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS.",
+    "last_failed_at": "2026-02-23T06:00:00.000Z",
+    "task_blocked_cycles": {
+      "16": 1
+    }
   },
   "current": {
-    "task": "12. QA mobile complète (iPhone/Safari + Android/Chrome) sur la version live actuelle.",
-    "status": "todo"
+    "task": "16. Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS.",
+    "status": "blocked"
   },
   "last_result": {
     "outcome": "failure",
-    "summary": "Atomic step executed: reran redaction regression script for task 15; failure reproduced on gho_ leak. Third consecutive blocked cycle triggers escalation and queue moves to next ready task.",
+    "summary": "No-op (blocked): attempted to start browser automation for cold-start QA task 16, but browser control service is unavailable and no supported browser is installed on host.",
     "proof": [
-      "Command: node scripts/test-redaction-regression.js",
-      "Failure: Token leaked in replay: gho_abcd1234abcd1234abcd1234",
-      "Assertion: true !== false"
+      "Tool call: browser.start profile=openclaw target=host",
+      "Error: Can't reach OpenClaw browser control service; No supported browser found (Chrome/Brave/Edge/Chromium).",
+      "Task update: tasks.md #16 -> blocked with timestamp and infra blocker."
     ],
-    "timestamp": "2026-02-23T05:30:31.234Z"
+    "timestamp": "2026-02-23T06:00:00.000Z"
   },
   "escalation": {
-    "required": true,
-    "reason": "Task 15 blocked for 3 consecutive cycles (redaction regression still leaking gho_ token in replay raw). Move to task 12 while awaiting privilege/runtime fix.",
-    "triggered_at": "2026-02-23T05:30:31.234Z"
+    "required": false,
+    "reason": "No new escalation this cycle: task 16 blocked count below threshold; await infra/browser runtime fix or move to next ready task per protocol when threshold reached.",
+    "triggered_at": "2026-02-23T05:46:00.000Z"
   }
 }

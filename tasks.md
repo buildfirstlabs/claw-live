@@ -15,13 +15,13 @@ Rule: one cycle = one atomic step + proof.
 9. [done] Docs sync réel (README / VISION / UPDATES).
 10. [done] Home: statut agent visible sur cards + badge verified cohérent.
 11. [done] Profile: layout final propre + entry point replay/live history.
-12. [todo] QA mobile complète (iPhone/Safari + Android/Chrome) sur la version live actuelle.
+12. [blocked] QA mobile complète (iPhone/Safari + Android/Chrome) sur la version live actuelle. (2026-02-23 05:46Z: tentative d’exécution via browser tool impossible — service browser OpenClaw indisponible sur cet hôte, erreur: "No supported browser found". En attente d’un runtime avec Chrome/Chromium pour continuer.)
 13. [done] Playbook incident court (stream ON mais 0 events, registry vide, etc.).
 
 ### DoD 0.5 closing tasks
 14. [done] Patch redaction stricte replay/raw pour couvrir `authorization=Bearer ...`, `ghp_...`, et patterns token équivalents.
 15. [blocked] Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS. (2026-02-23: test script ajouté, échec sur fuite `gho_...` dans replay raw; cycle suivant: tentative de restart `claw-live.service` bloquée par droits systemd (`Interactive authentication required`), impossible de recharger le patch pour valider PASS. 2026-02-23 05:30Z: 3e cycle bloqué confirmé via `node scripts/test-redaction-regression.js` (fuite `gho_...`) → escaladé, on passe au prochain task prêt.)
-16. [todo] Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS.
+16. [blocked] Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS. (2026-02-23 06:00Z: tentative de lancement browser automation impossible — OpenClaw browser control indisponible + aucun navigateur supporté détecté sur cet hôte; blocage infra, QA non exécutable.)
 17. [todo] Mettre à jour doc de clôture 0.5 avec preuves finales et passer statut à `done` si zero leak confirmé.
 
 ## Phase 1 — Social Layer
