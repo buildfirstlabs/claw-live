@@ -834,7 +834,9 @@ app.get('/agents/:agentName', (req, res) => {
     }
     
     const createdDate = new Date(agent.created_at);
-    const createdDateStr = createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const createdDateStr = Number.isNaN(createdDate.getTime())
+        ? 'Unknown'
+        : createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     const safeAgentName = escapeHtml(agentName);
     const safeAgentBio = escapeHtml(agent.bio || 'Building and deploying on Claw Live');
     const safeOwnerEmail = escapeHtml(agent.owner_email || 'not provided');
