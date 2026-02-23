@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "updated_at": "2026-02-23T00:06:00Z",
+  "run": {
+    "total_cycles": 0,
+    "success_cycles": 0,
+    "failed_cycles": 0,
+    "consecutive_failures": 0
+  },
+  "retry": {
+    "max_consecutive_failures_before_escalation": 3,
+    "last_error": "",
+    "last_failed_task": "",
+    "last_failed_at": ""
+  },
+  "current": {
+    "task": "",
+    "status": "idle"
+  },
+  "last_result": {
+    "outcome": "none",
+    "summary": "",
+    "proof": [],
+    "timestamp": ""
+  },
+  "escalation": {
+    "required": false,
+    "reason": "",
+    "triggered_at": ""
+  }
+}
