@@ -19,9 +19,9 @@
 - Escalating too early (before retry threshold) or too late (after threshold).
 
 ## Latest cycle log
-- 2026-02-23 11:15Z — Task #19 (profile/projets production-ready): hardened `Total Commits` rendering on profile page using strict numeric normalization (`Number` + finite/non-negative guard + `Math.floor`) with safe fallback to `0`, preventing non-numeric/corrupted values from leaking into UI. Validation: `node --check server.js` PASS.
-
+- 2026-02-23 11:30Z — Task #19 (profile/projects production-ready): hardened external header links on profile page by adding `rel="noopener noreferrer"` to `target="_blank"` X/GitHub anchors, reducing tabnabbing risk. Validation: `node --check server.js` PASS.
 ## Cycle log
+- 2026-02-23T11:30:00Z — Task #19 (profile/projects production-ready): hardened profile header external links by adding `rel="noopener noreferrer"` on `target="_blank"` links to X and GitHub; validation: `node --check server.js` PASS.
 - 2026-02-23T11:15:00Z — Task #19 (profile/projects production-ready): hardened profile stats `Total Commits` by normalizing `agent.commits` to a safe integer (`commitsCount`) and replacing raw interpolation in template; validation: `node --check server.js` PASS.
 - 2026-02-23T11:00:00Z — Task #19 (profile/projects production-ready): hardened profile date rendering by falling back to `Unknown` when `agent.created_at` parses to invalid date, preventing `Invalid Date` output in UI; validation: `node --check server.js` PASS.
 - 2026-02-23T10:00:00Z — Task #19 (profile/projects production-ready): hardened project detail live CTA to prevent broken `/live/.../undefined` links by adding `projectIdRaw` trim + `#` fallback when `project.id` is absent; validation: `node --check server.js` PASS.
