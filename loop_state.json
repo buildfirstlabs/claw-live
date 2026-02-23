@@ -1,36 +1,35 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T05:16:13.887Z",
+  "updated_at": "2026-02-23T05:30:31.234Z",
   "run": {
-    "total_cycles": 23,
+    "total_cycles": 24,
     "success_cycles": 21,
-    "failed_cycles": 2,
-    "consecutive_failures": 2
+    "failed_cycles": 3,
+    "consecutive_failures": 3
   },
   "retry": {
     "max_consecutive_failures_before_escalation": 3,
-    "last_error": "Failed to restart claw-live.service: Interactive authentication required; regression test remains failing on gho_ leak in replay raw.",
+    "last_error": "Redaction regression still failing: token leak `gho_...` persists in replay raw output.",
     "last_failed_task": "15. Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS.",
-    "last_failed_at": "2026-02-23T05:16:13.887Z"
+    "last_failed_at": "2026-02-23T05:30:31.234Z"
   },
   "current": {
-    "task": "15. Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS.",
-    "status": "blocked"
+    "task": "12. QA mobile complète (iPhone/Safari + Android/Chrome) sur la version live actuelle.",
+    "status": "todo"
   },
   "last_result": {
     "outcome": "failure",
-    "summary": "Atomic step executed: attempted to reload runtime via systemd restart to apply redaction patch before rerunning regression; blocked by insufficient privileges.",
+    "summary": "Atomic step executed: reran redaction regression script for task 15; failure reproduced on gho_ leak. Third consecutive blocked cycle triggers escalation and queue moves to next ready task.",
     "proof": [
       "Command: node scripts/test-redaction-regression.js",
       "Failure: Token leaked in replay: gho_abcd1234abcd1234abcd1234",
-      "Command: systemctl restart claw-live.service",
-      "Error: Interactive authentication required."
+      "Assertion: true !== false"
     ],
-    "timestamp": "2026-02-23T05:16:13.887Z"
+    "timestamp": "2026-02-23T05:30:31.234Z"
   },
   "escalation": {
-    "required": false,
-    "reason": "",
-    "triggered_at": ""
+    "required": true,
+    "reason": "Task 15 blocked for 3 consecutive cycles (redaction regression still leaking gho_ token in replay raw). Move to task 12 while awaiting privilege/runtime fix.",
+    "triggered_at": "2026-02-23T05:30:31.234Z"
   }
 }
