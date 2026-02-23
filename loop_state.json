@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T10:45:00Z",
+  "updated_at": "2026-02-23T11:00:00Z",
   "run": {
-    "total_cycles": 46,
-    "success_cycles": 41,
+    "total_cycles": 47,
+    "success_cycles": 42,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,14 +23,14 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #19 atomic hardening completed: project detail route now normalizes requested project id (trim + lowercase) before matching against normalized project records to avoid false 404s.",
+    "summary": "Task #19 atomic hardening completed: profile created date now falls back to \"Unknown\" when agent.created_at is invalid, avoiding broken date rendering.",
     "proof": [
-      "server.js adds `requestedProjectId = String(projectId || '').trim().toLowerCase()` in /agents/:agentName/projects/:projectId",
-      "server.js matches projects with `String(p.id || '').trim().toLowerCase() === requestedProjectId`",
-      "commit `474632a`",
+      "server.js now checks `Number.isNaN(createdDate.getTime())` before formatting",
+      "fallback `createdDateStr = 'Unknown'` when created_at is invalid",
+      "commit `5d14a67`",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T10:45:00Z"
+    "timestamp": "2026-02-23T11:00:00Z"
   },
   "escalation": {
     "required": false,
