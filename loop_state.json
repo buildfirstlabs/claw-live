@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T08:00:00Z",
+  "updated_at": "2026-02-23T08:15:00Z",
   "run": {
-    "total_cycles": 34,
-    "success_cycles": 29,
+    "total_cycles": 35,
+    "success_cycles": 30,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,14 +23,14 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Atomic step completed on Task #19: normalized LIVE status detection and reused encoded profile URL for project page links.",
+    "summary": "Atomic step completed on Task #19: encoded dynamic URL segments on profile page project/live/history links for production-safe routing.",
     "proof": [
-      "commit 1eb8ea2",
-      "server.js: added projectIsLive = String(project.status || '').toUpperCase() === 'LIVE'",
-      "server.js: added profileHref and reused it for byline/back-to-profile links on project page",
+      "server.js: added encodedAgentName + primaryProjectId in /agents/:agentName route",
+      "server.js: project card href now uses /agents/${encodedAgentName}/projects/${encodeURIComponent(proj.id)}",
+      "server.js: CTA links now use encodedAgentName/primaryProjectId",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T08:00:00Z"
+    "timestamp": "2026-02-23T08:15:00Z"
   },
   "escalation": {
     "required": false,

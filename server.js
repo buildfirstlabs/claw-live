@@ -831,13 +831,17 @@ app.get('/agents/:agentName', (req, res) => {
     
     // Use real follower count from agent data
     const followerCount = agent.followers || Math.floor(Math.random() * 5000) + 1000;
+    const encodedAgentName = encodeURIComponent(agentName);
+    const primaryProjectId = agent.projects && agent.projects.length > 0
+        ? encodeURIComponent(agent.projects[0].id)
+        : 'claw-live';
     
     // Build projects HTML - ENHANCED CARDS
     const projectsHTML = (agent.projects && agent.projects.length > 0) 
         ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-entry" style="animation-delay: 0.15s;">
                 <h2 class="col-span-1 md:col-span-2 text-xs font-black uppercase tracking-widest text-zinc-500 mb-0">Active Projects (${agent.projects.length})</h2>
                 ${agent.projects.map((proj, idx) => `
-                    <a href="/agents/${agentName}/projects/${proj.id}" class="group relative overflow-hidden rounded-2xl border border-zinc-700/30 bg-gradient-to-br from-zinc-900/40 to-zinc-950/60 p-6 transition-all hover:border-[#FF4500]/50 hover:bg-gradient-to-br hover:from-zinc-900/60 hover:to-zinc-950/80 hover:shadow-lg hover:shadow-[#FF4500]/20">
+                    <a href="/agents/${encodedAgentName}/projects/${encodeURIComponent(proj.id)}" class="group relative overflow-hidden rounded-2xl border border-zinc-700/30 bg-gradient-to-br from-zinc-900/40 to-zinc-950/60 p-6 transition-all hover:border-[#FF4500]/50 hover:bg-gradient-to-br hover:from-zinc-900/60 hover:to-zinc-950/80 hover:shadow-lg hover:shadow-[#FF4500]/20">
                         <div class="absolute -top-20 -right-20 w-40 h-40 bg-[#FF4500]/5 rounded-full blur-3xl group-hover:bg-[#FF4500]/10 transition-all"></div>
                         <div class="relative z-10">
                             <div class="flex items-start justify-between mb-3">
@@ -1051,10 +1055,10 @@ app.get('/agents/:agentName', (req, res) => {
         <div class="flex flex-col gap-4">
             <!-- CTA Buttons - PRIMARY -->
             <div class="profile-card p-6 animate-entry flex flex-col gap-3" style="animation-delay: 0.2s;">
-                <a href="/live/${agentName}/${agent.projects && agent.projects.length > 0 ? agent.projects[0].id : 'claw-live'}" class="w-full inline-flex items-center justify-center gap-2 bg-[#FF4500] text-black font-black px-6 py-4 rounded-xl hover:bg-[#FF6533] transition-all transform hover:scale-105 text-base uppercase tracking-wider shadow-lg shadow-[#FF4500]/30">
+                <a href="/live/${encodedAgentName}/${primaryProjectId}" class="w-full inline-flex items-center justify-center gap-2 bg-[#FF4500] text-black font-black px-6 py-4 rounded-xl hover:bg-[#FF6533] transition-all transform hover:scale-105 text-base uppercase tracking-wider shadow-lg shadow-[#FF4500]/30">
                     <span>Go Live Feed</span>
                 </a>
-                <a href="/agents/${agentName}/history" class="w-full inline-flex items-center justify-center gap-2 bg-white/10 border border-white/20 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/15 hover:border-[#FF4500]/40 transition-all text-sm uppercase tracking-wider">
+                <a href="/agents/${encodedAgentName}/history" class="w-full inline-flex items-center justify-center gap-2 bg-white/10 border border-white/20 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/15 hover:border-[#FF4500]/40 transition-all text-sm uppercase tracking-wider">
                     <span>View Live History</span>
                 </a>
                 <a href="${twitterLink}" target="_blank" class="w-full inline-flex items-center justify-center gap-2 bg-white/10 border border-white/20 text-white font-bold px-6 py-3 rounded-xl hover:bg-white/15 hover:border-[#FF4500]/40 transition-all text-sm uppercase tracking-wider">
