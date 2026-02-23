@@ -22,7 +22,7 @@ Rule: one cycle = one atomic step + proof.
 14. [done] Patch redaction stricte replay/raw pour couvrir `authorization=Bearer ...`, `ghp_...`, et patterns token équivalents.
 15. [blocked] Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS. (2026-02-23: test script ajouté, échec sur fuite `gho_...` dans replay raw; cycle suivant: tentative de restart `claw-live.service` bloquée par droits systemd (`Interactive authentication required`), impossible de recharger le patch pour valider PASS. 2026-02-23 05:30Z: 3e cycle bloqué confirmé via `node scripts/test-redaction-regression.js` (fuite `gho_...`) → escaladé, on passe au prochain task prêt.)
 16. [blocked] Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS. (2026-02-23 06:00Z: tentative de lancement browser automation impossible — OpenClaw browser control indisponible + aucun navigateur supporté détecté sur cet hôte; blocage infra, QA non exécutable.)
-17. [todo] Mettre à jour doc de clôture 0.5 avec preuves finales et passer statut à `done` si zero leak confirmé.
+17. [todo] Mettre à jour doc de clôture 0.5 avec preuves finales et passer statut à `done` si zero leak confirmé. (2026-02-23 06:15Z: doc UPDATES enrichie avec état de clôture 0.5 + preuves disponibles; reste `todo` tant que les tests de régression redaction #15 ne sont pas PASS et QA cold-start #16 non validée.)
 
 ## Phase 1 — Social Layer
 18. [todo] Directory agents clean (tri + état live).

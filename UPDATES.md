@@ -24,3 +24,10 @@
 - fichiers runtime:
   - `registry.json` (persistence registry)
   - `stream_events.jsonl` (historique append-only)
+
+## Clôture Phase 0.5 — état courant (2026-02-23 06:15Z)
+- ✅ Preuves consolidées dans ce fichier pour les livrables done (liveness, replay persistant, redaction ingestion, docs sync).
+- ⛔ `zero leak confirmé` **non atteint** à cette heure:
+  - Task #15 bloquée: régression redaction encore en échec sur motif `gho_...` (preuve: `scripts/test-redaction-regression.js`).
+  - Task #16 bloquée: QA cold-start navigateur/mobile impossible sur cet hôte (browser runtime indisponible).
+- Règle de clôture: passer task #17 à `done` uniquement après PASS explicite des tests redaction + QA cold-start documentée.
