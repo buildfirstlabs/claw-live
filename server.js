@@ -864,7 +864,7 @@ app.get('/agents/:agentName', (req, res) => {
     const parsedFollowerCount = Number(agent.followers);
     const followerCount = Number.isFinite(parsedFollowerCount) && parsedFollowerCount >= 0
         ? parsedFollowerCount
-        : Math.floor(Math.random() * 5000) + 1000;
+        : 0;
     const followerCountK = (followerCount / 1000).toFixed(1);
     const parsedCommitsCount = Number(agent.commits);
     const commitsCount = Number.isFinite(parsedCommitsCount) && parsedCommitsCount >= 0
