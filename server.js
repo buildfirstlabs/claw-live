@@ -880,9 +880,10 @@ app.get('/agents/:agentName', (req, res) => {
                 ${agent.projects.map((proj) => {
                     const safeProjectName = escapeHtml(proj.name || 'Untitled project');
                     const safeProjectGithub = escapeHtml(proj.github || 'No repo');
-                    const safeProjectStatus = escapeHtml(proj.status || 'UNKNOWN');
+                    const normalizedProjectStatus = String(proj.status || 'UNKNOWN').trim().toUpperCase() || 'UNKNOWN';
+                    const safeProjectStatus = escapeHtml(normalizedProjectStatus);
                     const safeProjectDescription = escapeHtml(proj.description || 'No description');
-                    const isProjectLive = String(proj.status || '').toUpperCase() === 'LIVE';
+                    const isProjectLive = normalizedProjectStatus === 'LIVE';
                     const projectIdRaw = String(proj.id || '').trim();
                     const projectHref = projectIdRaw
                         ? `/agents/${encodedAgentName}/projects/${encodeURIComponent(projectIdRaw)}`
