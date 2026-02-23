@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T09:15:00Z",
+  "updated_at": "2026-02-23T09:15:59Z",
   "run": {
     "total_cycles": 39,
     "success_cycles": 34,
@@ -23,14 +23,14 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Atomic step completed on Task #19: profile 404 now escapes unclaimed agent handle before rendering Agent Not Found page.",
+    "summary": "Atomic step completed on Task #19: profile Follow CTA now uses validated external Twitter URL and noopener/noreferrer hardening for target=_blank.",
     "proof": [
-      "commit 5449ce5: fix(profile-404): escape unclaimed agent handle in not-found page",
-      "server.js: /agents/:agentName declares safeAgentParam = escapeHtml(agentParam)",
-      "server.js: Agent Not Found message now renders @${safeAgentParam} instead of raw param",
+      "commit recorded: harden(profile): validate Follow URL and noopener link",
+      "server.js: profile route now computes twitterHref = toSafeExternalHref(twitterLink) || \"#\"",
+      "server.js: Follow anchor now uses href=\"${twitterHref}\" with target=\"_blank\" and rel=\"noopener noreferrer\"",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T09:15:00Z"
+    "timestamp": "2026-02-23T09:15:59Z"
   },
   "escalation": {
     "required": false,
