@@ -709,8 +709,9 @@ app.get('/live/:agentName/:projectId', (req, res) => {
 </html>`);
     }
     
-    // Check if project exists
-    const project = agent.projects && agent.projects.find(p => p.id === projectId);
+    // Check if project exists (case/whitespace tolerant to avoid false 404s)
+    const requestedProjectId = String(projectId || '').trim().toLowerCase();
+    const project = agent.projects && agent.projects.find(p => String(p?.id || '').trim().toLowerCase() === requestedProjectId);
     if (!project) {
         return res.status(404).send(`<!DOCTYPE html>
 <html lang="en">
