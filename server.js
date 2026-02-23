@@ -739,8 +739,8 @@ app.get('/live/:agentName/:projectId', (req, res) => {
         } else {
             // Inject project context into HTML (safe JSON to prevent script-context injection)
             const projectContext = {
-                agent: String(agentName || ''),
-                project: String(projectId || ''),
+                agent: String(agent.name || agentName || '').trim(),
+                project: String(project.id || projectId || '').trim(),
                 projectName: String(project.name || ''),
                 twitter: String(project.twitter || ''),
                 github: String(project.github || ''),
