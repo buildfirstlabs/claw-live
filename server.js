@@ -111,10 +111,12 @@ function broadcastPhase0(msg, level = 'info', module = 'PHASE0') {
 const SECRET_KEY_HINT = /(token|secret|api[-_]?key|password|authorization)/i;
 const SECRET_VALUE_PATTERNS = [
     /\b(sk|gsk)_[A-Za-z0-9_-]{8,}\b/g,
-    /\bgh(?:p|o|u|s|r)_[A-Za-z0-9]{20,}\b/g,
-    /\bauthorization\s*[:=]\s*Bearer\s+[A-Za-z0-9._-]{12,}\b/gi,
+    /\bgh(?:p|o|u|s|r)_[A-Za-z0-9]{20,}\b/gi,
+    /\bgithub_pat_[A-Za-z0-9_]{20,}\b/gi,
+    /\bgh[a-z]{2}_[A-Za-z0-9_]{20,}\b/gi,
+    /\bauthorization\s*[:=]\s*bearer\s+[^\s,;"']{8,}/gi,
     /\b(?:api[-_]?key|token|secret|password)\s*[:=]\s*[^\s,;"']+/gi,
-    /\bBearer\s+[A-Za-z0-9._-]{12,}\b/gi
+    /\bbearer\s+[^\s,;"']{8,}/gi
 ];
 
 function redactStringSecrets(input) {
@@ -139,6 +141,14 @@ function redactSecrets(input) {
     }
 
     return input;
+}
+
+function sanitizeForPersistence(input) {
+    return redactSecrets(input);
+}
+
+function sanitizeForReplay(input) {
+    return redactSecrets(input);
 }
 
 function writeJsonAtomic(filePath, data) {
@@ -280,7 +290,7 @@ function buildSignalQualityFeed(rawEvents, limit = 200, now = Date.now()) {
 
     const sliced = selected.slice(0, limit);
     return sliced.map((item) => ({
-        ...redactSecrets(item.raw),
+        ...sanitizeForReplay(item.raw),
         signal_kind: item.kind,
         signal_priority: item.priority,
         signal_type: item.signalType,
@@ -366,7 +376,7 @@ function saveRegistry() {
 }
 
 function commitStreamState(rawEvent) {
-    const event = redactSecrets(rawEvent || {});
+    const event = sanitizeForPersistence(rawEvent || {});
     appendStreamEventAtomic({ ...event, ts: new Date().toISOString() });
     writeJsonAtomic(LOG_FILE, streamData);
 }
@@ -1231,7 +1241,9 @@ app.get('/api/stream/replay', (req, res) => {
     const rawLimit = Math.max(limit * 6, 200);
     const rawEvents = readStreamReplay(rawLimit);
     const qualityGateDisabled = String(req.query.raw || '').toLowerCase() === '1';
-    const events = qualityGateDisabled ? rawEvents.slice(-limit).reverse().map((event) => redactSecrets(event)) : buildSignalQualityFeed(rawEvents, limit);
+    const events = qualityGateDisabled
+        ? rawEvents.slice(-limit).reverse().map((event) => sanitizeForReplay(event))
+        : buildSignalQualityFeed(rawEvents, limit).map((event) => sanitizeForReplay(event));
 
     res.json({
         count: events.length,
@@ -1532,7 +1544,7 @@ app.post('/api/waitlist', (req, res) => {
 });
 
 app.post('/api/stream', (req, res) => {
-    const incoming = redactSecrets(req.body || {});
+    const incoming = sanitizeForPersistence(req.body || {});
     const { thoughts, reasoning, terminal, chatMsg, log, status, fileUpdate, version, buildStatus, commitIncrement } = incoming;
     let updated = false;
 
