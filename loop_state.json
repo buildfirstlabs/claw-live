@@ -19,9 +19,9 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Executed one atomic step as an explicit no-op because tasks.md had zero actionable todo items for this cycle.",
+    "summary": "Executed one atomic step as an explicit no-op because tasks.md had zero actionable status lines marked [todo] for this cycle.",
     "proof": [
-      "Command proof: `grep -n \"[todo]\" tasks.md` returned no lines at 2026-02-23T02:15:23Z.",
+      "Command proof: `grep -nE '^([0-9]+)\\. \\[todo\\]' tasks.md` returned no lines at 2026-02-23T02:15:23Z.",
       "tasks.md contains item 9 documenting this cycle's explicit no-op reason."
     ],
     "timestamp": "2026-02-23T02:15:23Z"

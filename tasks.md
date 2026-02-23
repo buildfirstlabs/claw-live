@@ -10,4 +10,4 @@ Status legend: `todo` | `in_progress` | `done` | `blocked`
 6. [done] Apply retry/escalation logic when failures occur. (Checked failure counters: `consecutive_failures=0`; no escalation required this cycle.)
 7. [done] Execute one atomic loop step for this cycle: explicit no-op because there is no remaining `todo` task in `tasks.md` and no unblock signal in `context.md`.
 8. [done] Execute one atomic loop step for this cycle: explicit no-op because `tasks.md` still contains zero `todo` items (verified by grep count), so no actionable task exists.
-9. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -n "[todo]" tasks.md` returned no matches, so there is no actionable task.
+9. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` returned no matches, so there is no actionable task.
