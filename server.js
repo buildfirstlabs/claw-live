@@ -840,25 +840,33 @@ app.get('/agents/:agentName', (req, res) => {
     const projectsHTML = (agent.projects && agent.projects.length > 0) 
         ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-entry" style="animation-delay: 0.15s;">
                 <h2 class="col-span-1 md:col-span-2 text-xs font-black uppercase tracking-widest text-zinc-500 mb-0">Active Projects (${agent.projects.length})</h2>
-                ${agent.projects.map((proj, idx) => `
+                ${agent.projects.map((proj) => {
+                    const safeProjectName = escapeHtml(proj.name || 'Untitled project');
+                    const safeProjectGithub = escapeHtml(proj.github || 'No repo');
+                    const safeProjectStatus = escapeHtml(proj.status || 'UNKNOWN');
+                    const safeProjectDescription = escapeHtml(proj.description || 'No description');
+                    const isProjectLive = String(proj.status || '').toUpperCase() === 'LIVE';
+
+                    return `
                     <a href="/agents/${encodedAgentName}/projects/${encodeURIComponent(proj.id)}" class="group relative overflow-hidden rounded-2xl border border-zinc-700/30 bg-gradient-to-br from-zinc-900/40 to-zinc-950/60 p-6 transition-all hover:border-[#FF4500]/50 hover:bg-gradient-to-br hover:from-zinc-900/60 hover:to-zinc-950/80 hover:shadow-lg hover:shadow-[#FF4500]/20">
                         <div class="absolute -top-20 -right-20 w-40 h-40 bg-[#FF4500]/5 rounded-full blur-3xl group-hover:bg-[#FF4500]/10 transition-all"></div>
                         <div class="relative z-10">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex-1">
-                                    <h3 class="font-bold text-lg text-white group-hover:text-[#FF4500] transition-colors mb-1">${proj.name}</h3>
-                                    <p class="text-[10px] text-zinc-400 font-mono">${proj.github}</p>
+                                    <h3 class="font-bold text-lg text-white group-hover:text-[#FF4500] transition-colors mb-1">${safeProjectName}</h3>
+                                    <p class="text-[10px] text-zinc-400 font-mono">${safeProjectGithub}</p>
                                 </div>
-                                <span class="text-[9px] font-black px-2.5 py-1 rounded-full border whitespace-nowrap ml-2 ${proj.status === 'LIVE' ? 'bg-red-500/20 text-red-400 border-red-500/40 shadow-lg shadow-red-500/20' : 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30'}">${proj.status}</span>
+                                <span class="text-[9px] font-black px-2.5 py-1 rounded-full border whitespace-nowrap ml-2 ${isProjectLive ? 'bg-red-500/20 text-red-400 border-red-500/40 shadow-lg shadow-red-500/20' : 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30'}">${safeProjectStatus}</span>
                             </div>
-                            <p class="text-xs text-zinc-500 leading-relaxed mb-4">${proj.description || 'No description'}</p>
+                            <p class="text-xs text-zinc-500 leading-relaxed mb-4">${safeProjectDescription}</p>
                             <div class="flex items-center justify-between pt-4 border-t border-white/5">
                                 <span class="text-[8px] text-zinc-600 uppercase font-bold">View Project</span>
                                 <svg class="w-4 h-4 text-zinc-500 group-hover:text-[#FF4500] transition-all group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                             </div>
                         </div>
                     </a>
-                `).join('')}
+                `;
+                }).join('')}
             </div>`
         : '';
     
