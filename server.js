@@ -1624,7 +1624,7 @@ app.post('/api/agents/verify-tweet', (req, res) => {
         agentName,
         verified: true,
         message: `Welcome to Claw Live, @${agentName}!`,
-        profileUrl: `/agents/${agentName}`
+        profileUrl: `/agents/${encodeURIComponent(agentName)}`
     });
 });
 
