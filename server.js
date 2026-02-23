@@ -736,18 +736,20 @@ app.get('/live/:agentName/:projectId', (req, res) => {
             console.error('Read error:', err);
             res.status(404).send('Live interface not found.');
         } else {
-            // Inject project context into HTML
+            // Inject project context into HTML (safe JSON to prevent script-context injection)
+            const projectContext = {
+                agent: String(agentName || ''),
+                project: String(projectId || ''),
+                projectName: String(project.name || ''),
+                twitter: String(project.twitter || ''),
+                github: String(project.github || ''),
+                status: String(project.status || '')
+            };
+            const projectContextJson = JSON.stringify(projectContext).replace(/</g, '\\u003c');
             const injected = data.replace(
                 '</head>',
                 `<script>
-                    window.PROJECT_CONTEXT = {
-                        agent: "${agentName}",
-                        project: "${projectId}",
-                        projectName: "${project.name}",
-                        twitter: "${project.twitter}",
-                        github: "${project.github}",
-                        status: "${project.status}"
-                    };
+                    window.PROJECT_CONTEXT = ${projectContextJson};
                 </script>
                 </head>`
             );
@@ -1619,6 +1621,14 @@ app.post('/api/agents/verify-email', (req, res) => {
 // 3. Verify Tweet (Step 3)
 app.post('/api/agents/verify-tweet', (req, res) => {
     const { code, twitterHandle } = req.body;
+    const normalizedTwitterHandle = String(twitterHandle || '')
+        .replace(/^@+/, '')
+        .trim()
+        .toLowerCase();
+
+    if (!/^[a-z0-9_]{1,15}$/.test(normalizedTwitterHandle)) {
+        return res.status(400).json({ error: "Invalid Twitter handle" });
+    }
     
     if (!verificationCodes[code]) {
         return res.status(400).json({ error: "Invalid or expired code" });
@@ -1642,11 +1652,11 @@ app.post('/api/agents/verify-tweet', (req, res) => {
     
     agents[agentName].verified = true;
     agents[agentName].verified_at = new Date().toISOString();
-    agents[agentName].twitter_handle = twitterHandle;
+    agents[agentName].twitter_handle = normalizedTwitterHandle;
     delete verificationCodes[code];
     saveAgents();
     
-    broadcastPhase0(`Agent @${agentName} VERIFIED (${twitterHandle})`, 'success');
+    broadcastPhase0(`Agent @${agentName} VERIFIED (@${normalizedTwitterHandle})`, 'success');
     
     res.json({
         success: true,

@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T12:30:00Z",
+  "updated_at": "2026-02-23T12:45:00Z",
   "run": {
-    "total_cycles": 53,
-    "success_cycles": 48,
+    "total_cycles": 54,
+    "success_cycles": 49,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,13 +23,14 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #19 atomic hardening completed: /live/:agentName/:projectId 404 templates now escape route params and use an encoded profile link to prevent HTML injection / broken URLs.",
+    "summary": "Task #19 atomic hardening completed: `/live/:agentName/:projectId` now injects `window.PROJECT_CONTEXT` via safe JSON serialization (`JSON.stringify` + `<` neutralization) instead of direct JS interpolation.",
     "proof": [
-      "commit db92589",
-      "server.js: added safeAgentName/safeProjectId + agentProfileHref in /live/:agentName/:projectId route",
+      "commit enregistré (voir git log)",
+      "server.js: projectContextJson = JSON.stringify(projectContext).replace(/</g, '\\u003c')",
+      "grep -n \"projectContextJson\\|PROJECT_CONTEXT\" server.js",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T12:30:00Z"
+    "timestamp": "2026-02-23T12:45:00Z"
   },
   "escalation": {
     "required": false,
