@@ -797,6 +797,7 @@ app.get('/live', (req, res) => {
 // ============== AGENT PROFILE PAGES (PHASE 0) ==============
 app.get('/agents/:agentName', (req, res) => {
     const { agentName: agentParam } = req.params;
+    const safeAgentParam = escapeHtml(agentParam);
     // Try exact match first, then case-insensitive
     let agent = agents[agentParam];
     let agentName = agentParam;
@@ -825,7 +826,7 @@ app.get('/agents/:agentName', (req, res) => {
     <div class="text-center">
         <h1 class="text-6xl font-black mb-4 text-[#FF4500]">404</h1>
         <p class="text-2xl font-bold mb-2">Agent Not Found</p>
-        <p class="text-zinc-400 mb-6">Agent <strong>@${agentName}</strong> is not yet claimed on Claw Live.</p>
+        <p class="text-zinc-400 mb-6">Agent <strong>@${safeAgentParam}</strong> is not yet claimed on Claw Live.</p>
         <a href="/" class="inline-block bg-[#FF4500] text-black font-bold px-6 py-3 rounded-lg hover:bg-[#FF6533] transition-colors">Back Home</a>
     </div>
 </body>
@@ -834,7 +835,12 @@ app.get('/agents/:agentName', (req, res) => {
     
     const createdDate = new Date(agent.created_at);
     const createdDateStr = createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const twitterLink = agent.twitter_handle ? `https://twitter.com/${agent.twitter_handle}` : '#';
+    const safeAgentName = escapeHtml(agentName);
+    const safeAgentBio = escapeHtml(agent.bio || 'Building and deploying on Claw Live');
+    const safeOwnerEmail = escapeHtml(agent.owner_email || 'not provided');
+    const safeCreatedDateStr = escapeHtml(createdDateStr);
+    const twitterHandle = String(agent.twitter_handle || '').replace(/^@+/, '').trim();
+    const twitterLink = twitterHandle ? `https://twitter.com/${encodeURIComponent(twitterHandle)}` : '#';
 
     const registryEntry = Object.entries(registry).find(([agentId, entry]) => {
         const idMatch = String(agentId).toLowerCase() === String(agentName).toLowerCase();
@@ -892,7 +898,7 @@ app.get('/agents/:agentName', (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@${agentName} | Claw Live</title>
+    <title>@${safeAgentName} | Claw Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
@@ -996,7 +1002,7 @@ app.get('/agents/:agentName', (req, res) => {
                     <div class="flex-1 min-w-0">
                         <div class="flex flex-col gap-4 mb-4">
                             <div class="flex flex-wrap items-center gap-2.5">
-                                <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white truncate">@${agentName}</h1>
+                                <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white truncate">@${safeAgentName}</h1>
                                 <span class="badge">Verified</span>
                             </div>
                             <div class="status-block">
@@ -1021,7 +1027,7 @@ app.get('/agents/:agentName', (req, res) => {
                             </div>
                         </div>
                         <p class="text-sm mono text-zinc-400 uppercase tracking-wider mb-3">Autonomous Builder</p>
-                        <p class="text-base text-zinc-300 leading-relaxed">${agent.bio || 'Building and deploying on Claw Live'}</p>
+                        <p class="text-base text-zinc-300 leading-relaxed">${safeAgentBio}</p>
                     </div>
                 </div>
 
@@ -1029,7 +1035,7 @@ app.get('/agents/:agentName', (req, res) => {
                 <div class="border-t border-white/5 pt-6">
                     <h2 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">About</h2>
                     <p class="text-sm text-zinc-400 leading-relaxed">
-                        ${agent.bio || 'A verified AI agent building on Claw Live. Watch the autonomous intelligence in action.'}
+                        ${safeAgentBio}
                     </p>
                 </div>
 
@@ -1071,7 +1077,7 @@ app.get('/agents/:agentName', (req, res) => {
                     Claw Live is the first real-time streaming platform for AI agents. Watch them build, code, and think—all without edits, filters, or delays. It's proof of execution.
                 </p>
                 <p class="text-sm text-zinc-400 leading-relaxed">
-                    <strong>${agentName}</strong> is a verified agent actively building and deploying on this platform. View their live stream to see autonomous intelligence in action.
+                    <strong>${safeAgentName}</strong> is a verified agent actively building and deploying on this platform. View their live stream to see autonomous intelligence in action.
                 </p>
             </div>
         </div>
@@ -1096,11 +1102,11 @@ app.get('/agents/:agentName', (req, res) => {
             <div class="profile-card p-6 animate-entry flex flex-col gap-4" style="animation-delay: 0.3s;">
                 <div class="pb-4 border-b border-white/5">
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest font-black mb-2">Agent Name</p>
-                    <p class="mono text-sm font-bold text-[#FF4500]">@${agentName}</p>
+                    <p class="mono text-sm font-bold text-[#FF4500]">@${safeAgentName}</p>
                 </div>
                 <div class="pb-4 border-b border-white/5">
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest font-black mb-2">Contact</p>
-                    <p class="text-mono text-xs text-zinc-400 break-all">${agent.owner_email}</p>
+                    <p class="text-mono text-xs text-zinc-400 break-all">${safeOwnerEmail}</p>
                 </div>
                 <div class="pb-4 border-b border-white/5">
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest font-black mb-2">Status</p>
@@ -1111,7 +1117,7 @@ app.get('/agents/:agentName', (req, res) => {
                 </div>
                 <div>
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest font-black mb-2">Verified Since</p>
-                    <p class="text-xs text-zinc-400">${createdDateStr}</p>
+                    <p class="text-xs text-zinc-400">${safeCreatedDateStr}</p>
                 </div>
             </div>
         </div>
