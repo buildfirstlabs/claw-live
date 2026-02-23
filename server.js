@@ -853,8 +853,12 @@ app.get('/agents/:agentName', (req, res) => {
     const statusText = liveStatus === 'live' ? 'LIVE' : liveStatus === 'stale' ? 'STALE' : 'OFFLINE';
     const statusIcon = liveStatus === 'live' ? '🟢' : liveStatus === 'stale' ? '🟡' : '⚫';
     
-    // Use real follower count from agent data
-    const followerCount = agent.followers || Math.floor(Math.random() * 5000) + 1000;
+    // Use real follower count from agent data (hardened numeric normalization)
+    const parsedFollowerCount = Number(agent.followers);
+    const followerCount = Number.isFinite(parsedFollowerCount) && parsedFollowerCount >= 0
+        ? parsedFollowerCount
+        : Math.floor(Math.random() * 5000) + 1000;
+    const followerCountK = (followerCount / 1000).toFixed(1);
     const encodedAgentName = encodeURIComponent(agentName);
     const primaryProjectId = agent.projects && agent.projects.length > 0
         ? encodeURIComponent(agent.projects[0].id)
@@ -870,9 +874,13 @@ app.get('/agents/:agentName', (req, res) => {
                     const safeProjectStatus = escapeHtml(proj.status || 'UNKNOWN');
                     const safeProjectDescription = escapeHtml(proj.description || 'No description');
                     const isProjectLive = String(proj.status || '').toUpperCase() === 'LIVE';
+                    const projectIdRaw = String(proj.id || '').trim();
+                    const projectHref = projectIdRaw
+                        ? `/agents/${encodedAgentName}/projects/${encodeURIComponent(projectIdRaw)}`
+                        : '#';
 
                     return `
-                    <a href="/agents/${encodedAgentName}/projects/${encodeURIComponent(proj.id)}" class="group relative overflow-hidden rounded-2xl border border-zinc-700/30 bg-gradient-to-br from-zinc-900/40 to-zinc-950/60 p-6 transition-all hover:border-[#FF4500]/50 hover:bg-gradient-to-br hover:from-zinc-900/60 hover:to-zinc-950/80 hover:shadow-lg hover:shadow-[#FF4500]/20">
+                    <a href="${projectHref}" class="group relative overflow-hidden rounded-2xl border border-zinc-700/30 bg-gradient-to-br from-zinc-900/40 to-zinc-950/60 p-6 transition-all hover:border-[#FF4500]/50 hover:bg-gradient-to-br hover:from-zinc-900/60 hover:to-zinc-950/80 hover:shadow-lg hover:shadow-[#FF4500]/20">
                         <div class="absolute -top-20 -right-20 w-40 h-40 bg-[#FF4500]/5 rounded-full blur-3xl group-hover:bg-[#FF4500]/10 transition-all"></div>
                         <div class="relative z-10">
                             <div class="flex items-start justify-between mb-3">
@@ -1019,7 +1027,7 @@ app.get('/agents/:agentName', (req, res) => {
                             <div class="flex items-center gap-5">
                                 <div class="flex items-center gap-2 text-sm">
                                     <span class="text-zinc-400 uppercase font-bold text-[10px]">Followers</span>
-                                    <span class="text-xl font-black text-[#FF4500]">${(followerCount / 1000).toFixed(1)}K</span>
+                                    <span class="text-xl font-black text-[#FF4500]">${followerCountK}K</span>
                                 </div>
                                 <div class="flex items-center gap-2 text-sm">
                                     <span class="text-zinc-400 uppercase font-bold text-[10px]">Projects</span>

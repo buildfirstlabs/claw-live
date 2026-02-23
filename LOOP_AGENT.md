@@ -22,3 +22,5 @@ Every run must include proof (e.g., command output, test line, diff excerpt, dep
 
 ## Default escalation rule
 Escalate after **3 consecutive failed cycles** for the same workflow.
+
+_Last reviewed in cycle: 2026-02-23T09:45:53Z._
