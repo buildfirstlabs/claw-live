@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T09:00:00Z",
+  "updated_at": "2026-02-23T09:15:00Z",
   "run": {
-    "total_cycles": 38,
-    "success_cycles": 33,
+    "total_cycles": 39,
+    "success_cycles": 34,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,14 +23,14 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Atomic step completed on Task #19: history page now escapes agent handle in title/H1 and uses encoded profile/live links for URL safety.",
+    "summary": "Atomic step completed on Task #19: profile 404 now escapes unclaimed agent handle before rendering Agent Not Found page.",
     "proof": [
-      "commit a15a364: feat(history-page): escape agent handle and encode profile/live links",
-      "server.js: /agents/:agentName/history now uses safeAgentName in title/H1",
-      "server.js: live/profile hrefs now built with encodeURIComponent",
+      "commit 5449ce5: fix(profile-404): escape unclaimed agent handle in not-found page",
+      "server.js: /agents/:agentName declares safeAgentParam = escapeHtml(agentParam)",
+      "server.js: Agent Not Found message now renders @${safeAgentParam} instead of raw param",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T09:00:00Z"
+    "timestamp": "2026-02-23T09:15:00Z"
   },
   "escalation": {
     "required": false,
