@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T06:15:00.000Z",
+  "updated_at": "2026-02-23T06:30:00.000Z",
   "run": {
-    "total_cycles": 27,
-    "success_cycles": 22,
+    "total_cycles": 28,
+    "success_cycles": 23,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -13,26 +13,27 @@
     "last_failed_task": "16. Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS.",
     "last_failed_at": "2026-02-23T06:00:00.000Z",
     "task_blocked_cycles": {
-      "16": 1
+      "16": 1,
+      "17": 1
     }
   },
   "current": {
-    "task": "17. Mettre à jour doc de clôture 0.5 avec preuves finales et passer statut à `done` si zero leak confirmé.",
-    "status": "todo"
+    "task": "Aucun task prêt en Phase 0.5 (15/16/17 bloqués). En attente déblocage infra/tests.",
+    "status": "blocked"
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Atomic step completed: updated Phase 0.5 closure documentation with current proof status and explicit gating conditions; task 17 remains todo pending zero-leak confirmation.",
+    "summary": "Atomic step completed: task #17 moved to blocked because closure depends on blocked prerequisites (#15/#16). No code changes beyond task-state orchestration.",
     "proof": [
-      "File updated: UPDATES.md (section \"Clôture Phase 0.5 — état courant (2026-02-23 06:15Z)\")",
-      "File updated: tasks.md (#17 annotated with partial completion + remaining blockers #15/#16)",
-      "Git proof captured in commit for this cycle."
+      "File updated: tasks.md (task #17 status todo -> blocked with 06:30Z reason)",
+      "Dependency evidence: task #15 blocked (redaction regression PASS missing), task #16 blocked (browser runtime unavailable)",
+      "Git commit hash for this cycle records the change set"
     ],
-    "timestamp": "2026-02-23T06:15:00.000Z"
+    "timestamp": "2026-02-23T06:30:00.000Z"
   },
   "escalation": {
     "required": false,
-    "reason": "No escalation this cycle: successful doc step on next ready task (#17); blocked task counters unchanged.",
+    "reason": "No escalation this cycle: task #17 blocked cycle count=1 (<3 threshold).",
     "triggered_at": "2026-02-23T05:46:00.000Z"
   }
 }
