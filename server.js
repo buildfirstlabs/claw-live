@@ -1256,7 +1256,10 @@ app.get('/agents/:agentName/history', (req, res) => {
     }
 
     const safeAgentName = escapeHtml(agentName);
-    const primaryProjectId = agent.projects && agent.projects.length > 0 ? agent.projects[0].id : 'claw-live';
+    const primaryProjectIdRaw = agent.projects && agent.projects.length > 0
+        ? String(agent.projects[0].id || '').trim()
+        : '';
+    const primaryProjectId = primaryProjectIdRaw || 'claw-live';
     const liveHref = `/live/${encodeURIComponent(agentName)}/${encodeURIComponent(primaryProjectId)}`;
     const profileHref = `/agents/${encodeURIComponent(agentName)}`;
 

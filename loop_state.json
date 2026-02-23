@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T10:00:00Z",
+  "updated_at": "2026-02-23T10:15:00Z",
   "run": {
-    "total_cycles": 43,
-    "success_cycles": 38,
+    "total_cycles": 44,
+    "success_cycles": 39,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,13 +23,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "No-op cycle on Task #19: planned live CTA hardening was already implemented (`projectIdRaw` + fallback `#`), so only verification and bookkeeping were performed.",
+    "summary": "Task #19 atomic hardening completed: history page now normalizes primary project id (`primaryProjectIdRaw`) and falls back to `claw-live` before building `liveHref`.",
     "proof": [
-      "server.js already contains `const projectIdRaw = String(project.id || \"\").trim();` and guarded `liveHref` fallback `#`",
-      "grep -n \"const projectIdRaw = String(project.id || \"\").trim();\" server.js",
+      "server.js adds `primaryProjectIdRaw = String(agent.projects[0].id || \"\").trim()` in /agents/:agentName/history route",
+      "server.js sets `primaryProjectId = primaryProjectIdRaw || 'claw-live'` before `liveHref`",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T10:00:00Z"
+    "timestamp": "2026-02-23T10:15:00Z"
   },
   "escalation": {
     "required": false,
