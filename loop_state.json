@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T07:33:40Z",
+  "updated_at": "2026-02-23T08:00:00Z",
   "run": {
-    "total_cycles": 32,
-    "success_cycles": 27,
+    "total_cycles": 34,
+    "success_cycles": 29,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,14 +23,14 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Atomic step completed on Task #19: added dedicated project detail page route and rewired profile project cards to the new canonical URL.",
+    "summary": "Atomic step completed on Task #19: normalized LIVE status detection and reused encoded profile URL for project page links.",
     "proof": [
-      "commit c61a226",
-      "server.js: profile cards now link to /agents/:agentName/projects/:projectId",
-      "server.js: new GET /agents/:agentName/projects/:projectId route renders production-oriented project page",
+      "commit 1eb8ea2",
+      "server.js: added projectIsLive = String(project.status || '').toUpperCase() === 'LIVE'",
+      "server.js: added profileHref and reused it for byline/back-to-profile links on project page",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T07:33:40Z"
+    "timestamp": "2026-02-23T08:00:00Z"
   },
   "escalation": {
     "required": false,

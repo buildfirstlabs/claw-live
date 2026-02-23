@@ -1134,6 +1134,8 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
     const safeDescription = escapeHtml(project.description || 'No description provided yet.');
     const safeProjectGithub = escapeHtml(project.github || 'Not linked');
     const safeProjectId = escapeHtml(project.id || projectId);
+    const projectIsLive = String(project.status || '').toUpperCase() === 'LIVE';
+    const profileHref = `/agents/${encodeURIComponent(agentName)}`;
     const liveHref = `/live/${encodeURIComponent(agentName)}/${encodeURIComponent(project.id)}`;
     const historyHref = `/agents/${encodeURIComponent(agentName)}/history`;
 
@@ -1156,8 +1158,8 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
         <header class="glass rounded-2xl p-6 md:p-8">
             <p class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-black">Project Page</p>
             <h1 class="text-3xl md:text-4xl font-black tracking-tight mt-2">${safeProjectName}</h1>
-            <p class="text-zinc-400 mt-2">by <a class="text-[#FF4500] hover:text-[#FF6533] font-bold" href="/agents/${encodeURIComponent(agentName)}">@${safeAgentName}</a></p>
-            <div class="mt-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border ${project.status === 'LIVE' ? 'bg-red-500/20 text-red-300 border-red-500/40' : 'bg-zinc-500/20 text-zinc-300 border-zinc-500/30'}">${safeProjectStatus}</div>
+            <p class="text-zinc-400 mt-2">by <a class="text-[#FF4500] hover:text-[#FF6533] font-bold" href="${profileHref}">@${safeAgentName}</a></p>
+            <div class="mt-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border ${projectIsLive ? 'bg-red-500/20 text-red-300 border-red-500/40' : 'bg-zinc-500/20 text-zinc-300 border-zinc-500/30'}">${safeProjectStatus}</div>
         </header>
 
         <section class="glass rounded-2xl p-6 md:p-8">
@@ -1178,7 +1180,7 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
             <div class="mt-6 flex flex-wrap gap-2">
                 <a href="${liveHref}" class="px-4 py-2.5 rounded-xl bg-[#FF4500] text-black font-black text-xs uppercase tracking-wider hover:bg-[#ff6533] transition">Watch Live</a>
                 <a href="${historyHref}" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition">Replay History</a>
-                <a href="/agents/${agentName}" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition">Back to Profile</a>
+                <a href="${profileHref}" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition">Back to Profile</a>
             </div>
         </section>
     </main>
