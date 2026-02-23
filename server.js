@@ -1181,7 +1181,10 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
     const projectRepoHref = toSafeExternalHref(project.github);
     const projectIsLive = String(project.status || '').toUpperCase() === 'LIVE';
     const profileHref = `/agents/${encodeURIComponent(agentName)}`;
-    const liveHref = `/live/${encodeURIComponent(agentName)}/${encodeURIComponent(project.id)}`;
+    const projectIdRaw = String(project.id || '').trim();
+    const liveHref = projectIdRaw
+        ? `/live/${encodeURIComponent(agentName)}/${encodeURIComponent(projectIdRaw)}`
+        : '#';
     const historyHref = `/agents/${encodeURIComponent(agentName)}/history`;
 
     return res.send(`<!DOCTYPE html>

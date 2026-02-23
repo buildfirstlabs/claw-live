@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T09:45:53Z",
+  "updated_at": "2026-02-23T10:00:00Z",
   "run": {
-    "total_cycles": 41,
-    "success_cycles": 36,
+    "total_cycles": 43,
+    "success_cycles": 38,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,13 +23,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Atomic step completed on Task #19: profile project cards now build project links from a trimmed project id with fallback `#` to prevent `/projects/undefined` broken routes.",
+    "summary": "Atomic step completed on Task #19: project page live CTA now derives route from trimmed project id and falls back to `#` when missing to prevent `/live/.../undefined` links.",
     "proof": [
-      "commit: recorded in git history (see cycle report)",
-      "server.js: profile projects map now uses `projectIdRaw` and `projectHref` fallback `#` when id is missing",
+      "commit: 80b6745",
+      "server.js: project page now uses `projectIdRaw` to build `liveHref` with fallback `#`",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T09:45:53Z"
+    "timestamp": "2026-02-23T10:00:00Z"
   },
   "escalation": {
     "required": false,
