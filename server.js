@@ -160,6 +160,23 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function toSafeExternalHref(rawValue) {
+    if (!rawValue) {
+        return null;
+    }
+
+    try {
+        const parsed = new URL(String(rawValue));
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            return parsed.toString();
+        }
+    } catch {
+        return null;
+    }
+
+    return null;
+}
+
 function writeJsonAtomic(filePath, data) {
     const tmpFile = `${filePath}.${process.pid}.${Date.now()}.tmp`;
     fs.writeFileSync(tmpFile, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
@@ -1146,6 +1163,7 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
     const safeDescription = escapeHtml(project.description || 'No description provided yet.');
     const safeProjectGithub = escapeHtml(project.github || 'Not linked');
     const safeProjectId = escapeHtml(project.id || projectId);
+    const projectRepoHref = toSafeExternalHref(project.github);
     const projectIsLive = String(project.status || '').toUpperCase() === 'LIVE';
     const profileHref = `/agents/${encodeURIComponent(agentName)}`;
     const liveHref = `/live/${encodeURIComponent(agentName)}/${encodeURIComponent(project.id)}`;
@@ -1181,7 +1199,9 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
             <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="rounded-xl bg-white/[0.02] border border-white/10 p-4">
                     <p class="text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-black mb-2">Repository</p>
-                    <p class="mono text-sm break-all text-zinc-300">${safeProjectGithub}</p>
+                    ${projectRepoHref
+                        ? `<a href="${projectRepoHref}" target="_blank" rel="noopener noreferrer" class="mono text-sm break-all text-[#FF9A6A] hover:text-[#FFB58F] underline underline-offset-4">${safeProjectGithub}</a>`
+                        : `<p class="mono text-sm break-all text-zinc-300">${safeProjectGithub}</p>`}
                 </div>
                 <div class="rounded-xl bg-white/[0.02] border border-white/10 p-4">
                     <p class="text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-black mb-2">Project ID</p>
