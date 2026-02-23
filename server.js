@@ -1237,14 +1237,17 @@ app.get('/agents/:agentName/history', (req, res) => {
         return res.status(404).send('Agent Not Found');
     }
 
-    const liveHref = `/live/${agentName}/${agent.projects && agent.projects.length > 0 ? agent.projects[0].id : 'claw-live'}`;
+    const safeAgentName = escapeHtml(agentName);
+    const primaryProjectId = agent.projects && agent.projects.length > 0 ? agent.projects[0].id : 'claw-live';
+    const liveHref = `/live/${encodeURIComponent(agentName)}/${encodeURIComponent(primaryProjectId)}`;
+    const profileHref = `/agents/${encodeURIComponent(agentName)}`;
 
     res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@${agentName} Live History | Claw Live</title>
+    <title>@${safeAgentName} Live History | Claw Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
@@ -1258,12 +1261,12 @@ app.get('/agents/:agentName/history', (req, res) => {
         <header class="glass rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
                 <p class="text-[10px] uppercase tracking-[0.22em] text-zinc-500 font-black">Replay Entry Point</p>
-                <h1 class="text-2xl md:text-4xl font-black tracking-tight mt-1">@${agentName} Live History</h1>
+                <h1 class="text-2xl md:text-4xl font-black tracking-tight mt-1">@${safeAgentName} Live History</h1>
                 <p class="text-zinc-400 text-sm mt-2">Append-only replay feed from <span class="mono text-zinc-300">/api/stream/replay</span>.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a href="${liveHref}" class="px-4 py-2.5 rounded-xl bg-[#FF4500] text-black font-black text-xs uppercase tracking-wider hover:bg-[#ff6533] transition">Watch Live</a>
-                <a href="/agents/${agentName}" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition">Back to Profile</a>
+                <a href="${profileHref}" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition">Back to Profile</a>
             </div>
         </header>
 
