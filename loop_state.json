@@ -1,31 +1,32 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T04:45:46Z",
+  "updated_at": "2026-02-23T05:16:13.887Z",
   "run": {
-    "total_cycles": 21,
+    "total_cycles": 23,
     "success_cycles": 21,
-    "failed_cycles": 0,
-    "consecutive_failures": 0
+    "failed_cycles": 2,
+    "consecutive_failures": 2
   },
   "retry": {
     "max_consecutive_failures_before_escalation": 3,
-    "last_error": "",
-    "last_failed_task": "",
-    "last_failed_at": ""
+    "last_error": "Failed to restart claw-live.service: Interactive authentication required; regression test remains failing on gho_ leak in replay raw.",
+    "last_failed_task": "15. Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS.",
+    "last_failed_at": "2026-02-23T05:16:13.887Z"
   },
   "current": {
-    "task": "14. Patch redaction stricte replay/raw pour couvrir authorization=Bearer, tokens GitHub et équivalents.",
-    "status": "done"
+    "task": "15. Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS.",
+    "status": "blocked"
   },
   "last_result": {
-    "outcome": "success",
-    "summary": "Atomic step completed: strengthened secret redaction patterns in server ingestion/replay path and closed task 14.",
+    "outcome": "failure",
+    "summary": "Atomic step executed: attempted to reload runtime via systemd restart to apply redaction patch before rerunning regression; blocked by insufficient privileges.",
     "proof": [
-      "Commit: 850a4ffd4dbd5c5eb3ff289115fbe4e9ec7a7790",
-      "Regex proof: server.js:114 now matches ghp/gho/ghu/ghs/ghr token prefixes.",
-      "Task proof: tasks.md:22 marks item 14 as [done]."
+      "Command: node scripts/test-redaction-regression.js",
+      "Failure: Token leaked in replay: gho_abcd1234abcd1234abcd1234",
+      "Command: systemctl restart claw-live.service",
+      "Error: Interactive authentication required."
     ],
-    "timestamp": "2026-02-23T04:45:46Z"
+    "timestamp": "2026-02-23T05:16:13.887Z"
   },
   "escalation": {
     "required": false,

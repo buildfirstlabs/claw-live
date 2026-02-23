@@ -20,7 +20,7 @@ Rule: one cycle = one atomic step + proof.
 
 ### DoD 0.5 closing tasks
 14. [done] Patch redaction stricte replay/raw pour couvrir `authorization=Bearer ...`, `ghp_...`, et patterns token équivalents.
-15. [todo] Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS.
+15. [blocked] Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS. (2026-02-23: test script ajouté, échec sur fuite `gho_...` dans replay raw; cycle suivant: tentative de restart `claw-live.service` bloquée par droits systemd (`Interactive authentication required`), impossible de recharger le patch pour valider PASS.)
 16. [todo] Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS.
 17. [todo] Mettre à jour doc de clôture 0.5 avec preuves finales et passer statut à `done` si zero leak confirmé.
 
