@@ -25,7 +25,7 @@
     "outcome": "success",
     "summary": "Atomic step completed on Task #19: profile project cards now build project links from a trimmed project id with fallback `#` to prevent `/projects/undefined` broken routes.",
     "proof": [
-      "commit: 519e15c",
+      "commit: recorded in git history (see cycle report)",
       "server.js: profile projects map now uses `projectIdRaw` and `projectHref` fallback `#` when id is missing",
       "node --check server.js (pass)"
     ],
