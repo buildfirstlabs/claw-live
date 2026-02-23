@@ -860,8 +860,11 @@ app.get('/agents/:agentName', (req, res) => {
         : Math.floor(Math.random() * 5000) + 1000;
     const followerCountK = (followerCount / 1000).toFixed(1);
     const encodedAgentName = encodeURIComponent(agentName);
-    const primaryProjectId = agent.projects && agent.projects.length > 0
-        ? encodeURIComponent(agent.projects[0].id)
+    const primaryProjectIdRaw = agent.projects && agent.projects.length > 0
+        ? String(agent.projects[0].id || '').trim()
+        : '';
+    const primaryProjectId = primaryProjectIdRaw
+        ? encodeURIComponent(primaryProjectIdRaw)
         : 'claw-live';
     
     // Build projects HTML - ENHANCED CARDS
