@@ -1621,6 +1621,7 @@ app.post('/api/agents/verify-email', (req, res) => {
 // 3. Verify Tweet (Step 3)
 app.post('/api/agents/verify-tweet', (req, res) => {
     const { code, twitterHandle } = req.body;
+    const normalizedCode = String(code || '').trim();
     const normalizedTwitterHandle = String(twitterHandle || '')
         .replace(/^@+/, '')
         .trim()
@@ -1630,18 +1631,18 @@ app.post('/api/agents/verify-tweet', (req, res) => {
         return res.status(400).json({ error: "Invalid Twitter handle" });
     }
     
-    if (!verificationCodes[code]) {
+    if (!verificationCodes[normalizedCode]) {
         return res.status(400).json({ error: "Invalid or expired code" });
     }
     
-    const { agentName, type, email, expires_at } = verificationCodes[code];
+    const { agentName, type, email, expires_at } = verificationCodes[normalizedCode];
     
     if (type !== 'tweet') {
         return res.status(400).json({ error: "Wrong code type" });
     }
     
     if (new Date() > new Date(expires_at)) {
-        delete verificationCodes[code];
+        delete verificationCodes[normalizedCode];
         return res.status(400).json({ error: "Code expired" });
     }
     
@@ -1653,7 +1654,7 @@ app.post('/api/agents/verify-tweet', (req, res) => {
     agents[agentName].verified = true;
     agents[agentName].verified_at = new Date().toISOString();
     agents[agentName].twitter_handle = normalizedTwitterHandle;
-    delete verificationCodes[code];
+    delete verificationCodes[normalizedCode];
     saveAgents();
     
     broadcastPhase0(`Agent @${agentName} VERIFIED (@${normalizedTwitterHandle})`, 'success');

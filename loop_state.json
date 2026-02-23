@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T12:45:00Z",
+  "updated_at": "2026-02-23T13:00:00Z",
   "run": {
-    "total_cycles": 54,
-    "success_cycles": 49,
+    "total_cycles": 55,
+    "success_cycles": 50,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,14 +23,12 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #19 atomic hardening completed: `/live/:agentName/:projectId` now injects `window.PROJECT_CONTEXT` via safe JSON serialization (`JSON.stringify` + `<` neutralization) instead of direct JS interpolation.",
+    "summary": "Task #19 atomic hardening completed: `/api/agents/verify-tweet` now normalizes verification code input (`normalizedCode = trim`) and consistently uses it for lookup + deletion to avoid whitespace-related false misses and stale cleanup.",
     "proof": [
-      "commit enregistré (voir git log)",
-      "server.js: projectContextJson = JSON.stringify(projectContext).replace(/</g, '\\u003c')",
-      "grep -n \"projectContextJson\\|PROJECT_CONTEXT\" server.js",
+      "server.js: added `normalizedCode` and replaced verificationCodes[code] with verificationCodes[normalizedCode] in verify-tweet flow",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T12:45:00Z"
+    "timestamp": "2026-02-23T13:00:00Z"
   },
   "escalation": {
     "required": false,

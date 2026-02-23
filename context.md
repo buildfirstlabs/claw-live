@@ -19,9 +19,9 @@
 - Escalating too early (before retry threshold) or too late (after threshold).
 
 ## Latest cycle log
-- 2026-02-23 13:00Z — Task #19 (profile/projects production-ready): hardened claim API input handling by normalizing `twitterHandle` (`trim`, remove leading `@`, lowercase) and enforcing strict regex `^[a-z0-9_]{1,15}$` before persistence/logging. Validation: `node --check server.js` PASS.
+- 2026-02-23 13:00Z — Task #19 (profile/projects production-ready): hardened claim flow code handling by normalizing verification `code` (`trim`) and using `normalizedCode` consistently for lookup + deletion in `/api/agents/verify-tweet`, avoiding false misses/cleanup failures with whitespace-padded codes. Validation: `node --check server.js` PASS.
 ## Cycle log
-- 2026-02-23T13:00:00Z — Task #19 (profile/projects production-ready): hardened `/api/agents/verify-tweet` by normalizing `twitterHandle` and rejecting invalid handles with strict regex before storing `agents[agentName].twitter_handle`; validation: `node --check server.js` PASS.
+- 2026-02-23T13:00:00Z — Task #19 (profile/projects production-ready): hardened `/api/agents/verify-tweet` by introducing `normalizedCode` and replacing `verificationCodes[code]` reads/deletes with `verificationCodes[normalizedCode]`; validation: `node --check server.js` PASS.
 - 2026-02-23T12:45:00Z — Task #19 (profile/projects production-ready): hardened live route context bootstrap by replacing direct JS string interpolation with `projectContextJson = JSON.stringify(...).replace(/</g, '\\u003c')` before assigning `window.PROJECT_CONTEXT`; validation: `node --check server.js` PASS.
 - 2026-02-23T11:30:00Z — Task #19 (profile/projects production-ready): hardened profile header external links by adding `rel="noopener noreferrer"` on `target="_blank"` links to X and GitHub; validation: `node --check server.js` PASS.
 - 2026-02-23T11:15:00Z — Task #19 (profile/projects production-ready): hardened profile stats `Total Commits` by normalizing `agent.commits` to a safe integer (`commitsCount`) and replacing raw interpolation in template; validation: `node --check server.js` PASS.
