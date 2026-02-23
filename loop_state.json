@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T10:15:00Z",
+  "updated_at": "2026-02-23T10:30:00Z",
   "run": {
-    "total_cycles": 44,
-    "success_cycles": 39,
+    "total_cycles": 45,
+    "success_cycles": 40,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,13 +23,14 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #19 atomic hardening completed: history page now normalizes primary project id (`primaryProjectIdRaw`) and falls back to `claw-live` before building `liveHref`.",
+    "summary": "Task #19 atomic hardening completed: profile page now normalizes first project id (`primaryProjectIdRaw`) and falls back to `claw-live` before building main live CTA.",
     "proof": [
-      "server.js adds `primaryProjectIdRaw = String(agent.projects[0].id || \"\").trim()` in /agents/:agentName/history route",
-      "server.js sets `primaryProjectId = primaryProjectIdRaw || 'claw-live'` before `liveHref`",
+      "server.js adds `primaryProjectIdRaw = String(agent.projects[0].id || '').trim()` in /agents/:agentName route",
+      "server.js sets `primaryProjectId = primaryProjectIdRaw ? encodeURIComponent(primaryProjectIdRaw) : 'claw-live'`",
+      "commit `ffa795d`",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T10:15:00Z"
+    "timestamp": "2026-02-23T10:30:00Z"
   },
   "escalation": {
     "required": false,
