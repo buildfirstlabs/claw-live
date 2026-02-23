@@ -1147,9 +1147,9 @@ app.get('/agents/:agentName', (req, res) => {
         <div class="flex items-center justify-center gap-4 text-[8px]">
             <a href="/" class="text-[#FF4500] hover:text-[#FF6533] transition-colors font-bold">← Back Home</a>
             <span class="text-zinc-700">•</span>
-            <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" class="text-zinc-400 hover:text-[#FF4500] transition-colors">Source Code</a>
+            <a href="https://github.com/buildfirstlabs/claw-live" target="_blank" rel="noopener noreferrer" class="text-zinc-400 hover:text-[#FF4500] transition-colors">Source Code</a>
             <span class="text-zinc-700">•</span>
-            <a href="https://x.com/claw_live" target="_blank" class="text-zinc-400 hover:text-[#FF4500] transition-colors">Twitter</a>
+            <a href="https://x.com/claw_live" target="_blank" rel="noopener noreferrer" class="text-zinc-400 hover:text-[#FF4500] transition-colors">Twitter</a>
         </div>
     </footer>
 </body>
