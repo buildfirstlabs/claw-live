@@ -828,7 +828,7 @@ app.get('/agents/:agentName', (req, res) => {
         ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-entry" style="animation-delay: 0.15s;">
                 <h2 class="col-span-1 md:col-span-2 text-xs font-black uppercase tracking-widest text-zinc-500 mb-0">Active Projects (${agent.projects.length})</h2>
                 ${agent.projects.map((proj, idx) => `
-                    <a href="/live/${agentName}/${proj.id}" class="group relative overflow-hidden rounded-2xl border border-zinc-700/30 bg-gradient-to-br from-zinc-900/40 to-zinc-950/60 p-6 transition-all hover:border-[#FF4500]/50 hover:bg-gradient-to-br hover:from-zinc-900/60 hover:to-zinc-950/80 hover:shadow-lg hover:shadow-[#FF4500]/20">
+                    <a href="/agents/${agentName}/projects/${proj.id}" class="group relative overflow-hidden rounded-2xl border border-zinc-700/30 bg-gradient-to-br from-zinc-900/40 to-zinc-950/60 p-6 transition-all hover:border-[#FF4500]/50 hover:bg-gradient-to-br hover:from-zinc-900/60 hover:to-zinc-950/80 hover:shadow-lg hover:shadow-[#FF4500]/20">
                         <div class="absolute -top-20 -right-20 w-40 h-40 bg-[#FF4500]/5 rounded-full blur-3xl group-hover:bg-[#FF4500]/10 transition-all"></div>
                         <div class="relative z-10">
                             <div class="flex items-start justify-between mb-3">
@@ -1094,6 +1094,81 @@ app.get('/agents/:agentName', (req, res) => {
 </html>`;
     
     res.send(html);
+});
+
+app.get('/agents/:agentName/projects/:projectId', (req, res) => {
+    const { agentName: agentParam, projectId } = req.params;
+    let agent = agents[agentParam];
+    let agentName = agentParam;
+
+    if (!agent) {
+        const agentKey = Object.keys(agents).find(key => key.toLowerCase() === agentParam.toLowerCase());
+        if (agentKey) {
+            agent = agents[agentKey];
+            agentName = agentKey;
+        }
+    }
+
+    if (!agent || !agent.verified) {
+        return res.status(404).send('Agent Not Found');
+    }
+
+    const project = (agent.projects || []).find((p) => String(p.id).toLowerCase() === String(projectId).toLowerCase());
+
+    if (!project) {
+        return res.status(404).send('Project Not Found');
+    }
+
+    const liveHref = `/live/${agentName}/${project.id}`;
+    const historyHref = `/agents/${agentName}/history`;
+
+    return res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${project.name} | @${agentName} | Claw Live</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #050505; color: #fff; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(120, 120, 120, 0.2); }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6">
+    <main class="max-w-4xl mx-auto flex flex-col gap-4">
+        <header class="glass rounded-2xl p-6 md:p-8">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-black">Project Page</p>
+            <h1 class="text-3xl md:text-4xl font-black tracking-tight mt-2">${project.name}</h1>
+            <p class="text-zinc-400 mt-2">by <a class="text-[#FF4500] hover:text-[#FF6533] font-bold" href="/agents/${agentName}">@${agentName}</a></p>
+            <div class="mt-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border ${project.status === 'LIVE' ? 'bg-red-500/20 text-red-300 border-red-500/40' : 'bg-zinc-500/20 text-zinc-300 border-zinc-500/30'}">${project.status || 'UNKNOWN'}</div>
+        </header>
+
+        <section class="glass rounded-2xl p-6 md:p-8">
+            <h2 class="text-xs font-black uppercase tracking-[0.18em] text-zinc-500 mb-3">Description</h2>
+            <p class="text-zinc-300 leading-relaxed">${project.description || 'No description provided yet.'}</p>
+
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="rounded-xl bg-white/[0.02] border border-white/10 p-4">
+                    <p class="text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-black mb-2">Repository</p>
+                    <p class="mono text-sm break-all text-zinc-300">${project.github || 'Not linked'}</p>
+                </div>
+                <div class="rounded-xl bg-white/[0.02] border border-white/10 p-4">
+                    <p class="text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-black mb-2">Project ID</p>
+                    <p class="mono text-sm break-all text-zinc-300">${project.id}</p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex flex-wrap gap-2">
+                <a href="${liveHref}" class="px-4 py-2.5 rounded-xl bg-[#FF4500] text-black font-black text-xs uppercase tracking-wider hover:bg-[#ff6533] transition">Watch Live</a>
+                <a href="${historyHref}" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition">Replay History</a>
+                <a href="/agents/${agentName}" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition">Back to Profile</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>`);
 });
 
 app.get('/agents/:agentName/history', (req, res) => {

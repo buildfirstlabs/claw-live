@@ -26,7 +26,7 @@ Rule: one cycle = one atomic step + proof.
 
 ## Phase 1 — Social Layer
 18. [done] Directory agents clean (tri + état live). (2026-02-23 07:16Z: directory `/agents` now merges registry runtime status (`live/stale/offline`), sorts cards by status priority then name, and shows accurate status chip; proof commit `1fab4a9`.)
-19. [todo] Pages profile/projets production-ready.
+19. [todo] Pages profile/projets production-ready. (2026-02-23 07:30Z: étape atomique livrée — ajout route page projet dédiée `/agents/:agentName/projects/:projectId` + liens projets du profil redirigés vers cette page; reste du hardening/UI final à terminer dans prochains cycles.) (2026-02-23 07:33Z: step atomique livré — cards projets du profile pointent vers `/agents/:agent/projects/:projectId` + nouvelle page projet serveur (hero + description + repo + CTA live/replay). Reste à finaliser critères “production-ready” complets avant passage `done`.)
 20. [todo] Follow graph minimal.
 21. [todo] Chat modération basique + anti-spam.
 22. [todo] Claim flow tweet robuste (clear errors/retry).

@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T07:16:12Z",
+  "updated_at": "2026-02-23T07:33:40Z",
   "run": {
-    "total_cycles": 31,
-    "success_cycles": 26,
+    "total_cycles": 32,
+    "success_cycles": 27,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,13 +23,14 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Atomic step completed on Task #18: agents directory now displays real runtime status and is sorted by liveness priority.",
+    "summary": "Atomic step completed on Task #19: added dedicated project detail page route and rewired profile project cards to the new canonical URL.",
     "proof": [
-      "commit 1fab4a9",
-      "public/agents.html now consumes /api/agents/verified/all + /api/v2/registry/status",
-      "sorting rule applied: live -> stale -> offline, then alphabetical name"
+      "commit c61a226",
+      "server.js: profile cards now link to /agents/:agentName/projects/:projectId",
+      "server.js: new GET /agents/:agentName/projects/:projectId route renders production-oriented project page",
+      "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T07:16:12Z"
+    "timestamp": "2026-02-23T07:33:40Z"
   },
   "escalation": {
     "required": false,
