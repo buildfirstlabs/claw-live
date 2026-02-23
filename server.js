@@ -111,7 +111,8 @@ function broadcastPhase0(msg, level = 'info', module = 'PHASE0') {
 const SECRET_KEY_HINT = /(token|secret|api[-_]?key|password|authorization)/i;
 const SECRET_VALUE_PATTERNS = [
     /\b(sk|gsk)_[A-Za-z0-9_-]{8,}\b/g,
-    /\bghp_[A-Za-z0-9]{20,}\b/g,
+    /\bgh(?:p|o|u|s|r)_[A-Za-z0-9]{20,}\b/g,
+    /\bauthorization\s*[:=]\s*Bearer\s+[A-Za-z0-9._-]{12,}\b/gi,
     /\b(?:api[-_]?key|token|secret|password)\s*[:=]\s*[^\s,;"']+/gi,
     /\bBearer\s+[A-Za-z0-9._-]{12,}\b/gi
 ];

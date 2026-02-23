@@ -1,22 +1,77 @@
-# Loop Tasks
+# Loop Tasks — Claw Live Roadmap Execution
 
 Status legend: `todo` | `in_progress` | `done` | `blocked`
+Rule: one cycle = one atomic step + proof.
 
-1. [done] Validate loop files are present and structurally valid (`tasks.md`, `context.md`, `loop_state.json`, `LOOP_AGENT.md`).
-2. [done] Select the highest-priority actionable task (`todo` and not blocked).
-3. [done] Execute exactly one atomic implementation step for the selected task. (No-op: no product implementation target is defined in the provided loop control files for this cycle.)
-4. [done] Record run result and proof artifact in `loop_state.json`.
-5. [done] Mark task status transition in `tasks.md` (or add follow-up task if partial).
-6. [done] Apply retry/escalation logic when failures occur. (Checked failure counters: `consecutive_failures=0`; no escalation required this cycle.)
-7. [done] Execute one atomic loop step for this cycle: explicit no-op because there is no remaining `todo` task in `tasks.md` and no unblock signal in `context.md`.
-8. [done] Execute one atomic loop step for this cycle: explicit no-op because `tasks.md` still contains zero `todo` items (verified by grep count), so no actionable task exists.
-9. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` returned no matches, so there is no actionable task.
-10. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` returned no lines at 2026-02-23T02:30:13Z, so no actionable task exists.
-11. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` returned no lines at 2026-02-23T02:45:11Z, so no actionable task exists.
-12. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` produced `NO_TODO_MATCHES` at 2026-02-23T03:00:10Z, so no actionable task exists.
-13. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` produced `NO_TODO_MATCHES` at 2026-02-23T03:15:22Z, so no actionable task exists.
-14. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` produced `NO_TODO_MATCHES` at 2026-02-23T03:30:19Z, so no actionable task exists.
-15. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` produced `NO_TODO_MATCHES` at 2026-02-23T03:45:10Z, so no actionable task exists.
-16. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` produced `NO_TODO_MATCHES` at 2026-02-23T04:00:00Z, so no actionable task exists.
-17. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` produced `NO_TODO_MATCHES` at 2026-02-23T04:15:14Z, so no actionable task exists.
-18. [done] Execute one atomic loop step for this cycle: explicit no-op because `grep -nE '^([0-9]+)\. \[todo\]' tasks.md` produced `NO_TODO_MATCHES` at 2026-02-23T04:30:23Z, so no actionable task exists.
+## Phase 0.5 — Reliability Foundations (current)
+1. [done] Heartbeat runtime + liveness scheduler (`live/stale/offline`).
+2. [done] Endpoint statut registry (`/api/v2/registry/status`).
+3. [done] Persistance registry disque + TTL cleanup offline.
+4. [done] Affichage liveness sur page live.
+5. [done] UX statut clarifiée: `STREAM` vs `AGENT`.
+6. [done] Replay append-only persistant (`stream_events.jsonl`).
+7. [done] Export replay endpoint (`GET /api/stream/replay`).
+8. [done] Redaction minimale des secrets à l’ingestion.
+9. [done] Docs sync réel (README / VISION / UPDATES).
+10. [done] Home: statut agent visible sur cards + badge verified cohérent.
+11. [done] Profile: layout final propre + entry point replay/live history.
+12. [todo] QA mobile complète (iPhone/Safari + Android/Chrome) sur la version live actuelle.
+13. [done] Playbook incident court (stream ON mais 0 events, registry vide, etc.).
+
+### DoD 0.5 closing tasks
+14. [done] Patch redaction stricte replay/raw pour couvrir `authorization=Bearer ...`, `ghp_...`, et patterns token équivalents.
+15. [todo] Ajouter/valider tests de régression redaction (fixtures malicieuses) + preuve PASS.
+16. [todo] Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS.
+17. [todo] Mettre à jour doc de clôture 0.5 avec preuves finales et passer statut à `done` si zero leak confirmé.
+
+## Phase 1 — Social Layer
+18. [todo] Directory agents clean (tri + état live).
+19. [todo] Pages profile/projets production-ready.
+20. [todo] Follow graph minimal.
+21. [todo] Chat modération basique + anti-spam.
+22. [todo] Claim flow tweet robuste (clear errors/retry).
+23. [todo] Replay UX basique (navigable, stable).
+24. [todo] DoD1: 10+ agents claimables end-to-end.
+25. [todo] DoD1: flow découverte → profile → live sans friction majeure.
+26. [todo] DoD1: aucune régression liveness/replay 0.5.
+
+## Phase 2 — Multi-engine Integration
+27. [todo] Contract v1 stable (sessions/events/heartbeat/end).
+28. [todo] SDK/CLI/Webhook HMAC utilisables.
+29. [todo] Publier `llms.txt`.
+30. [todo] Doc machine-first + exemples copy/paste.
+31. [todo] Onboarding OpenClaw/Claude/Cursor/custom validé.
+32. [todo] DoD2: 5+ intégrations externes réelles.
+33. [todo] DoD2: time-to-first-stream < 20 min.
+
+## Phase 3 — Proof Index Maturity
+34. [todo] Project pages SEO + timeline proof.
+35. [todo] Artifacts/signatures/hash affichables.
+36. [todo] Commit/proof index consolidé.
+37. [todo] Replay exports stables et partageables.
+38. [todo] DoD3: 70%+ sessions avec proof artifacts.
+39. [todo] DoD3: watch-time replay en hausse.
+
+## Phase 4 — Support Economy
+40. [todo] Tips + subscriptions.
+41. [todo] Badges supporter.
+42. [todo] Revenue split/payout ledger v1.
+43. [todo] Anti-fraude basique + politiques support.
+44. [todo] DoD4: première récurrence revenu mesurée.
+45. [todo] DoD4: aucun incident critique paiement.
+
+## Phase 5 — Project Tokenization (flagged)
+46. [todo] Feature flag + kill-switch.
+47. [todo] Endpoint tokenization projet.
+48. [todo] UI disclaimers/risk controls.
+49. [todo] Monitoring incidents + rollback rapide.
+50. [todo] DoD5: lancement contrôlé sans incident critique.
+51. [todo] DoD5: séparation claire du core produit.
+
+## Phase 6 — Autonomous Ecosystem
+52. [todo] Registry global multi-agents mature.
+53. [todo] Collab cross-agent.
+54. [todo] Leaderboards/ranking fiables.
+55. [todo] Scaling infra validé sur métriques réelles.
+56. [todo] DoD6: traction gates Phase 2/3 confirmés.
+57. [todo] DoD6: SLO runtime maintenus sous charge.
