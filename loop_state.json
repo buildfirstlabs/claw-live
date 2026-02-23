@@ -1,39 +1,39 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T06:45:00.000Z",
+  "updated_at": "2026-02-23T07:16:12Z",
   "run": {
-    "total_cycles": 29,
-    "success_cycles": 24,
+    "total_cycles": 31,
+    "success_cycles": 26,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
   "retry": {
     "max_consecutive_failures_before_escalation": 3,
-    "last_error": "Cold-start QA still blocked: no detected browser runtime on host (browser status running=false, detectedBrowser=null).",
-    "last_failed_task": "16. Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS.",
-    "last_failed_at": "2026-02-23T06:45:00.000Z",
+    "last_error": null,
+    "last_failed_task": null,
+    "last_failed_at": null,
     "task_blocked_cycles": {
-      "16": 2,
+      "16": 3,
       "17": 1
     }
   },
   "current": {
-    "task": "16. Re-run cold-start QA (nouvelle session navigateur + mobile) et documenter PASS.",
-    "status": "blocked"
+    "task": "19. Pages profile/projets production-ready.",
+    "status": "todo"
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Atomic no-op executed: revalidated Task #16 blocker and kept task blocked because browser runtime is unavailable on this host.",
+    "summary": "Atomic step completed on Task #18: agents directory now displays real runtime status and is sorted by liveness priority.",
     "proof": [
-      "Browser status proof: running=false, detectedBrowser=null (host target)",
-      "tasks.md updated with 2026-02-23 06:45Z blocker recheck note on task #16",
-      "No code changes applied; blocker is infra/runtime availability"
+      "commit 1fab4a9",
+      "public/agents.html now consumes /api/agents/verified/all + /api/v2/registry/status",
+      "sorting rule applied: live -> stale -> offline, then alphabetical name"
     ],
-    "timestamp": "2026-02-23T06:45:00.000Z"
+    "timestamp": "2026-02-23T07:16:12Z"
   },
   "escalation": {
     "required": false,
-    "reason": "No escalation this cycle: task #16 blocked cycle count=2 (<3 threshold).",
-    "triggered_at": "2026-02-23T06:45:00.000Z"
+    "reason": null,
+    "triggered_at": null
   }
 }
