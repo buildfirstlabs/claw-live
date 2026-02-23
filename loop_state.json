@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-23T08:46:07Z",
+  "updated_at": "2026-02-23T09:00:00Z",
   "run": {
-    "total_cycles": 37,
-    "success_cycles": 32,
+    "total_cycles": 38,
+    "success_cycles": 33,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,14 +23,14 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Atomic step completed on Task #19: project repository card now renders a secure clickable link only for valid http/https URLs, otherwise falls back to plain text.",
+    "summary": "Atomic step completed on Task #19: history page now escapes agent handle in title/H1 and uses encoded profile/live links for URL safety.",
     "proof": [
-      "commit 181bf45: feat(project-page): render repository as safe external link",
-      "server.js: added toSafeExternalHref() URL guard (http/https only)",
-      "server.js: repository UI uses anchor with target=_blank + rel=\"noopener noreferrer\" when URL is valid",
+      "commit a15a364: feat(history-page): escape agent handle and encode profile/live links",
+      "server.js: /agents/:agentName/history now uses safeAgentName in title/H1",
+      "server.js: live/profile hrefs now built with encodeURIComponent",
       "node --check server.js (pass)"
     ],
-    "timestamp": "2026-02-23T08:46:07Z"
+    "timestamp": "2026-02-23T09:00:00Z"
   },
   "escalation": {
     "required": false,
