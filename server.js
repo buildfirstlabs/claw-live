@@ -861,6 +861,10 @@ app.get('/agents/:agentName', (req, res) => {
         ? parsedFollowerCount
         : Math.floor(Math.random() * 5000) + 1000;
     const followerCountK = (followerCount / 1000).toFixed(1);
+    const parsedCommitsCount = Number(agent.commits);
+    const commitsCount = Number.isFinite(parsedCommitsCount) && parsedCommitsCount >= 0
+        ? Math.floor(parsedCommitsCount)
+        : 0;
     const encodedAgentName = encodeURIComponent(agentName);
     const primaryProjectIdRaw = agent.projects && agent.projects.length > 0
         ? String(agent.projects[0].id || '').trim()
@@ -1058,7 +1062,7 @@ app.get('/agents/:agentName', (req, res) => {
                     <h2 class="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">Statistics</h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="stat-card text-center group cursor-default">
-                            <div class="text-3xl font-black text-[#FF4500] mb-2 group-hover:scale-110 transition-transform">${agent.commits || 0}</div>
+                            <div class="text-3xl font-black text-[#FF4500] mb-2 group-hover:scale-110 transition-transform">${commitsCount}</div>
                             <div class="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">Total Commits</div>
                             <div class="text-[8px] text-zinc-600 mt-1">Deployed & Live</div>
                         </div>
