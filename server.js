@@ -1169,7 +1169,8 @@ app.get('/agents/:agentName/projects/:projectId', (req, res) => {
         return res.status(404).send('Agent Not Found');
     }
 
-    const project = (agent.projects || []).find((p) => String(p.id).toLowerCase() === String(projectId).toLowerCase());
+    const requestedProjectId = String(projectId || '').trim().toLowerCase();
+    const project = (agent.projects || []).find((p) => String(p.id || '').trim().toLowerCase() === requestedProjectId);
 
     if (!project) {
         return res.status(404).send('Project Not Found');
