@@ -1764,10 +1764,14 @@ app.get('/api/agents/follow-graph', (req, res) => {
 
     verifiedEntries.forEach(([fromName, agent]) => {
         const normalizedFromNameKey = String(fromName || '').trim().toLowerCase();
-        if (!normalizedFromNameKey) return;
+        const normalizedFromAgentNameKey = String(agent?.name || '').trim().toLowerCase();
+        const sourceLookupKey = normalizedFromAgentNameKey || normalizedFromNameKey;
+        if (!sourceLookupKey) return;
 
-        const fromNode = nodeByName.get(normalizedFromNameKey);
-        const canonicalFromName = fromNode ? fromNode.name : String(fromName || '').trim();
+        const fromNode = nodeByName.get(sourceLookupKey) || nodeByName.get(normalizedFromNameKey);
+        const canonicalFromName = fromNode
+            ? fromNode.name
+            : String(agent?.name || fromName || '').trim();
         if (!canonicalFromName) return;
         const normalizedCanonicalFromName = canonicalFromName.toLowerCase();
 
