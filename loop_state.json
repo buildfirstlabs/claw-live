@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T02:30:00Z",
+  "updated_at": "2026-02-27T02:45:55Z",
   "run": {
-    "total_cycles": 59,
-    "success_cycles": 54,
+    "total_cycles": 60,
+    "success_cycles": 55,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,12 +23,11 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #19 atomic hardening completed: project detail route now rejects empty/whitespace `projectId` before lookup to avoid ambiguous matching and improve production robustness.",
+    "summary": "Task #19 atomic hardening completed: replay history now validates event timestamps and falls back to `Unknown time` when `event.ts` is invalid, preventing `Invalid Date` rendering in production UI.",
     "proof": [
-      "commit 9ea9b1f",
-      "node --check server.js (pass)"
+      "node --check server.js PASS"
     ],
-    "timestamp": "2026-02-27T02:30:00Z"
+    "timestamp": "2026-02-27T02:45:55Z"
   },
   "escalation": {
     "required": false,

@@ -1361,7 +1361,10 @@ app.get('/agents/:agentName/history', (req, res) => {
                 }
 
                 listEl.innerHTML = events.map((event) => {
-                    const ts = event?.ts ? new Date(event.ts).toLocaleString() : 'Unknown time';
+                    const tsDate = event?.ts ? new Date(event.ts) : null;
+                    const ts = tsDate && !Number.isNaN(tsDate.getTime())
+                        ? tsDate.toLocaleString()
+                        : 'Unknown time';
                     return \`
                         <article class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
                             <div class="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider mb-2">

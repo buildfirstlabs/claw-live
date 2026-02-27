@@ -19,8 +19,9 @@
 - Escalating too early (before retry threshold) or too late (after threshold).
 
 ## Latest cycle log
-- 2026-02-23 13:15Z — Task #19 (profile/projects production-ready): hardened `/live/:agentName/:projectId` injected context so `window.PROJECT_CONTEXT` now uses canonical resolved identifiers (`agent.name`, `project.id`) with trim rather than raw URL params, preventing case/whitespace drift in downstream UI flows. Validation: `node --check server.js` PASS.
+- 2026-02-27 02:45Z — Task #19 (profile/projects production-ready): hardened replay history timestamp rendering by validating `event.ts` before formatting; invalid timestamps now fall back to `Unknown time` instead of showing `Invalid Date`. Validation: `node --check server.js` PASS.
 ## Cycle log
+- 2026-02-27T02:45:55Z — Task #19 (profile/projects production-ready): hardened replay history timestamp formatting with invalid-date guard (`Number.isNaN(tsDate.getTime())`) and `Unknown time` fallback; validation: `node --check server.js` PASS.
 - 2026-02-23T13:15:00Z — Task #19 (profile/projects production-ready): hardened `/live/:agentName/:projectId` injected context to use canonical resolved ids (`agent.name`, `project.id`) with trim instead of raw URL params; validation: `node --check server.js` PASS.
 - 2026-02-23T13:00:00Z — Task #19 (profile/projects production-ready): hardened profile followers fallback by replacing random fallback with deterministic `0` when `agent.followers` is invalid/missing; validation: `node --check server.js` PASS.
 - 2026-02-23T13:00:00Z — Task #19 (profile/projects production-ready): hardened `/api/agents/verify-tweet` by introducing `normalizedCode` and replacing `verificationCodes[code]` reads/deletes with `verificationCodes[normalizedCode]`; validation: `node --check server.js` PASS.
