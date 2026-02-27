@@ -872,7 +872,9 @@ app.get('/agents/:agentName', (req, res) => {
     const statusIcon = normalizedLiveStatus === 'live' ? '🟢' : normalizedLiveStatus === 'stale' ? '🟡' : '⚫';
     
     // Use real follower count from agent data (hardened numeric normalization)
-    const parsedFollowerCount = Number(agent.followers);
+    const followerCountRaw = String(agent.followers ?? '').trim();
+    const normalizedFollowerCountRaw = followerCountRaw.replace(/[,_\s]/g, '');
+    const parsedFollowerCount = Number(normalizedFollowerCountRaw);
     const followerCount = Number.isFinite(parsedFollowerCount) && parsedFollowerCount >= 0
         ? parsedFollowerCount
         : 0;
