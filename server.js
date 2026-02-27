@@ -1726,7 +1726,65 @@ app.post('/api/agents/verify-tweet', (req, res) => {
     });
 });
 
-// 4. Get Agent Info
+// 4. Get Minimal Follow Graph (Phase 1 Social Layer)
+app.get('/api/agents/follow-graph', (req, res) => {
+    const verifiedEntries = Object.entries(agents)
+        .filter(([_, agent]) => agent && agent.verified);
+
+    const nodes = verifiedEntries.map(([name, agent]) => {
+        const normalizedHandle = String(agent.twitter_handle || '')
+            .replace(/^@+/, '')
+            .trim()
+            .toLowerCase();
+
+        return {
+            id: name,
+            name,
+            handle: normalizedHandle || null,
+            verified: true,
+            live_status: String(agent.live_status || 'offline').trim().toLowerCase(),
+            followers: Number.isFinite(Number(agent.followers)) ? Math.max(0, Math.floor(Number(agent.followers))) : 0
+        };
+    });
+
+    const nodeByName = new Map(nodes.map((node) => [node.name.toLowerCase(), node]));
+    const nodeByHandle = new Map(nodes.filter((node) => node.handle).map((node) => [node.handle, node]));
+    const edgeSet = new Set();
+    const edges = [];
+
+    verifiedEntries.forEach(([fromName, agent]) => {
+        const following = Array.isArray(agent.following) ? agent.following : [];
+
+        following.forEach((rawTarget) => {
+            const normalizedTarget = String(rawTarget || '')
+                .replace(/^@+/, '')
+                .trim()
+                .toLowerCase();
+
+            if (!normalizedTarget) return;
+
+            const targetNode = nodeByName.get(normalizedTarget) || nodeByHandle.get(normalizedTarget);
+            if (!targetNode || targetNode.name === fromName) return;
+
+            const edgeKey = `${fromName}->${targetNode.name}`;
+            if (edgeSet.has(edgeKey)) return;
+            edgeSet.add(edgeKey);
+
+            edges.push({ from: fromName, to: targetNode.name });
+        });
+    });
+
+    res.json({
+        nodes,
+        edges,
+        counts: {
+            nodes: nodes.length,
+            edges: edges.length
+        }
+    });
+});
+
+// 5. Get Agent Info
 app.get('/api/agents/:agentName', (req, res) => {
     const { agentName } = req.params;
     
@@ -1737,7 +1795,7 @@ app.get('/api/agents/:agentName', (req, res) => {
     res.json(agents[agentName]);
 });
 
-// 5. Get All Verified Agents
+// 6. Get All Verified Agents
 app.get('/api/agents/verified/all', (req, res) => {
     const verified = Object.entries(agents)
         .filter(([_, agent]) => agent.verified)
