@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T08:45:00Z",
+  "updated_at": "2026-02-27T09:00:00Z",
   "run": {
-    "total_cycles": 88,
-    "success_cycles": 83,
+    "total_cycles": 89,
+    "success_cycles": 84,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by decoding percent-encoded following targets before follow-graph token normalization.",
+    "summary": "Task #20 progressed by canonicalizing source-node resolution before follow-graph edge emission.",
     "proof": [
-      "commit 0fbfc5d",
+      "commit cc3c03f",
       "node --check server.js PASS",
-      "grep -n \"decodeURIComponent|targetToken\" server.js"
+      "grep -n \"canonicalFromName|normalizedFromNameKey\" server.js"
     ],
-    "timestamp": "2026-02-27T08:45:00Z"
+    "timestamp": "2026-02-27T09:00:00Z"
   },
   "escalation": {
     "required": false,
