@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T10:16:10Z",
+  "updated_at": "2026-02-27T10:15:37Z",
   "run": {
-    "total_cycles": 97,
-    "success_cycles": 92,
+    "total_cycles": 96,
+    "success_cycles": 91,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by extending follow target string parsing to include semicolon delimiters in addition to comma/newline.",
+    "summary": "Task #20 progressed by extending string follow-list parsing to also split on tab delimiters, preserving edges from mixed-delimiter upstream payloads.",
     "proof": [
-      "commit 65451e2",
+      "commit <pending>",
       "node --check server.js PASS",
-      "grep -nF \"split(/[\\n,;]+/)\" server.js"
+      "grep -nF \"split(/[\\n,;\\t]+/)\" server.js"
     ],
-    "timestamp": "2026-02-27T10:16:10Z"
+    "timestamp": "2026-02-27T10:15:37Z"
   },
   "escalation": {
     "required": false,
