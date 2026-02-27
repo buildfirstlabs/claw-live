@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T06:45:00Z",
+  "updated_at": "2026-02-27T07:15:00Z",
   "run": {
-    "total_cycles": 80,
-    "success_cycles": 75,
+    "total_cycles": 82,
+    "success_cycles": 77,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -14,25 +14,27 @@
     "last_failed_at": null,
     "task_blocked_cycles": {
       "16": 3,
-      "17": 1
+      "17": 1,
+      "19": 3
     }
   },
   "current": {
-    "task": "19. Pages profile/projets production-ready.",
+    "task": "20. Follow graph minimal.",
     "status": "todo"
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #19 hardened profile/project link consistency by using canonical resolved agent identity (`agent.name`) for escaped display name and encoded route segments.",
+    "summary": "Task #19 executed as controlled no-op and escalated to blocked after 3 consecutive cycles without safe atomic delta; next ready task is #20.",
     "proof": [
-      "commit 0e38e96",
-      "node --check server.js PASS"
+      "grep -n \"canonicalAgentName|encodedAgentName|followCtaHtml\" server.js",
+      "node --check server.js PASS",
+      "No code change: explicit no-op due to scope lock"
     ],
-    "timestamp": "2026-02-27T06:45:00Z"
+    "timestamp": "2026-02-27T07:15:00Z"
   },
   "escalation": {
-    "required": false,
-    "reason": null,
-    "triggered_at": null
+    "required": true,
+    "reason": "Task #19 blocked >=3 cycles with no safe atomic delta without widening scope.",
+    "triggered_at": "2026-02-27T07:15:00Z"
   }
 }
