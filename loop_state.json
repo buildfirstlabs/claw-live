@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T09:45:00Z",
+  "updated_at": "2026-02-27T10:00:00Z",
   "run": {
-    "total_cycles": 92,
-    "success_cycles": 87,
+    "total_cycles": 93,
+    "success_cycles": 88,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by prioritizing follow-graph source resolution using canonical agent.name with fallback to object-key mapping.",
+    "summary": "Task #20 progressed by sorting verified follow-graph source entries by canonical name before graph construction to make node/edge resolution deterministic.",
     "proof": [
-      "commit 874237d",
+      "commit 7768c6c",
       "node --check server.js PASS",
-      "grep -n \"normalizedFromAgentNameKey\\|sourceLookupKey\" server.js"
+      "grep -n \"canonicalA\\|canonicalB\" server.js"
     ],
-    "timestamp": "2026-02-27T09:45:00Z"
+    "timestamp": "2026-02-27T10:00:00Z"
   },
   "escalation": {
     "required": false,
