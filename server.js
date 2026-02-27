@@ -1764,12 +1764,15 @@ app.get('/api/agents/follow-graph', (req, res) => {
             .map((node) => [String(node.name || '').trim().toLowerCase(), node])
             .filter(([key]) => key)
     );
-    const nodeByHandle = nodes.reduce((acc, node) => {
-        const handleKey = String(node.handle || '').trim().toLowerCase();
-        if (!handleKey || acc.has(handleKey)) return acc;
-        acc.set(handleKey, node);
-        return acc;
-    }, new Map());
+    const nodeByHandle = nodes
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+        .reduce((acc, node) => {
+            const handleKey = String(node.handle || '').trim().toLowerCase();
+            if (!handleKey || acc.has(handleKey)) return acc;
+            acc.set(handleKey, node);
+            return acc;
+        }, new Map());
     const edgeSet = new Set();
     const edges = [];
 
