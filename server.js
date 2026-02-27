@@ -1711,13 +1711,17 @@ app.get('/api/agents/follow-graph', (req, res) => {
             .replace(/^@+/, '')
             .trim()
             .toLowerCase();
+        const normalizedLiveStatusRaw = String(agent.live_status || 'offline').trim().toLowerCase();
+        const normalizedLiveStatus = ['live', 'stale', 'offline'].includes(normalizedLiveStatusRaw)
+            ? normalizedLiveStatusRaw
+            : 'offline';
 
         return {
             id: name,
             name,
             handle: normalizedHandle || null,
             verified: true,
-            live_status: String(agent.live_status || 'offline').trim().toLowerCase(),
+            live_status: normalizedLiveStatus,
             followers: Number.isFinite(Number(agent.followers)) ? Math.max(0, Math.floor(Number(agent.followers))) : 0
         };
     });
