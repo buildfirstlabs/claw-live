@@ -1764,7 +1764,12 @@ app.get('/api/agents/follow-graph', (req, res) => {
             .map((node) => [String(node.name || '').trim().toLowerCase(), node])
             .filter(([key]) => key)
     );
-    const nodeByHandle = new Map(nodes.filter((node) => node.handle).map((node) => [node.handle, node]));
+    const nodeByHandle = nodes.reduce((acc, node) => {
+        const handleKey = String(node.handle || '').trim().toLowerCase();
+        if (!handleKey || acc.has(handleKey)) return acc;
+        acc.set(handleKey, node);
+        return acc;
+    }, new Map());
     const edgeSet = new Set();
     const edges = [];
 
@@ -1781,7 +1786,10 @@ app.get('/api/agents/follow-graph', (req, res) => {
         if (!canonicalFromName) return;
         const normalizedCanonicalFromName = canonicalFromName.toLowerCase();
 
-        const following = Array.isArray(agent.following) ? agent.following : [];
+        const followingRaw = agent?.following;
+        const following = Array.isArray(followingRaw)
+            ? followingRaw
+            : (typeof followingRaw === 'string' ? followingRaw.split(/[\n,]+/) : []);
 
         following.forEach((rawTarget) => {
             if (typeof rawTarget !== 'string') return;
