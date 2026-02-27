@@ -19,8 +19,9 @@
 - Escalating too early (before retry threshold) or too late (after threshold).
 
 ## Latest cycle log
-- 2026-02-27 02:45Z — Task #19 (profile/projects production-ready): hardened replay history timestamp rendering by validating `event.ts` before formatting; invalid timestamps now fall back to `Unknown time` instead of showing `Invalid Date`. Validation: `node --check server.js` PASS.
+- 2026-02-27 03:00Z — Task #19 (profile/projects production-ready): no-op contrôlé après audit de robustesse; la résolution case-insensitive de `agentName` est déjà en place sur profile/projet/history (preuves grep lignes 811/1174/1269), et `node --check server.js` reste PASS. Aucun delta sûr/utile supplémentaire sur ce cycle atomique.
 ## Cycle log
+- 2026-02-27T03:00:00Z — Task #19 (profile/projects production-ready): no-op contrôlé, pas de changement code; audit de robustesse confirmé par `grep "agentKey = Object.keys(agents)..." server.js` (lignes 811/1174/1269) + `node --check server.js` PASS.
 - 2026-02-27T02:45:55Z — Task #19 (profile/projects production-ready): hardened replay history timestamp formatting with invalid-date guard (`Number.isNaN(tsDate.getTime())`) and `Unknown time` fallback; validation: `node --check server.js` PASS.
 - 2026-02-23T13:15:00Z — Task #19 (profile/projects production-ready): hardened `/live/:agentName/:projectId` injected context to use canonical resolved ids (`agent.name`, `project.id`) with trim instead of raw URL params; validation: `node --check server.js` PASS.
 - 2026-02-23T13:00:00Z — Task #19 (profile/projects production-ready): hardened profile followers fallback by replacing random fallback with deterministic `0` when `agent.followers` is invalid/missing; validation: `node --check server.js` PASS.
