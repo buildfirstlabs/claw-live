@@ -27,6 +27,7 @@
     "outcome": "success",
     "summary": "Task #20 progressed by accepting object-map `agent.following` payloads and extracting truthy keys into follow-graph edges.",
     "proof": [
+      "commit a2c208d",
       "node --check server.js PASS",
       "grep -n \"Object.entries(followingRaw)|filter(([, value]) => Boolean(value))\" server.js"
     ],
