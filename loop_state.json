@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T11:00:00Z",
+  "updated_at": "2026-02-27T11:15:00Z",
   "run": {
-    "total_cycles": 100,
-    "success_cycles": 95,
+    "total_cycles": 101,
+    "success_cycles": 96,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by accepting object-map `agent.following` payloads and extracting truthy keys into follow-graph edges.",
+    "summary": "Task #20 progressed by adding Map-based `agent.following` parsing and extracting truthy keys into follow-graph edges.",
     "proof": [
-      "commit a2c208d",
+      "commit 21718c0",
       "node --check server.js PASS",
-      "grep -n \"Object.entries(followingRaw)|filter(([, value]) => Boolean(value))\" server.js"
+      "grep -n \"followingRaw instanceof Map|Array.from(followingRaw.entries())\" server.js"
     ],
-    "timestamp": "2026-02-27T11:00:00Z"
+    "timestamp": "2026-02-27T11:15:00Z"
   },
   "escalation": {
     "required": false,
