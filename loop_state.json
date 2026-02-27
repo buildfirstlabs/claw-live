@@ -15,7 +15,8 @@
     "task_blocked_cycles": {
       "16": 3,
       "17": 1,
-      "19": 3
+      "19": 3,
+      "20": 0
     }
   },
   "current": {
@@ -24,10 +25,11 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 one atomic step delivered: persistent follow-graph state scaffold added (file constant, loader, atomic save, saveAll integration, bootstrap create-if-missing).",
+    "summary": "Task #20 progressed with a minimal follow-graph API endpoint for verified agents and deduplicated follow edges.",
     "proof": [
-      "commit 5b8c5c1",
-      "node --check server.js PASS"
+      "commit 9bca40f",
+      "node --check server.js PASS",
+      "grep -n \"api/agents/follow-graph\" server.js"
     ],
     "timestamp": "2026-02-27T07:30:00Z"
   },
