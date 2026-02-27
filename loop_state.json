@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T09:00:00Z",
+  "updated_at": "2026-02-27T09:15:00Z",
   "run": {
-    "total_cycles": 89,
-    "success_cycles": 84,
+    "total_cycles": 90,
+    "success_cycles": 85,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by canonicalizing source-node resolution before follow-graph edge emission.",
+    "summary": "Task #20 progressed by canonicalizing follow-graph node identity and making self-loop detection case/whitespace-insensitive.",
     "proof": [
-      "commit cc3c03f",
+      "commit 07a798a",
       "node --check server.js PASS",
-      "grep -n \"canonicalFromName|normalizedFromNameKey\" server.js"
+      "grep -n \"canonicalName|normalizedCanonicalFromName\" server.js"
     ],
-    "timestamp": "2026-02-27T09:00:00Z"
+    "timestamp": "2026-02-27T09:15:00Z"
   },
   "escalation": {
     "required": false,

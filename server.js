@@ -1706,12 +1706,31 @@ app.get('/api/agents/follow-graph', (req, res) => {
     const verifiedEntries = Object.entries(agents)
         .filter(([_, agent]) => agent && agent.verified);
 
+    const registryStatusByName = new Map(
+        Object.entries(registry)
+            .map(([agentId, entry]) => {
+                const identityNameKey = String(entry?.identity?.name || '').trim().toLowerCase();
+                const idKey = String(agentId || '').trim().toLowerCase();
+                const normalizedStatusRaw = String(entry?.status || 'offline').trim().toLowerCase();
+                const normalizedStatus = ['live', 'stale', 'offline'].includes(normalizedStatusRaw)
+                    ? normalizedStatusRaw
+                    : 'offline';
+
+                return [identityNameKey || idKey, normalizedStatus];
+            })
+            .filter(([key]) => key)
+    );
+
     const nodes = verifiedEntries.map(([name, agent]) => {
+        const canonicalName = String(agent.name || name).trim() || String(name || '').trim();
+        const normalizedNameKey = canonicalName.toLowerCase();
         const normalizedHandle = String(agent.twitter_handle || '')
             .replace(/^@+/, '')
             .trim()
             .toLowerCase();
-        const normalizedLiveStatusRaw = String(agent.live_status || 'offline').trim().toLowerCase();
+        const normalizedLiveStatusRaw = String(
+            registryStatusByName.get(normalizedNameKey) || agent.live_status || 'offline'
+        ).trim().toLowerCase();
         const normalizedLiveStatus = ['live', 'stale', 'offline'].includes(normalizedLiveStatusRaw)
             ? normalizedLiveStatusRaw
             : 'offline';
@@ -1725,8 +1744,8 @@ app.get('/api/agents/follow-graph', (req, res) => {
             : 0;
 
         return {
-            id: name,
-            name,
+            id: canonicalName,
+            name: canonicalName,
             handle: normalizedHandle || null,
             verified: true,
             live_status: normalizedLiveStatus,
@@ -1750,6 +1769,7 @@ app.get('/api/agents/follow-graph', (req, res) => {
         const fromNode = nodeByName.get(normalizedFromNameKey);
         const canonicalFromName = fromNode ? fromNode.name : String(fromName || '').trim();
         if (!canonicalFromName) return;
+        const normalizedCanonicalFromName = canonicalFromName.toLowerCase();
 
         const following = Array.isArray(agent.following) ? agent.following : [];
 
@@ -1776,7 +1796,7 @@ app.get('/api/agents/follow-graph', (req, res) => {
             if (!targetToken) return;
 
             const targetNode = nodeByName.get(targetToken) || nodeByHandle.get(targetToken);
-            if (!targetNode || targetNode.name === canonicalFromName) return;
+            if (!targetNode || String(targetNode.name || '').trim().toLowerCase() === normalizedCanonicalFromName) return;
 
             const edgeKey = `${canonicalFromName}->${targetNode.name}`;
             if (edgeSet.has(edgeKey)) return;
