@@ -877,7 +877,7 @@ app.get('/agents/:agentName', (req, res) => {
     const isStrictNumericFollowers = /^\d+$/.test(normalizedFollowerCountRaw);
     const parsedFollowerCount = isStrictNumericFollowers ? Number(normalizedFollowerCountRaw) : NaN;
     const followerCount = Number.isFinite(parsedFollowerCount) && parsedFollowerCount >= 0
-        ? Math.floor(parsedFollowerCount)
+        ? Math.min(Number.MAX_SAFE_INTEGER, Math.floor(parsedFollowerCount))
         : 0;
     const compactCount = (value, suffix) => {
         const rounded = (value).toFixed(1).replace(/\.0$/, '');
