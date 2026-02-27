@@ -27,7 +27,7 @@
     "outcome": "success",
     "summary": "Task #20 progressed by hardening followers parsing in follow-graph nodes with strict digits-only normalization and MAX_SAFE_INTEGER cap.",
     "proof": [
-      "commit bbdeab6",
+      "commit fceb61a",
       "node --check server.js PASS"
     ],
     "timestamp": "2026-02-27T08:15:00Z"
