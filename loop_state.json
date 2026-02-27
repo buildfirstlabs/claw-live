@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T08:15:00Z",
+  "updated_at": "2026-02-27T08:30:00Z",
   "run": {
-    "total_cycles": 86,
-    "success_cycles": 81,
+    "total_cycles": 87,
+    "success_cycles": 82,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by hardening follow-graph target resolution with canonical nodeByName keys (trim/lowercase).",
+    "summary": "Task #20 progressed by normalizing following targets from x/twitter profile URLs before follow-graph resolution.",
     "proof": [
-      "commit <pending>",
+      "commit 5581882",
       "node --check server.js PASS",
-      "grep -n \"String(node.name || '')\" server.js"
+      "grep -n \"targetToken\" server.js"
     ],
-    "timestamp": "2026-02-27T08:15:00Z"
+    "timestamp": "2026-02-27T08:30:00Z"
   },
   "escalation": {
     "required": false,
