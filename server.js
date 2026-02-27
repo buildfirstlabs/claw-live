@@ -1806,10 +1806,16 @@ app.get('/api/agents/follow-graph', (req, res) => {
         });
     });
 
-    nodes.sort((a, b) => a.name.localeCompare(b.name));
+    nodes.sort((a, b) => {
+        const nameCmp = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+        return nameCmp !== 0 ? nameCmp : a.name.localeCompare(b.name);
+    });
     edges.sort((a, b) => {
-        const fromCmp = a.from.localeCompare(b.from);
-        return fromCmp !== 0 ? fromCmp : a.to.localeCompare(b.to);
+        const fromCmp = a.from.localeCompare(b.from, undefined, { sensitivity: 'base' });
+        if (fromCmp !== 0) return fromCmp;
+
+        const toCmp = a.to.localeCompare(b.to, undefined, { sensitivity: 'base' });
+        return toCmp !== 0 ? toCmp : a.to.localeCompare(b.to);
     });
 
     res.json({
