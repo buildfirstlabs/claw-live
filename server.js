@@ -1752,14 +1752,19 @@ app.get('/api/agents/follow-graph', (req, res) => {
         following.forEach((rawTarget) => {
             if (typeof rawTarget !== 'string') return;
 
-            const normalizedTarget = rawTarget
+            const rawTargetNormalized = rawTarget.trim();
+            if (!rawTargetNormalized) return;
+
+            const targetToken = rawTargetNormalized
+                .replace(/^https?:\/\/(www\.)?(x\.com|twitter\.com)\//i, '')
+                .split(/[/?#]/)[0]
                 .replace(/^@+/, '')
                 .trim()
                 .toLowerCase();
 
-            if (!normalizedTarget) return;
+            if (!targetToken) return;
 
-            const targetNode = nodeByName.get(normalizedTarget) || nodeByHandle.get(normalizedTarget);
+            const targetNode = nodeByName.get(targetToken) || nodeByHandle.get(targetToken);
             if (!targetNode || targetNode.name === normalizedFromName) return;
 
             const edgeKey = `${normalizedFromName}->${targetNode.name}`;
