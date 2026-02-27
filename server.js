@@ -1716,13 +1716,21 @@ app.get('/api/agents/follow-graph', (req, res) => {
             ? normalizedLiveStatusRaw
             : 'offline';
 
+        const normalizedFollowersRaw = String(agent.followers ?? '')
+            .replace(/[,_\s'’]/g, '')
+            .trim();
+        const isStrictNumericFollowers = /^\d+$/.test(normalizedFollowersRaw);
+        const followersCount = isStrictNumericFollowers
+            ? Math.min(Number.MAX_SAFE_INTEGER, Math.floor(Number(normalizedFollowersRaw)))
+            : 0;
+
         return {
             id: name,
             name,
             handle: normalizedHandle || null,
             verified: true,
             live_status: normalizedLiveStatus,
-            followers: Number.isFinite(Number(agent.followers)) ? Math.max(0, Math.floor(Number(agent.followers))) : 0
+            followers: followersCount
         };
     });
 
@@ -1732,10 +1740,15 @@ app.get('/api/agents/follow-graph', (req, res) => {
     const edges = [];
 
     verifiedEntries.forEach(([fromName, agent]) => {
+        const normalizedFromName = String(fromName || '').trim();
+        if (!normalizedFromName) return;
+
         const following = Array.isArray(agent.following) ? agent.following : [];
 
         following.forEach((rawTarget) => {
-            const normalizedTarget = String(rawTarget || '')
+            if (typeof rawTarget !== 'string') return;
+
+            const normalizedTarget = rawTarget
                 .replace(/^@+/, '')
                 .trim()
                 .toLowerCase();
@@ -1743,13 +1756,13 @@ app.get('/api/agents/follow-graph', (req, res) => {
             if (!normalizedTarget) return;
 
             const targetNode = nodeByName.get(normalizedTarget) || nodeByHandle.get(normalizedTarget);
-            if (!targetNode || targetNode.name === fromName) return;
+            if (!targetNode || targetNode.name === normalizedFromName) return;
 
-            const edgeKey = `${fromName}->${targetNode.name}`;
+            const edgeKey = `${normalizedFromName}->${targetNode.name}`;
             if (edgeSet.has(edgeKey)) return;
             edgeSet.add(edgeKey);
 
-            edges.push({ from: fromName, to: targetNode.name });
+            edges.push({ from: normalizedFromName, to: targetNode.name });
         });
     });
 
