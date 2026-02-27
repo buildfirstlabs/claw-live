@@ -876,9 +876,11 @@ app.get('/agents/:agentName', (req, res) => {
     const followerCount = Number.isFinite(parsedFollowerCount) && parsedFollowerCount >= 0
         ? parsedFollowerCount
         : 0;
-    const followerCountDisplay = followerCount >= 1000
-        ? `${(followerCount / 1000).toFixed(1)}K`
-        : String(Math.floor(followerCount));
+    const followerCountDisplay = followerCount >= 1000000
+        ? `${(followerCount / 1000000).toFixed(1)}M`
+        : followerCount >= 1000
+            ? `${(followerCount / 1000).toFixed(1)}K`
+            : String(Math.floor(followerCount));
     const parsedCommitsCount = Number(agent.commits);
     const commitsCount = Number.isFinite(parsedCommitsCount) && parsedCommitsCount >= 0
         ? Math.floor(parsedCommitsCount)
