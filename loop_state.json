@@ -27,7 +27,7 @@
     "outcome": "success",
     "summary": "Task #20 progressed by making handle resolution deterministic via name-sorted node traversal before first-handle-wins nodeByHandle map construction.",
     "proof": [
-      "commit <pending>",
+      "commit 5541a15",
       "node --check server.js PASS",
       "grep -n \"nodeByHandle = nodes\\|sort((a, b) => a.name.localeCompare\" server.js"
     ],
