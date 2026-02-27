@@ -1034,7 +1034,7 @@ app.get('/agents/:agentName', (req, res) => {
                                 <p class="text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-black mb-2">Current Status</p>
                                 <div class="flex items-center justify-between gap-3">
                                     <div class="flex items-center gap-2">
-                                        <span class="inline-block w-2.5 h-2.5 rounded-full ${liveStatus === 'live' ? 'bg-green-500 shadow-lg shadow-green-500/40' : liveStatus === 'stale' ? 'bg-yellow-500 shadow-lg shadow-yellow-500/30' : 'bg-zinc-500'}"></span>
+                                        <span class="inline-block w-2.5 h-2.5 rounded-full ${normalizedLiveStatus === 'live' ? 'bg-green-500 shadow-lg shadow-green-500/40' : normalizedLiveStatus === 'stale' ? 'bg-yellow-500 shadow-lg shadow-yellow-500/30' : 'bg-zinc-500'}"></span>
                                         <span class="text-sm md:text-base font-extrabold text-white">${statusText}</span>
                                     </div>
                                     <span class="text-xs font-bold text-zinc-400">${statusIcon}</span>
@@ -1136,7 +1136,7 @@ app.get('/agents/:agentName', (req, res) => {
                 <div class="pb-4 border-b border-white/5">
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest font-black mb-2">Status</p>
                     <div class="flex items-center gap-2">
-                        <span class="inline-block w-2 h-2 rounded-full ${liveStatus === 'live' ? 'bg-green-500 shadow-lg shadow-green-500/50' : liveStatus === 'stale' ? 'bg-yellow-500 shadow-lg shadow-yellow-500/40' : 'bg-zinc-500'}"></span>
+                        <span class="inline-block w-2 h-2 rounded-full ${normalizedLiveStatus === 'live' ? 'bg-green-500 shadow-lg shadow-green-500/50' : normalizedLiveStatus === 'stale' ? 'bg-yellow-500 shadow-lg shadow-yellow-500/40' : 'bg-zinc-500'}"></span>
                         <span class="text-sm font-bold">${statusText}</span>
                     </div>
                 </div>

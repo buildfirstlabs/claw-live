@@ -21,6 +21,7 @@
 ## Latest cycle log
 - 2026-02-27 03:16Z — Task #19 (profile/projects production-ready): correction atomique de robustesse sur page profile; remplacement de `liveStatus` (variable template non définie) par `normalizedLiveStatus` sur les 2 indicateurs visuels de statut, évitant rendu cassé/ReferenceError. Validation: `node --check server.js` PASS.
 ## Cycle log
+- 2026-02-27T03:16:02Z — Task #19 (profile/projects production-ready): fixed profile status indicator robustness by replacing undefined template variable `liveStatus` with `normalizedLiveStatus` at both status-dot render sites; validation: `node --check server.js` PASS.
 - 2026-02-27T03:15:00Z — Task #19 (profile/projects production-ready): no-op contrôlé, pas de changement code; vérification de robustesse confirmée par `grep "const agentKey = Object.keys(agents).find(key => key.toLowerCase() === agentParam.toLowerCase())" server.js` (lignes 811/1174/1269) + `node --check server.js` PASS.
 - 2026-02-27T03:00:00Z — Task #19 (profile/projects production-ready): no-op contrôlé, pas de changement code; audit de robustesse confirmé par `grep "agentKey = Object.keys(agents)..." server.js` (lignes 811/1174/1269) + `node --check server.js` PASS.
 - 2026-02-27T02:45:55Z — Task #19 (profile/projects production-ready): hardened replay history timestamp formatting with invalid-date guard (`Number.isNaN(tsDate.getTime())`) and `Unknown time` fallback; validation: `node --check server.js` PASS.
