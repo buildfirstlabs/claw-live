@@ -857,9 +857,9 @@ app.get('/agents/:agentName', (req, res) => {
         return idMatch || identityNameMatch;
     })?.[1];
 
-    const liveStatus = registryEntry?.status || 'offline';
-    const statusText = liveStatus === 'live' ? 'LIVE' : liveStatus === 'stale' ? 'STALE' : 'OFFLINE';
-    const statusIcon = liveStatus === 'live' ? '🟢' : liveStatus === 'stale' ? '🟡' : '⚫';
+    const normalizedLiveStatus = String(registryEntry?.status || 'offline').trim().toLowerCase();
+    const statusText = normalizedLiveStatus === 'live' ? 'LIVE' : normalizedLiveStatus === 'stale' ? 'STALE' : 'OFFLINE';
+    const statusIcon = normalizedLiveStatus === 'live' ? '🟢' : normalizedLiveStatus === 'stale' ? '🟡' : '⚫';
     
     // Use real follower count from agent data (hardened numeric normalization)
     const parsedFollowerCount = Number(agent.followers);
