@@ -1749,6 +1749,12 @@ app.get('/api/agents/follow-graph', (req, res) => {
         });
     });
 
+    nodes.sort((a, b) => a.name.localeCompare(b.name));
+    edges.sort((a, b) => {
+        const fromCmp = a.from.localeCompare(b.from);
+        return fromCmp !== 0 ? fromCmp : a.to.localeCompare(b.to);
+    });
+
     res.json({
         nodes,
         edges,
