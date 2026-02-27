@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T10:00:00Z",
+  "updated_at": "2026-02-27T10:15:00Z",
   "run": {
-    "total_cycles": 93,
-    "success_cycles": 88,
+    "total_cycles": 94,
+    "success_cycles": 89,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by sorting verified follow-graph source entries by canonical name before graph construction to make node/edge resolution deterministic.",
+    "summary": "Task #20 progressed by accepting string-form following lists (comma/newline separated) in follow-graph edge extraction.",
     "proof": [
-      "commit 7768c6c",
+      "commit b1e5570",
       "node --check server.js PASS",
-      "grep -n \"canonicalA\\|canonicalB\" server.js"
+      "grep -n \"followingRaw\\|split(/[\\n,]+/)\" server.js"
     ],
-    "timestamp": "2026-02-27T10:00:00Z"
+    "timestamp": "2026-02-27T10:15:00Z"
   },
   "escalation": {
     "required": false,
