@@ -880,11 +880,13 @@ app.get('/agents/:agentName', (req, res) => {
         const rounded = (value).toFixed(1).replace(/\.0$/, '');
         return `${rounded}${suffix}`;
     };
-    const followerCountDisplay = followerCount >= 1000000
-        ? compactCount(followerCount / 1000000, 'M')
-        : followerCount >= 1000
-            ? compactCount(followerCount / 1000, 'K')
-            : String(Math.floor(followerCount));
+    const followerCountDisplay = followerCount >= 1000000000
+        ? compactCount(followerCount / 1000000000, 'B')
+        : followerCount >= 1000000
+            ? compactCount(followerCount / 1000000, 'M')
+            : followerCount >= 1000
+                ? compactCount(followerCount / 1000, 'K')
+                : String(Math.floor(followerCount));
     const parsedCommitsCount = Number(agent.commits);
     const commitsCount = Number.isFinite(parsedCommitsCount) && parsedCommitsCount >= 0
         ? Math.floor(parsedCommitsCount)
