@@ -1794,7 +1794,13 @@ app.get('/api/agents/follow-graph', (req, res) => {
             ? followingRaw
             : (followingRaw instanceof Set
                 ? Array.from(followingRaw)
-                : (typeof followingRaw === 'string' ? followingRaw.split(/[\n,;\t|]+/) : []));
+                : (typeof followingRaw === 'string'
+                    ? followingRaw.split(/[\n,;\t|]+/)
+                    : (followingRaw && typeof followingRaw === 'object'
+                        ? Object.entries(followingRaw)
+                            .filter(([, value]) => Boolean(value))
+                            .map(([key]) => key)
+                        : [])));
 
         following.forEach((rawTarget) => {
             if (typeof rawTarget !== 'string') return;

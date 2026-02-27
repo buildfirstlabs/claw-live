@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T10:48:15Z",
+  "updated_at": "2026-02-27T11:00:00Z",
   "run": {
-    "total_cycles": 99,
-    "success_cycles": 94,
+    "total_cycles": 100,
+    "success_cycles": 95,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,12 +25,12 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by accepting Set-based `agent.following` collections in follow-graph edge extraction, in addition to array/string inputs.",
+    "summary": "Task #20 progressed by accepting object-map `agent.following` payloads and extracting truthy keys into follow-graph edges.",
     "proof": [
       "node --check server.js PASS",
-      "grep -n \"followingRaw instanceof Set\" server.js"
+      "grep -n \"Object.entries(followingRaw)|filter(([, value]) => Boolean(value))\" server.js"
     ],
-    "timestamp": "2026-02-27T10:48:15Z"
+    "timestamp": "2026-02-27T11:00:00Z"
   },
   "escalation": {
     "required": false,
