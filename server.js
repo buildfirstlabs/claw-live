@@ -873,7 +873,7 @@ app.get('/agents/:agentName', (req, res) => {
     
     // Use real follower count from agent data (hardened numeric normalization)
     const followerCountRaw = String(agent.followers ?? '').trim();
-    const normalizedFollowerCountRaw = followerCountRaw.replace(/[,_\s]/g, '');
+    const normalizedFollowerCountRaw = followerCountRaw.replace(/[,_'’\s]/g, '');
     const isStrictNumericFollowers = /^\d+$/.test(normalizedFollowerCountRaw);
     const parsedFollowerCount = isStrictNumericFollowers
         ? (normalizedFollowerCountRaw.length > 15
