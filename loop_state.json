@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T10:15:37Z",
+  "updated_at": "2026-02-27T10:30:00Z",
   "run": {
-    "total_cycles": 96,
-    "success_cycles": 91,
+    "total_cycles": 97,
+    "success_cycles": 92,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by extending string follow-list parsing to also split on tab delimiters, preserving edges from mixed-delimiter upstream payloads.",
+    "summary": "Task #20 progressed by hardening follow-target parsing to strip wrapping quotes/backticks before token normalization, preserving edges from serialized/CSV-like following payloads.",
     "proof": [
-      "commit <pending>",
+      "commit 9346be2",
       "node --check server.js PASS",
-      "grep -nF \"split(/[\\n,;\\t]+/)\" server.js"
+      "grep -n \"targetToken = decodedTarget\" -A6 server.js"
     ],
-    "timestamp": "2026-02-27T10:15:37Z"
+    "timestamp": "2026-02-27T10:30:00Z"
   },
   "escalation": {
     "required": false,
