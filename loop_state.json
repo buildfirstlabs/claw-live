@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T11:15:00Z",
+  "updated_at": "2026-02-27T11:30:00Z",
   "run": {
-    "total_cycles": 101,
-    "success_cycles": 96,
+    "total_cycles": 102,
+    "success_cycles": 97,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by adding Map-based `agent.following` parsing and extracting truthy keys into follow-graph edges.",
+    "summary": "Task #20 progressed by hardening follow-target parsing to strip surrounding square brackets before token normalization.",
     "proof": [
-      "commit 21718c0",
+      "commit 894956d",
       "node --check server.js PASS",
-      "grep -n \"followingRaw instanceof Map|Array.from(followingRaw.entries())\" server.js"
+      "grep -nF \".replace(/^\\[+|\\]+$/g, '')\" server.js"
     ],
-    "timestamp": "2026-02-27T11:15:00Z"
+    "timestamp": "2026-02-27T11:30:00Z"
   },
   "escalation": {
     "required": false,
