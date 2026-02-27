@@ -22,6 +22,7 @@ const WAITLIST_FILE = path.join(__dirname, 'waitlist.json');
 const STATS_FILE = path.join(__dirname, 'analytics.json');
 const AGENTS_FILE = path.join(__dirname, 'agents.json');
 const REGISTRY_FILE = path.join(__dirname, 'registry.json');
+const FOLLOW_GRAPH_FILE = path.join(__dirname, 'follow_graph.json');
 
 const ACTIVE_AGENT_ID = process.env.CLAW_ACTIVE_AGENT_ID || 'clawcaster-main';
 const ACTIVE_AGENT_NAME = process.env.CLAW_ACTIVE_AGENT_NAME || 'ClawCaster';
@@ -78,6 +79,7 @@ let streamData = {
 let waitlist = { count: 0, publicOffset: 124, entries: [] };
 let analytics = { views: 0, publicOffset: 1542, uniqueIps: [] };
 let registry = {}; 
+let followGraph = { version: 1, edges: {}, updated_at: null };
 let swarmSignals = [];
 let lastStreamMutationAt = Date.now();
 let runtimeBootAt = Date.now();
@@ -347,6 +349,18 @@ if (fs.existsSync(REGISTRY_FILE)) {
         registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8'));
     } catch (e) {}
 }
+if (fs.existsSync(FOLLOW_GRAPH_FILE)) {
+    try {
+        const savedFollowGraph = JSON.parse(fs.readFileSync(FOLLOW_GRAPH_FILE, 'utf8'));
+        followGraph = {
+            version: 1,
+            edges: savedFollowGraph && typeof savedFollowGraph.edges === 'object' && !Array.isArray(savedFollowGraph.edges)
+                ? savedFollowGraph.edges
+                : {},
+            updated_at: typeof savedFollowGraph?.updated_at === 'string' ? savedFollowGraph.updated_at : null
+        };
+    } catch (e) {}
+}
 
 if (ensureActiveRegistryEntry(Date.now())) {
     saveRegistry();
@@ -386,6 +400,7 @@ function saveAll() {
         writeJsonAtomic(LOG_FILE, streamData);
         writeJsonAtomic(WAITLIST_FILE, waitlist);
         writeJsonAtomic(STATS_FILE, analytics);
+        writeJsonAtomic(FOLLOW_GRAPH_FILE, followGraph);
     } catch (e) {}
 }
 
@@ -399,6 +414,16 @@ function saveRegistry() {
     try {
         writeJsonAtomic(REGISTRY_FILE, registry);
     } catch (e) {}
+}
+
+function saveFollowGraph() {
+    try {
+        writeJsonAtomic(FOLLOW_GRAPH_FILE, followGraph);
+    } catch (e) {}
+}
+
+if (!fs.existsSync(FOLLOW_GRAPH_FILE)) {
+    saveFollowGraph();
 }
 
 function commitStreamState(rawEvent) {
