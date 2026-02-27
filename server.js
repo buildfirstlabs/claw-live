@@ -843,7 +843,8 @@ app.get('/agents/:agentName', (req, res) => {
     const createdDateStr = Number.isNaN(createdDate.getTime())
         ? 'Unknown'
         : createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const safeAgentName = escapeHtml(agentName);
+    const canonicalAgentName = String(agent.name || agentName || '').trim() || String(agentName || '').trim();
+    const safeAgentName = escapeHtml(canonicalAgentName);
     const safeAgentBio = escapeHtml(agent.bio || 'Building and deploying on Claw Live');
     const safeOwnerEmail = escapeHtml(agent.owner_email || 'not provided');
     const safeCreatedDateStr = escapeHtml(createdDateStr);
@@ -898,7 +899,7 @@ app.get('/agents/:agentName', (req, res) => {
     const commitsCount = Number.isFinite(parsedCommitsCount) && parsedCommitsCount >= 0
         ? Math.floor(parsedCommitsCount)
         : 0;
-    const encodedAgentName = encodeURIComponent(agentName);
+    const encodedAgentName = encodeURIComponent(canonicalAgentName);
     const primaryProjectIdRaw = agent.projects && agent.projects.length > 0
         ? String(agent.projects[0].id || '').trim()
         : '';
