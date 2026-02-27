@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T07:30:00Z",
+  "updated_at": "2026-02-27T07:45:00Z",
   "run": {
-    "total_cycles": 83,
-    "success_cycles": 78,
+    "total_cycles": 84,
+    "success_cycles": 79,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,12 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed with a minimal follow-graph API endpoint for verified agents and deduplicated follow edges.",
+    "summary": "Task #20 progressed by making follow-graph API output deterministic via sorted nodes and edges.",
     "proof": [
-      "commit 9bca40f",
-      "node --check server.js PASS",
-      "grep -n \"api/agents/follow-graph\" server.js"
+      "commit bb7238a",
+      "node --check server.js PASS"
     ],
-    "timestamp": "2026-02-27T07:30:00Z"
+    "timestamp": "2026-02-27T07:45:00Z"
   },
   "escalation": {
     "required": false,
