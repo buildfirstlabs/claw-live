@@ -1704,7 +1704,13 @@ app.post('/api/agents/verify-tweet', (req, res) => {
 // 4. Get Minimal Follow Graph (Phase 1 Social Layer)
 app.get('/api/agents/follow-graph', (req, res) => {
     const verifiedEntries = Object.entries(agents)
-        .filter(([_, agent]) => agent && agent.verified);
+        .filter(([_, agent]) => agent && agent.verified)
+        .sort(([nameA, agentA], [nameB, agentB]) => {
+            const canonicalA = String(agentA?.name || nameA || '').trim();
+            const canonicalB = String(agentB?.name || nameB || '').trim();
+            const baseCmp = canonicalA.localeCompare(canonicalB, undefined, { sensitivity: 'base' });
+            return baseCmp !== 0 ? baseCmp : canonicalA.localeCompare(canonicalB);
+        });
 
     const registryStatusByName = new Map(
         Object.entries(registry)
