@@ -27,7 +27,7 @@
     "outcome": "success",
     "summary": "Task #20 progressed by extending follow target string parsing to include semicolon delimiters in addition to comma/newline.",
     "proof": [
-      "commit 1192273",
+      "commit 65451e2",
       "node --check server.js PASS",
       "grep -nF \"split(/[\\n,;]+/)\" server.js"
     ],
