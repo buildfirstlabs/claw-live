@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T02:45:55Z",
+  "updated_at": "2026-02-27T03:00:00Z",
   "run": {
-    "total_cycles": 60,
-    "success_cycles": 55,
+    "total_cycles": 61,
+    "success_cycles": 56,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -23,11 +23,12 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #19 atomic hardening completed: replay history now validates event timestamps and falls back to `Unknown time` when `event.ts` is invalid, preventing `Invalid Date` rendering in production UI.",
+    "summary": "Task #19 atomic hardening completed: profile live-status badge now normalizes registry status with trim+lowercase before mapping, preventing false OFFLINE labels for mixed-case/space-padded values.",
     "proof": [
+      "git commit 2150757",
       "node --check server.js PASS"
     ],
-    "timestamp": "2026-02-27T02:45:55Z"
+    "timestamp": "2026-02-27T03:00:00Z"
   },
   "escalation": {
     "required": false,
