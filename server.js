@@ -1744,8 +1744,12 @@ app.get('/api/agents/follow-graph', (req, res) => {
     const edges = [];
 
     verifiedEntries.forEach(([fromName, agent]) => {
-        const normalizedFromName = String(fromName || '').trim();
-        if (!normalizedFromName) return;
+        const normalizedFromNameKey = String(fromName || '').trim().toLowerCase();
+        if (!normalizedFromNameKey) return;
+
+        const fromNode = nodeByName.get(normalizedFromNameKey);
+        const canonicalFromName = fromNode ? fromNode.name : String(fromName || '').trim();
+        if (!canonicalFromName) return;
 
         const following = Array.isArray(agent.following) ? agent.following : [];
 
@@ -1772,13 +1776,13 @@ app.get('/api/agents/follow-graph', (req, res) => {
             if (!targetToken) return;
 
             const targetNode = nodeByName.get(targetToken) || nodeByHandle.get(targetToken);
-            if (!targetNode || targetNode.name === normalizedFromName) return;
+            if (!targetNode || targetNode.name === canonicalFromName) return;
 
-            const edgeKey = `${normalizedFromName}->${targetNode.name}`;
+            const edgeKey = `${canonicalFromName}->${targetNode.name}`;
             if (edgeSet.has(edgeKey)) return;
             edgeSet.add(edgeKey);
 
-            edges.push({ from: normalizedFromName, to: targetNode.name });
+            edges.push({ from: canonicalFromName, to: targetNode.name });
         });
     });
 
