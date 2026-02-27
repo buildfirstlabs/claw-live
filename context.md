@@ -19,6 +19,7 @@
 - Escalating too early (before retry threshold) or too late (after threshold).
 
 ## Latest cycle log
+- 2026-02-27 08:00Z — Task #20 (follow graph minimal): étape atomique livrée — normalisation stricte de `live_status` dans `GET /api/agents/follow-graph` pour ne conserver que `live|stale|offline`; toute valeur inattendue est forcée à `offline` afin de stabiliser le contrat UI. Validation: `node --check server.js` PASS. Proof: commit `ee6fc6b`.
 - 2026-02-27 07:45Z — Task #20 (follow graph minimal): étape atomique livrée — sortie API follow graph rendue déterministe en triant `nodes` par `name` et `edges` par `from/to` avant réponse JSON, pour stabiliser consommation UI/caching/diffs. Validation: `node --check server.js` PASS. Proof: commit `bb7238a`.
 - 2026-02-27 07:30Z — Task #20 (follow graph minimal): étape atomique livrée — ajout endpoint API minimal `GET /api/agents/follow-graph` (nodes agents vérifiés + edges dédupliquées depuis `agent.following` avec résolution par nom/handle), prêt pour brancher la UI graphe dans les prochains cycles. Validation: `node --check server.js` PASS + `grep -n "api/agents/follow-graph" server.js`. Proof: commit `9bca40f`.
 - 2026-02-27 07:15Z — Task #19 (profile/projects production-ready): no-op contrôlé + ESCALADE. Trois cycles consécutifs sans delta atomique sûr; task marquée `blocked` et bascule vers #20 au prochain cycle. Validation: `grep -n "canonicalAgentName\|encodedAgentName\|followCtaHtml" server.js` + `node --check server.js` PASS. Proof: explicit no-op with reason.

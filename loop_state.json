@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T07:45:00Z",
+  "updated_at": "2026-02-27T08:00:00Z",
   "run": {
-    "total_cycles": 84,
-    "success_cycles": 79,
+    "total_cycles": 85,
+    "success_cycles": 80,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,12 +25,12 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by making follow-graph API output deterministic via sorted nodes and edges.",
+    "summary": "Task #20 progressed by enforcing strict live_status normalization in follow-graph nodes (unknown values now fallback to offline).",
     "proof": [
-      "commit bb7238a",
+      "commit ee6fc6b",
       "node --check server.js PASS"
     ],
-    "timestamp": "2026-02-27T07:45:00Z"
+    "timestamp": "2026-02-27T08:00:00Z"
   },
   "escalation": {
     "required": false,
