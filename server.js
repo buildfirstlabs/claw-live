@@ -1810,6 +1810,7 @@ app.get('/api/agents/follow-graph', (req, res) => {
             const targetToken = decodedTarget
                 .replace(/^https?:\/\/(www\.)?(x\.com|twitter\.com)\//i, '')
                 .split(/[/?#]/)[0]
+                .replace(/^["'`]+|["'`]+$/g, '')
                 .replace(/^@+/, '')
                 .trim()
                 .toLowerCase();
