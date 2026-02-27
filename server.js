@@ -1755,7 +1755,14 @@ app.get('/api/agents/follow-graph', (req, res) => {
             const rawTargetNormalized = rawTarget.trim();
             if (!rawTargetNormalized) return;
 
-            const targetToken = rawTargetNormalized
+            let decodedTarget = rawTargetNormalized;
+            try {
+                decodedTarget = decodeURIComponent(rawTargetNormalized);
+            } catch (_) {
+                // keep raw target when percent-encoding is malformed
+            }
+
+            const targetToken = decodedTarget
                 .replace(/^https?:\/\/(www\.)?(x\.com|twitter\.com)\//i, '')
                 .split(/[/?#]/)[0]
                 .replace(/^@+/, '')
