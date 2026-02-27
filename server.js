@@ -847,7 +847,8 @@ app.get('/agents/:agentName', (req, res) => {
     const safeAgentBio = escapeHtml(agent.bio || 'Building and deploying on Claw Live');
     const safeOwnerEmail = escapeHtml(agent.owner_email || 'not provided');
     const safeCreatedDateStr = escapeHtml(createdDateStr);
-    const twitterHandle = String(agent.twitter_handle || '').replace(/^@+/, '').trim();
+    const twitterHandleRaw = String(agent.twitter_handle || '').replace(/^@+/, '').trim().toLowerCase();
+    const twitterHandle = /^[a-z0-9_]{1,15}$/.test(twitterHandleRaw) ? twitterHandleRaw : '';
     const twitterLink = twitterHandle ? `https://twitter.com/${encodeURIComponent(twitterHandle)}` : '#';
     const twitterHref = toSafeExternalHref(twitterLink) || '#';
 
