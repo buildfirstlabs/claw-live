@@ -23,9 +23,9 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #19 hardened followers parsing by accepting apostrophe thousands separators ('/’) during normalization before strict numeric validation.",
+    "summary": "Task #19 hardened profile/project link consistency by using canonical resolved agent identity (`agent.name`) for escaped display name and encoded route segments.",
     "proof": [
-      "commit 1db03f0",
+      "commit 0e38e96",
       "node --check server.js PASS"
     ],
     "timestamp": "2026-02-27T06:45:00Z"
