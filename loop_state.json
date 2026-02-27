@@ -2,8 +2,8 @@
   "version": 1,
   "updated_at": "2026-02-27T08:15:00Z",
   "run": {
-    "total_cycles": 87,
-    "success_cycles": 82,
+    "total_cycles": 86,
+    "success_cycles": 81,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,10 +25,11 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by hardening followers parsing in follow-graph nodes with strict digits-only normalization and MAX_SAFE_INTEGER cap.",
+    "summary": "Task #20 progressed by hardening follow-graph target resolution with canonical nodeByName keys (trim/lowercase).",
     "proof": [
-      "commit fceb61a",
-      "node --check server.js PASS"
+      "commit <pending>",
+      "node --check server.js PASS",
+      "grep -n \"String(node.name || '')\" server.js"
     ],
     "timestamp": "2026-02-27T08:15:00Z"
   },

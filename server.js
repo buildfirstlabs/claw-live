@@ -1734,7 +1734,11 @@ app.get('/api/agents/follow-graph', (req, res) => {
         };
     });
 
-    const nodeByName = new Map(nodes.map((node) => [node.name.toLowerCase(), node]));
+    const nodeByName = new Map(
+        nodes
+            .map((node) => [String(node.name || '').trim().toLowerCase(), node])
+            .filter(([key]) => key)
+    );
     const nodeByHandle = new Map(nodes.filter((node) => node.handle).map((node) => [node.handle, node]));
     const edgeSet = new Set();
     const edges = [];
