@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-02-27T10:30:00Z",
+  "updated_at": "2026-02-27T10:46:12Z",
   "run": {
-    "total_cycles": 97,
-    "success_cycles": 92,
+    "total_cycles": 98,
+    "success_cycles": 93,
     "failed_cycles": 5,
     "consecutive_failures": 0
   },
@@ -25,13 +25,13 @@
   },
   "last_result": {
     "outcome": "success",
-    "summary": "Task #20 progressed by hardening follow-target parsing to strip wrapping quotes/backticks before token normalization, preserving edges from serialized/CSV-like following payloads.",
+    "summary": "Task #20 progressed by extending string `following` parsing to include the pipe delimiter (`|`), preserving edges for pipe-delimited upstream payloads.",
     "proof": [
-      "commit 9346be2",
+      "commit <pending>",
       "node --check server.js PASS",
-      "grep -n \"targetToken = decodedTarget\" -A6 server.js"
+      "grep -nF \"split(/[\\n,;\\t|]+/)\" server.js"
     ],
-    "timestamp": "2026-02-27T10:30:00Z"
+    "timestamp": "2026-02-27T10:46:12Z"
   },
   "escalation": {
     "required": false,
